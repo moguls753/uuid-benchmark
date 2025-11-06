@@ -1,69 +1,42 @@
 package main
 
 import (
-"fmt"
-"log"
-"math/rand"
-"time"
+	"database/sql"
+	"fmt"
+	"log"
 
-"github.com/google/uuid"
-"github.com/oklog/ulid/v2"
+	_ "github.com/lib/pq"
 )
 
 func main() {
-fmt.Println("UUID Benchmark Tool")
-fmt.Println("===================")
-fmt.Println()
+	fmt.Println("UUID Benchmark - Step 1: Database Connection")
+	fmt.Println("=" * 50)
+	fmt.Println()
 
-numExamples := 5
+	// Connection string for PostgreSQL
+	connStr := "host=localhost port=5432 user=benchmark password=benchmark123 dbname=uuid_benchmark sslmode=disable"
 
-fmt.Println("UUIDv1 (Time-based with MAC address):")
-fmt.Println("--------------------------------------")
-for i := 0; i < numExamples; i++ {
-	v1, err := uuid.NewUUID()
+	// Open connection
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to open database: %v", err)
 	}
-	fmt.Printf("%d. %s\n", i+1, v1.String())
-	time.Sleep(1 * time.Millisecond)
-}
-fmt.Println()
+	defer db.Close()
 
-fmt.Println("UUIDv4 (Random):")
-fmt.Println("----------------")
-for i := 0; i < numExamples; i++ {
-	v4 := uuid.New()
-	fmt.Printf("%d. %s\n", i+1, v4.String())
-}
-fmt.Println()
-
-fmt.Println("UUIDv7 (Timestamp-sortable):")
-fmt.Println("-----------------------------")
-for i := 0; i < numExamples; i++ {
-	v7, err := uuid.NewV7()
+	// Test connection
+	err = db.Ping()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to ping database: %v", err)
 	}
-	fmt.Printf("%d. %s\n", i+1, v7.String())
-	time.Sleep(1 * time.Millisecond)
-}
-fmt.Println()
 
-fmt.Println("ULID (Lexicographically sortable):")
-fmt.Println("-----------------------------------")
-entropy := rand.New(rand.NewSource(time.Now().UnixNano()))
-for i := 0; i < numExamples; i++ {
-	ul := ulid.MustNew(ulid.Timestamp(time.Now()), entropy)
-	fmt.Printf("%d. %s\n", i+1, ul.String())
-	time.Sleep(1 * time.Millisecond)
-}
-fmt.Println()
+	fmt.Println("✓ Successfully connected to PostgreSQL!")
 
-fmt.Println("INT8 / BIGSERIAL (Sequential integers - reference):")
-fmt.Println("----------------------------------------------------")
-var startID int64 = 1000000
-for i := 0; i < numExamples; i++ {
-	fmt.Printf("%d. %d (0x%016x)\n", i+1, startID+int64(i), startID+int64(i))
-}
-fmt.Println()
+	// Get PostgreSQL version
+	var version string
+	err = db.QueryRow("SELECT version()").Scan(&version)
+	if err != nil {
+		log.Fatalf("Failed to query version: %v", err)
+	}
+
+	fmt.Printf("✓ PostgreSQL version: %s\n", version)
 }

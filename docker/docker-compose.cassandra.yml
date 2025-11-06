@@ -1,0 +1,33 @@
+services:
+  cassandra:
+    image: cassandra:5
+    container_name: uuid-bench-cassandra
+    environment:
+      CASSANDRA_CLUSTER_NAME: ${CASSANDRA_CLUSTER_NAME:-UUIDBenchCluster}
+      CASSANDRA_DC: ${CASSANDRA_DC:-dc1}
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+      MAX_HEAP_SIZE: 4G
+      HEAP_NEWSIZE: 1G
+    ports:
+      - "9042:9042"  # CQL native transport
+      - "7199:7199"  # JMX
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '2'
+          memory: 4G
+    networks:
+      - benchmark_network
+
+networks:
+  benchmark_network:
+    driver: bridge
+
+volumes:
+  cassandra_data:
+    driver: local
