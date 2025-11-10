@@ -2,9 +2,6 @@ package postgres
 
 import (
 	"fmt"
-	"os/exec"
-	"strconv"
-	"strings"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
 )
@@ -36,6 +33,17 @@ func (p *PostgresBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, erro
 		result.PageSplits = 0
 	} else {
 		result.PageSplits = pageSplits
+	}
+
+	// Measure buffer pool hit ratios
+	bufferHitRatio, indexHitRatio, err := p.measureBufferHitRatios()
+	if err != nil {
+		fmt.Printf("Warning: Could not measure buffer hit ratios: %v\n", err)
+		result.BufferHitRatio = 0
+		result.IndexBufferHitRatio = 0
+	} else {
+		result.BufferHitRatio = bufferHitRatio
+		result.IndexBufferHitRatio = indexHitRatio
 	}
 
 	return result, nil
@@ -85,25 +93,78 @@ func (p *PostgresBenchmarker) measureIndexFragmentation() (benchmark.IndexFragme
 	return stats, nil
 }
 
-// countPageSplits counts B-tree page splits from PostgreSQL WAL using pg_waldump
-func (p *PostgresBenchmarker) countPageSplits() (int, error) {
-	// Run pg_waldump inside the PostgreSQL container to count SPLIT operations
-	// Use [0-9]* pattern to match only WAL segment files, not subdirectories like 'summaries'
-	cmd := exec.Command("docker", "exec", "uuid-bench-postgres",
-		"sh", "-c",
-		"pg_waldump /var/lib/postgresql/data/pg_wal/[0-9]* 2>/dev/null | grep -c SPLIT || true")
-
-	output, err := cmd.Output()
+// getCurrentLSN returns the current WAL LSN (Log Sequence Number)
+func (p *PostgresBenchmarker) getCurrentLSN() (string, error) {
+	var lsn string
+	err := p.db.QueryRow("SELECT pg_current_wal_lsn()::text").Scan(&lsn)
 	if err != nil {
-		return 0, fmt.Errorf("execute pg_waldump: %w", err)
+		return "", fmt.Errorf("query current LSN: %w", err)
+	}
+	return lsn, nil
+}
+
+// countPageSplits counts B-tree page splits from PostgreSQL WAL using pg_walinspect
+func (p *PostgresBenchmarker) countPageSplits() (int, error) {
+	// If we don't have LSN range captured, return 0
+	if p.startLSN == "" || p.endLSN == "" {
+		return 0, fmt.Errorf("LSN range not captured (startLSN=%q, endLSN=%q)", p.startLSN, p.endLSN)
 	}
 
-	// Parse the count from output
-	countStr := strings.TrimSpace(string(output))
-	count, err := strconv.Atoi(countStr)
+	// Query pg_walinspect for Btree page splits in the LSN range
+	// Note: pg_get_wal_stats returns a column with format "resource_manager/record_type"
+	query := `
+		SELECT COALESCE(SUM(count), 0)::int
+		FROM pg_get_wal_stats($1::pg_lsn, $2::pg_lsn, per_record := true)
+		WHERE "resource_manager/record_type" IN ('Btree/SPLIT_L', 'Btree/SPLIT_R')
+	`
+
+	var count int
+	err := p.db.QueryRow(query, p.startLSN, p.endLSN).Scan(&count)
 	if err != nil {
-		return 0, fmt.Errorf("parse count '%s': %w", countStr, err)
+		return 0, fmt.Errorf("query page splits (LSN %s to %s): %w", p.startLSN, p.endLSN, err)
 	}
 
 	return count, nil
+}
+
+// measureBufferHitRatios queries PostgreSQL for cache hit ratios
+func (p *PostgresBenchmarker) measureBufferHitRatios() (float64, float64, error) {
+	// Overall database buffer hit ratio
+	var bufferHitRatio float64
+	bufferQuery := `
+		SELECT
+			COALESCE(blks_hit::float / NULLIF(blks_hit + blks_read, 0), 0) AS cache_hit_ratio
+		FROM pg_stat_database
+		WHERE datname = 'uuid_benchmark'
+	`
+	err := p.db.QueryRow(bufferQuery).Scan(&bufferHitRatio)
+	if err != nil {
+		return 0, 0, fmt.Errorf("query buffer hit ratio: %w", err)
+	}
+
+	// Index-specific buffer hit ratio for the current table
+	var indexHitRatio float64
+	indexQuery := `
+		SELECT
+			COALESCE(idx_blks_hit::float / NULLIF(idx_blks_hit + idx_blks_read, 0), 0) AS index_hit_ratio
+		FROM pg_statio_user_tables
+		WHERE relname = $1
+	`
+	err = p.db.QueryRow(indexQuery, p.tableName).Scan(&indexHitRatio)
+	if err != nil {
+		// If table doesn't exist or no stats, return 0
+		indexHitRatio = 0
+	}
+
+	return bufferHitRatio, indexHitRatio, nil
+}
+
+// ResetStats resets PostgreSQL statistics counters
+// Call this before read/update workloads to measure buffer hit ratio accurately
+func (p *PostgresBenchmarker) ResetStats() error {
+	_, err := p.db.Exec("SELECT pg_stat_reset()")
+	if err != nil {
+		return fmt.Errorf("reset stats: %w", err)
+	}
+	return nil
 }

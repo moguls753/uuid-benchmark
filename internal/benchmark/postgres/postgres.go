@@ -12,6 +12,8 @@ type PostgresBenchmarker struct {
 	keyType   string
 	tableName string
 	indexName string
+	startLSN  string // WAL LSN at start of insert operation
+	endLSN    string // WAL LSN at end of insert operation
 }
 
 // New creates a new PostgreSQL benchmarker instance

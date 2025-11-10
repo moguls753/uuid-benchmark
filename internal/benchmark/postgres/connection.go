@@ -27,6 +27,12 @@ func (p *PostgresBenchmarker) Connect() error {
 		return fmt.Errorf("enable pgstattuple extension: %w", err)
 	}
 
+	// Enable pg_walinspect extension for WAL analysis (PostgreSQL 15+)
+	_, err = p.db.Exec("CREATE EXTENSION IF NOT EXISTS pg_walinspect")
+	if err != nil {
+		return fmt.Errorf("enable pg_walinspect extension: %w", err)
+	}
+
 	return nil
 }
 

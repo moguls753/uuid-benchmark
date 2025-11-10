@@ -13,6 +13,13 @@ import (
 const noWorkerID = -1
 
 func (p *PostgresBenchmarker) InsertRecords(keyType string, numRecords, batchSize int) (time.Duration, error) {
+	// Capture start LSN before any inserts
+	startLSN, err := p.getCurrentLSN()
+	if err != nil {
+		return 0, fmt.Errorf("capture start LSN: %w", err)
+	}
+	p.startLSN = startLSN
+
 	startTime := time.Now()
 
 	if batchSize == 1 {
@@ -40,10 +47,26 @@ func (p *PostgresBenchmarker) InsertRecords(keyType string, numRecords, batchSiz
 		}
 	}
 
-	return time.Since(startTime), nil
+	duration := time.Since(startTime)
+
+	// Capture end LSN after all inserts
+	endLSN, err := p.getCurrentLSN()
+	if err != nil {
+		return 0, fmt.Errorf("capture end LSN: %w", err)
+	}
+	p.endLSN = endLSN
+
+	return duration, nil
 }
 
 func (p *PostgresBenchmarker) InsertRecordsConcurrent(keyType string, numRecords, connections, batchSize int) (*benchmark.ConcurrentBenchmarkResult, error) {
+	// Capture start LSN before any inserts
+	startLSN, err := p.getCurrentLSN()
+	if err != nil {
+		return nil, fmt.Errorf("capture start LSN: %w", err)
+	}
+	p.startLSN = startLSN
+
 	var wg sync.WaitGroup
 	var mu sync.Mutex
 	allLatencies := make([]time.Duration, 0, numRecords)
@@ -76,6 +99,13 @@ func (p *PostgresBenchmarker) InsertRecordsConcurrent(keyType string, numRecords
 
 	wg.Wait()
 	duration := time.Since(startTime)
+
+	// Capture end LSN after all inserts
+	endLSN, err := p.getCurrentLSN()
+	if err != nil {
+		return nil, fmt.Errorf("capture end LSN: %w", err)
+	}
+	p.endLSN = endLSN
 
 	p50, p95, p99 := benchmark.CalculatePercentiles(allLatencies)
 

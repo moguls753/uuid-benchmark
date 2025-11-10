@@ -2,6 +2,12 @@ services:
   postgres:
     image: postgres:17
     container_name: uuid-bench-postgres
+    command:
+      - "postgres"
+      - "-c"
+      - "checkpoint_timeout=1h"
+      - "-c"
+      - "max_wal_size=10GB"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-benchmark}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-benchmark123}
