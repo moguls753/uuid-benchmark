@@ -201,8 +201,10 @@ func (p *PostgresBenchmarker) executeRandomRead(keyType string, numTotalRecords 
 	switch keyType {
 	case "bigserial":
 		return p.executeReadBigserial(numTotalRecords)
-	case "uuidv4":
+	case "uuidv4", "uuidv7", "uuidv1":
 		return p.executeReadUUIDv4()
+	case "ulid":
+		return p.executeReadULID()
 	default:
 		return 0, fmt.Errorf("unknown key type: %s", keyType)
 	}
@@ -259,13 +261,44 @@ func (p *PostgresBenchmarker) executeReadUUIDv4() (int64, error) {
 	return 1, nil
 }
 
+// executeReadULID performs a point lookup for ULID (stored as TEXT)
+func (p *PostgresBenchmarker) executeReadULID() (int64, error) {
+	// For ULID, we need to first fetch a random existing ID
+	query := fmt.Sprintf("SELECT id FROM %s ORDER BY RANDOM() LIMIT 1", p.tableName)
+
+	var randomULID string
+	err := p.db.QueryRow(query).Scan(&randomULID)
+	if err != nil {
+		return 0, err
+	}
+
+	// Now perform the actual point lookup
+	selectQuery := fmt.Sprintf("SELECT id, data, created_at FROM %s WHERE id = $1", p.tableName)
+
+	var id string
+	var data string
+	var createdAt time.Time
+
+	err = p.db.QueryRow(selectQuery, randomULID).Scan(&id, &data, &createdAt)
+	if err == sql.ErrNoRows {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+
+	return 1, nil
+}
+
 // executeRangeScan performs a range scan
 func (p *PostgresBenchmarker) executeRangeScan(keyType string, rangeSize, numTotalRecords int) (int64, error) {
 	switch keyType {
 	case "bigserial":
 		return p.executeRangeScanBigserial(rangeSize, numTotalRecords)
-	case "uuidv4":
+	case "uuidv4", "uuidv7", "uuidv1":
 		return p.executeRangeScanUUIDv4(rangeSize)
+	case "ulid":
+		return p.executeRangeScanULID(rangeSize)
 	default:
 		return 0, fmt.Errorf("unknown key type: %s", keyType)
 	}
@@ -299,6 +332,27 @@ func (p *PostgresBenchmarker) executeRangeScanBigserial(rangeSize, numTotalRecor
 // executeRangeScanUUIDv4 performs a range scan for UUIDv4
 func (p *PostgresBenchmarker) executeRangeScanUUIDv4(rangeSize int) (int64, error) {
 	// For UUIDs, we'll fetch N consecutive rows after a random starting point
+	// This simulates a range scan on the index order
+	query := fmt.Sprintf("SELECT id, data, created_at FROM %s ORDER BY id OFFSET (SELECT FLOOR(RANDOM() * COUNT(*)) FROM %s) LIMIT $1",
+		p.tableName, p.tableName)
+
+	rows, err := p.db.Query(query, rangeSize)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+
+	var count int64
+	for rows.Next() {
+		count++
+	}
+
+	return count, rows.Err()
+}
+
+// executeRangeScanULID performs a range scan for ULID (stored as TEXT)
+func (p *PostgresBenchmarker) executeRangeScanULID(rangeSize int) (int64, error) {
+	// For ULID (TEXT), we'll fetch N consecutive rows after a random starting point
 	// This simulates a range scan on the index order
 	query := fmt.Sprintf("SELECT id, data, created_at FROM %s ORDER BY id OFFSET (SELECT FLOOR(RANDOM() * COUNT(*)) FROM %s) LIMIT $1",
 		p.tableName, p.tableName)

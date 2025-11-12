@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
+	"github.com/oklog/ulid/v2"
 )
 
 const noWorkerID = -1
@@ -175,6 +176,37 @@ func (p *PostgresBenchmarker) executeSingleInsert(keyType string, index int) err
 		)
 		return err
 
+	case "uuidv7":
+		id, err := uuid.NewV7()
+		if err != nil {
+			return fmt.Errorf("generate uuidv7: %w", err)
+		}
+		_, err = p.db.Exec(
+			fmt.Sprintf("INSERT INTO %s (id, data) VALUES ($1, $2)", p.tableName),
+			id, data,
+		)
+		return err
+
+	case "ulid":
+		id := ulid.Make()
+		// ULID stored as TEXT in base32 format
+		_, err := p.db.Exec(
+			fmt.Sprintf("INSERT INTO %s (id, data) VALUES ($1, $2)", p.tableName),
+			id.String(), data,
+		)
+		return err
+
+	case "uuidv1":
+		id, err := uuid.NewUUID()
+		if err != nil {
+			return fmt.Errorf("generate uuidv1: %w", err)
+		}
+		_, err = p.db.Exec(
+			fmt.Sprintf("INSERT INTO %s (id, data) VALUES ($1, $2)", p.tableName),
+			id, data,
+		)
+		return err
+
 	default:
 		return fmt.Errorf("unknown key type: %s", keyType)
 	}
@@ -186,6 +218,12 @@ func (p *PostgresBenchmarker) executeBatchInsert(keyType string, startIdx, batch
 		return p.executeBatchBigserial(startIdx, batchSize, workerID)
 	case "uuidv4":
 		return p.executeBatchUUIDv4(startIdx, batchSize, workerID)
+	case "uuidv7":
+		return p.executeBatchUUIDv7(startIdx, batchSize, workerID)
+	case "ulid":
+		return p.executeBatchULID(startIdx, batchSize, workerID)
+	case "uuidv1":
+		return p.executeBatchUUIDv1(startIdx, batchSize, workerID)
 	default:
 		return fmt.Errorf("unknown key type: %s", keyType)
 	}
@@ -221,6 +259,66 @@ func (p *PostgresBenchmarker) executeBatchUUIDv4(startIdx, batchSize, workerID i
 	for i := 0; i < batchSize; i++ {
 		placeholders[i] = fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2)
 		args[i*2] = uuid.New()
+		args[i*2+1] = formatDataString(startIdx+i, workerID)
+	}
+
+	sql := fmt.Sprintf("INSERT INTO %s (id, data) VALUES %s",
+		p.tableName, strings.Join(placeholders, ", "))
+
+	_, err := p.db.Exec(sql, args...)
+	return err
+}
+
+func (p *PostgresBenchmarker) executeBatchUUIDv7(startIdx, batchSize, workerID int) error {
+	placeholders := make([]string, batchSize)
+	args := make([]interface{}, batchSize*2)
+
+	for i := 0; i < batchSize; i++ {
+		placeholders[i] = fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2)
+		id, err := uuid.NewV7()
+		if err != nil {
+			return fmt.Errorf("generate uuidv7: %w", err)
+		}
+		args[i*2] = id
+		args[i*2+1] = formatDataString(startIdx+i, workerID)
+	}
+
+	sql := fmt.Sprintf("INSERT INTO %s (id, data) VALUES %s",
+		p.tableName, strings.Join(placeholders, ", "))
+
+	_, err := p.db.Exec(sql, args...)
+	return err
+}
+
+func (p *PostgresBenchmarker) executeBatchULID(startIdx, batchSize, workerID int) error {
+	placeholders := make([]string, batchSize)
+	args := make([]interface{}, batchSize*2)
+
+	for i := 0; i < batchSize; i++ {
+		placeholders[i] = fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2)
+		id := ulid.Make()
+		args[i*2] = id.String()
+		args[i*2+1] = formatDataString(startIdx+i, workerID)
+	}
+
+	sql := fmt.Sprintf("INSERT INTO %s (id, data) VALUES %s",
+		p.tableName, strings.Join(placeholders, ", "))
+
+	_, err := p.db.Exec(sql, args...)
+	return err
+}
+
+func (p *PostgresBenchmarker) executeBatchUUIDv1(startIdx, batchSize, workerID int) error {
+	placeholders := make([]string, batchSize)
+	args := make([]interface{}, batchSize*2)
+
+	for i := 0; i < batchSize; i++ {
+		placeholders[i] = fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2)
+		id, err := uuid.NewUUID()
+		if err != nil {
+			return fmt.Errorf("generate uuidv1: %w", err)
+		}
+		args[i*2] = id
 		args[i*2+1] = formatDataString(startIdx+i, workerID)
 	}
 

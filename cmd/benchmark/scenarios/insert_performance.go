@@ -8,7 +8,7 @@ import (
 )
 
 // AllKeyTypes defines all UUID types to benchmark
-var AllKeyTypes = []string{"bigserial", "uuidv4"} // uuidv7, ulid, uuidv1 pending
+var AllKeyTypes = []string{"bigserial", "uuidv4", "uuidv7", "ulid", "uuidv1"}
 
 // InsertPerformance evaluates disk efficiency during insert operations
 //

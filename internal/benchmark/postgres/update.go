@@ -184,8 +184,10 @@ func (p *PostgresBenchmarker) executeRandomUpdate(keyType string, index, numTota
 	switch keyType {
 	case "bigserial":
 		return p.executeUpdateBigserial(newData, numTotalRecords)
-	case "uuidv4":
+	case "uuidv4", "uuidv7", "uuidv1":
 		return p.executeUpdateUUIDv4(newData)
+	case "ulid":
+		return p.executeUpdateULID(newData)
 	default:
 		return fmt.Errorf("unknown key type: %s", keyType)
 	}
@@ -218,6 +220,23 @@ func (p *PostgresBenchmarker) executeUpdateUUIDv4(newData string) error {
 	return err
 }
 
+// executeUpdateULID performs a point update for ULID (stored as TEXT)
+func (p *PostgresBenchmarker) executeUpdateULID(newData string) error {
+	// For ULID, we need to first fetch a random existing ID
+	query := fmt.Sprintf("SELECT id FROM %s ORDER BY RANDOM() LIMIT 1", p.tableName)
+
+	var randomULID string
+	err := p.db.QueryRow(query).Scan(&randomULID)
+	if err != nil {
+		return err
+	}
+
+	// Now perform the actual update
+	updateQuery := fmt.Sprintf("UPDATE %s SET data = $1 WHERE id = $2", p.tableName)
+	_, err = p.db.Exec(updateQuery, newData, randomULID)
+	return err
+}
+
 // executeBatchUpdate performs a batch of updates in a single transaction
 func (p *PostgresBenchmarker) executeBatchUpdate(keyType string, startIdx, batchSize, numTotalRecords int) error {
 	// Begin transaction
@@ -240,7 +259,7 @@ func (p *PostgresBenchmarker) executeBatchUpdate(keyType string, startIdx, batch
 				return err
 			}
 
-		case "uuidv4":
+		case "uuidv4", "uuidv7", "uuidv1":
 			// For UUID, fetch random ID first
 			query := fmt.Sprintf("SELECT id FROM %s ORDER BY RANDOM() LIMIT 1", p.tableName)
 			var randomUUID uuid.UUID
@@ -251,6 +270,21 @@ func (p *PostgresBenchmarker) executeBatchUpdate(keyType string, startIdx, batch
 
 			updateQuery := fmt.Sprintf("UPDATE %s SET data = $1 WHERE id = $2", p.tableName)
 			_, err = tx.Exec(updateQuery, newData, randomUUID)
+			if err != nil {
+				return err
+			}
+
+		case "ulid":
+			// For ULID (TEXT), fetch random ID first
+			query := fmt.Sprintf("SELECT id FROM %s ORDER BY RANDOM() LIMIT 1", p.tableName)
+			var randomULID string
+			err := tx.QueryRow(query).Scan(&randomULID)
+			if err != nil {
+				return err
+			}
+
+			updateQuery := fmt.Sprintf("UPDATE %s SET data = $1 WHERE id = $2", p.tableName)
+			_, err = tx.Exec(updateQuery, newData, randomULID)
 			if err != nil {
 				return err
 			}

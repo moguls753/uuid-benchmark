@@ -68,6 +68,30 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 				created_at TIMESTAMP DEFAULT NOW()
 			)
 		`, p.tableName)
+	case "uuidv7":
+		createSQL = fmt.Sprintf(`
+			CREATE TABLE %s (
+				id UUID PRIMARY KEY,
+				data TEXT,
+				created_at TIMESTAMP DEFAULT NOW()
+			)
+		`, p.tableName)
+	case "ulid":
+		createSQL = fmt.Sprintf(`
+			CREATE TABLE %s (
+				id TEXT PRIMARY KEY,
+				data TEXT,
+				created_at TIMESTAMP DEFAULT NOW()
+			)
+		`, p.tableName)
+	case "uuidv1":
+		createSQL = fmt.Sprintf(`
+			CREATE TABLE %s (
+				id UUID PRIMARY KEY,
+				data TEXT,
+				created_at TIMESTAMP DEFAULT NOW()
+			)
+		`, p.tableName)
 	default:
 		return fmt.Errorf("unknown key type: %s", keyType)
 	}
