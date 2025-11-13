@@ -23,13 +23,13 @@ type Benchmarker interface {
 }
 
 type BenchmarkResult struct {
-	InsertDuration     time.Duration
-	Throughput         float64
-	PageSplits         int
-	TableSize          int64
-	IndexSize          int64
-	Fragmentation      IndexFragmentationStats
-	BufferHitRatio     float64 // Cache hit ratio (0.0 to 1.0)
+	InsertDuration      time.Duration
+	Throughput          float64
+	PageSplits          int
+	TableSize           int64
+	IndexSize           int64
+	Fragmentation       IndexFragmentationStats
+	BufferHitRatio      float64 // Cache hit ratio (0.0 to 1.0)
 	IndexBufferHitRatio float64 // Index-specific cache hit ratio
 }
 

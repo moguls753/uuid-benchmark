@@ -14,9 +14,9 @@ import (
 
 func main() {
 	// Scenario-based flags
-	scenario := flag.String("scenario", "insert-performance", "Scenario to run (insert-performance, read-after-fragmentation, update-performance)")
+	scenario := flag.String("scenario", "insert-performance", "Scenario to run (insert-performance, read-after-fragmentation, update-performance, mixed-insert-heavy, mixed-read-heavy, mixed-balanced)")
 	numRecords := flag.Int("num-records", 100000, "Number of records for insert operations")
-	numOps := flag.Int("num-ops", 10000, "Number of operations for read/update scenarios")
+	numOps := flag.Int("num-ops", 10000, "Number of operations for read/update/mixed scenarios")
 	connections := flag.Int("connections", 1, "Number of concurrent connections")
 	batchSize := flag.Int("batch-size", 100, "Batch size for inserts/updates")
 	flag.Parse()
@@ -46,6 +46,15 @@ func main() {
 
 	case "update-performance":
 		runUpdatePerformanceForAllTypes(*numRecords, *numOps, *batchSize)
+
+	case "mixed-insert-heavy":
+		runMixedWorkloadInsertHeavyForAllTypes(*numOps, *connections, *batchSize)
+
+	case "mixed-read-heavy":
+		runMixedWorkloadReadHeavyForAllTypes(*numOps, *connections)
+
+	case "mixed-balanced":
+		runMixedWorkloadBalancedForAllTypes(*numOps, *connections)
 
 	default:
 		log.Fatalf("Invalid scenario: %s", *scenario)
@@ -128,6 +137,81 @@ func runUpdatePerformanceForAllTypes(numRecords, numOps, batchSize int) {
 
 	// Display comparison table
 	displayUpdatePerformanceComparison(results)
+}
+
+func runMixedWorkloadInsertHeavyForAllTypes(totalOps, connections, batchSize int) {
+	results := make(map[string]*benchmark.MixedWorkloadResult)
+
+	// Run benchmark for each key type
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		// Fresh container for each key type
+		startContainer()
+
+		result, err := scenarios.MixedWorkloadInsertHeavy(keyType, totalOps, connections, batchSize)
+		if err != nil {
+			stopContainer()
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		stopContainer()
+	}
+
+	// Display comparison table
+	displayMixedWorkloadComparison(results, "Insert-Heavy (90% insert, 10% read)")
+}
+
+func runMixedWorkloadReadHeavyForAllTypes(totalOps, connections int) {
+	results := make(map[string]*benchmark.MixedWorkloadResult)
+
+	// Run benchmark for each key type
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		// Fresh container for each key type
+		startContainer()
+
+		result, err := scenarios.MixedWorkloadReadHeavy(keyType, totalOps, connections)
+		if err != nil {
+			stopContainer()
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		stopContainer()
+	}
+
+	// Display comparison table
+	displayMixedWorkloadComparison(results, "Read-Heavy (10% insert, 90% read)")
+}
+
+func runMixedWorkloadBalancedForAllTypes(totalOps, connections int) {
+	results := make(map[string]*benchmark.MixedWorkloadResult)
+
+	// Run benchmark for each key type
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		// Fresh container for each key type
+		startContainer()
+
+		result, err := scenarios.MixedWorkloadBalanced(keyType, totalOps, connections)
+		if err != nil {
+			stopContainer()
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		stopContainer()
+	}
+
+	// Display comparison table
+	displayMixedWorkloadComparison(results, "Balanced (50% insert, 30% read, 20% update)")
 }
 
 // Comparison display functions
@@ -282,6 +366,83 @@ func displayUpdatePerformanceComparison(results map[string]*benchmark.UpdatePerf
 	fmt.Println()
 
 	// Fragmentation after updates
+	fmt.Printf("%-20s", "Fragmentation")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+	}
+	fmt.Println()
+}
+
+func displayMixedWorkloadComparison(results map[string]*benchmark.MixedWorkloadResult, workloadName string) {
+	fmt.Println()
+	fmt.Println()
+	fmt.Printf("COMPARISON - Mixed Workload: %s\n", workloadName)
+	fmt.Println(strings.Repeat("=", 70))
+
+	// Header
+	fmt.Printf("%-20s", "Metric")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", strings.ToUpper(keyType))
+	}
+	fmt.Println()
+	fmt.Println(strings.Repeat("-", 70))
+
+	// Overall throughput
+	fmt.Printf("%-20s", "Overall Throughput")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.0f ops/s", results[keyType].OverallThroughput))
+	}
+	fmt.Println()
+
+	// Insert throughput
+	if results[scenarios.AllKeyTypes[0]].InsertOps > 0 {
+		fmt.Printf("%-20s", "Insert Throughput")
+		for _, keyType := range scenarios.AllKeyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.0f rec/s", results[keyType].InsertThroughput))
+		}
+		fmt.Println()
+	}
+
+	// Read throughput
+	if results[scenarios.AllKeyTypes[0]].ReadOps > 0 {
+		fmt.Printf("%-20s", "Read Throughput")
+		for _, keyType := range scenarios.AllKeyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.0f rec/s", results[keyType].ReadThroughput))
+		}
+		fmt.Println()
+	}
+
+	// Update throughput
+	if results[scenarios.AllKeyTypes[0]].UpdateOps > 0 {
+		fmt.Printf("%-20s", "Update Throughput")
+		for _, keyType := range scenarios.AllKeyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.0f rec/s", results[keyType].UpdateThroughput))
+		}
+		fmt.Println()
+	}
+
+	// Buffer hit ratio
+	fmt.Printf("%-20s", "Buffer Hit Ratio")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].BufferHitRatio*100))
+	}
+	fmt.Println()
+
+	// Index buffer hit ratio
+	fmt.Printf("%-20s", "Index Hit Ratio")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].IndexBufferHitRatio*100))
+	}
+	fmt.Println()
+
+	// Index size
+	fmt.Printf("%-20s", "Index Size")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", benchmark.FormatBytes(results[keyType].IndexSize))
+	}
+	fmt.Println()
+
+	// Fragmentation
 	fmt.Printf("%-20s", "Fragmentation")
 	for _, keyType := range scenarios.AllKeyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
