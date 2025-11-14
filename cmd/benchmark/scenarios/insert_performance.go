@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/docker"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres"
 )
 
@@ -44,6 +45,12 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 		Connections: connections,
 	}
 
+	// Capture I/O stats before insert
+	ioStatsBefore, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	if err != nil {
+		fmt.Printf("⚠ Failed to capture I/O stats before insert: %v\n", err)
+	}
+
 	// Execute insert operation (sequential or concurrent)
 	if connections == 1 {
 		// Sequential insert
@@ -64,6 +71,21 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 		result.LatencyP50 = concResult.LatencyP50
 		result.LatencyP95 = concResult.LatencyP95
 		result.LatencyP99 = concResult.LatencyP99
+	}
+
+	// Capture I/O stats after insert
+	ioStatsAfter, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	if err != nil {
+		fmt.Printf("⚠ Failed to capture I/O stats after insert: %v\n", err)
+	}
+
+	// Calculate I/O metrics
+	if ioStatsBefore != nil && ioStatsAfter != nil {
+		ioMetrics := docker.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		result.ReadIOPS = ioMetrics.ReadIOPS
+		result.WriteIOPS = ioMetrics.WriteIOPS
+		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
+		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
 	}
 
 	fmt.Printf("✓ Inserted %d records in %s\n", numRecords, result.Duration)

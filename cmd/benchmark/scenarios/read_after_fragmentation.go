@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/docker"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres"
 )
 
@@ -75,6 +76,13 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 
 	// Step 3: Run read workload (point lookups)
 	fmt.Printf("→ Running %d point lookups...\n", numReads)
+
+	// Capture I/O stats before read workload
+	ioStatsBefore, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	if err != nil {
+		fmt.Printf("⚠ Failed to capture I/O stats before reads: %v\n", err)
+	}
+
 	readResult, err := bench.ReadRandomRecords(keyType, numReads, numRecords)
 	if err != nil {
 		return nil, fmt.Errorf("read records: %w", err)
