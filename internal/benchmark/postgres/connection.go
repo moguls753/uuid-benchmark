@@ -3,9 +3,9 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
-// Connect establishes a connection to the PostgreSQL database
 func (p *PostgresBenchmarker) Connect() error {
 	connStr := "host=localhost port=5432 user=benchmark password=benchmark123 dbname=uuid_benchmark sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
@@ -27,7 +27,7 @@ func (p *PostgresBenchmarker) Connect() error {
 		return fmt.Errorf("enable pgstattuple extension: %w", err)
 	}
 
-	// Enable pg_walinspect extension for WAL analysis (PostgreSQL 15+)
+	// Enable pg_walinspect extension for WAL analysis (PostgreSQL 15+), page splits counts
 	_, err = p.db.Exec("CREATE EXTENSION IF NOT EXISTS pg_walinspect")
 	if err != nil {
 		return fmt.Errorf("enable pg_walinspect extension: %w", err)
@@ -110,4 +110,26 @@ func (p *PostgresBenchmarker) Close() error {
 		return p.db.Close()
 	}
 	return nil
+}
+
+// WaitForReady waits for PostgreSQL to be ready with retry logic
+// This is used during container startup to ensure the database is accepting connections
+func WaitForReady() error {
+	connStr := "host=localhost port=5432 user=benchmark password=benchmark123 dbname=uuid_benchmark sslmode=disable"
+	timeout := 30 * time.Second
+	deadline := time.Now().Add(timeout)
+
+	for time.Now().Before(deadline) {
+		db, err := sql.Open("postgres", connStr)
+		if err == nil {
+			if err := db.Ping(); err == nil {
+				db.Close()
+				return nil // Success!
+			}
+			db.Close()
+		}
+		time.Sleep(500 * time.Millisecond) // Retry every 500ms
+	}
+
+	return fmt.Errorf("timeout waiting for PostgreSQL after %v", timeout)
 }

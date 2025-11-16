@@ -8,9 +8,6 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres"
 )
 
-// AllKeyTypes defines all UUID types to benchmark
-var AllKeyTypes = []string{"bigserial", "uuidv4", "uuidv7", "ulid", "uuidv1"}
-
 // InsertPerformance evaluates disk efficiency during insert operations
 //
 // This scenario measures:
@@ -19,9 +16,6 @@ var AllKeyTypes = []string{"bigserial", "uuidv4", "uuidv7", "ulid", "uuidv1"}
 //   - Index fragmentation
 //   - Disk usage (table and index size)
 //   - Latency percentiles (p50, p95, p99)
-//
-// Thesis relevance: Demonstrates that UUIDv4 causes more page splits and
-// fragmentation compared to sequential keys (BIGSERIAL) or time-ordered UUIDs (UUIDv7).
 func InsertPerformance(keyType string, numRecords, batchSize, connections int) (*benchmark.InsertPerformanceResult, error) {
 	bench := postgres.New()
 
