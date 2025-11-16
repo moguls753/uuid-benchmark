@@ -271,6 +271,34 @@ func displayInsertPerformanceComparison(results map[string]*benchmark.InsertPerf
 		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.AvgLeafDensity))
 	}
 	fmt.Println()
+
+	// Read IOPS
+	fmt.Printf("%-15s", "Read IOPS")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].ReadIOPS))
+	}
+	fmt.Println()
+
+	// Write IOPS
+	fmt.Printf("%-15s", "Write IOPS")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].WriteIOPS))
+	}
+	fmt.Println()
+
+	// Read throughput
+	fmt.Printf("%-15s", "Read MB/s")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].ReadThroughputMB))
+	}
+	fmt.Println()
+
+	// Write throughput
+	fmt.Printf("%-15s", "Write MB/s")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].WriteThroughputMB))
+	}
+	fmt.Println()
 }
 
 func displayReadAfterFragmentationComparison(results map[string]*benchmark.ReadAfterFragmentationResult) {
@@ -328,6 +356,34 @@ func displayReadAfterFragmentationComparison(results map[string]*benchmark.ReadA
 		fmt.Printf("%-20s", results[keyType].LatencyP95.Round(time.Microsecond))
 	}
 	fmt.Println()
+
+	// Read IOPS
+	fmt.Printf("%-20s", "Read IOPS")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].ReadIOPS))
+	}
+	fmt.Println()
+
+	// Write IOPS
+	fmt.Printf("%-20s", "Write IOPS")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].WriteIOPS))
+	}
+	fmt.Println()
+
+	// Read throughput MB/s
+	fmt.Printf("%-20s", "Read MB/s")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].ReadThroughputMB))
+	}
+	fmt.Println()
+
+	// Write throughput MB/s
+	fmt.Printf("%-20s", "Write MB/s")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].WriteThroughputMB))
+	}
+	fmt.Println()
 }
 
 func displayUpdatePerformanceComparison(results map[string]*benchmark.UpdatePerformanceResult) {
@@ -369,6 +425,34 @@ func displayUpdatePerformanceComparison(results map[string]*benchmark.UpdatePerf
 	fmt.Printf("%-20s", "Fragmentation")
 	for _, keyType := range scenarios.AllKeyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+	}
+	fmt.Println()
+
+	// Read IOPS
+	fmt.Printf("%-20s", "Read IOPS")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].ReadIOPS))
+	}
+	fmt.Println()
+
+	// Write IOPS
+	fmt.Printf("%-20s", "Write IOPS")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].WriteIOPS))
+	}
+	fmt.Println()
+
+	// Read throughput MB/s
+	fmt.Printf("%-20s", "Read MB/s")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].ReadThroughputMB))
+	}
+	fmt.Println()
+
+	// Write throughput MB/s
+	fmt.Printf("%-20s", "Write MB/s")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].WriteThroughputMB))
 	}
 	fmt.Println()
 }
@@ -446,6 +530,34 @@ func displayMixedWorkloadComparison(results map[string]*benchmark.MixedWorkloadR
 	fmt.Printf("%-20s", "Fragmentation")
 	for _, keyType := range scenarios.AllKeyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+	}
+	fmt.Println()
+
+	// Read IOPS
+	fmt.Printf("%-20s", "Read IOPS")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].ReadIOPS))
+	}
+	fmt.Println()
+
+	// Write IOPS
+	fmt.Printf("%-20s", "Write IOPS")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].WriteIOPS))
+	}
+	fmt.Println()
+
+	// Read throughput MB/s
+	fmt.Printf("%-20s", "Read MB/s")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].ReadThroughputMB))
+	}
+	fmt.Println()
+
+	// Write throughput MB/s
+	fmt.Printf("%-20s", "Write MB/s")
+	for _, keyType := range scenarios.AllKeyTypes {
+		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].WriteThroughputMB))
 	}
 	fmt.Println()
 }

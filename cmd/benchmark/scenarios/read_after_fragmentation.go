@@ -92,6 +92,22 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 	result.LatencyP50 = readResult.LatencyP50
 	result.LatencyP95 = readResult.LatencyP95
 	result.LatencyP99 = readResult.LatencyP99
+
+	// Capture I/O stats after read workload
+	ioStatsAfter, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	if err != nil {
+		fmt.Printf("⚠ Failed to capture I/O stats after reads: %v\n", err)
+	}
+
+	// Calculate I/O metrics
+	if ioStatsBefore != nil && ioStatsAfter != nil {
+		ioMetrics := docker.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		result.ReadIOPS = ioMetrics.ReadIOPS
+		result.WriteIOPS = ioMetrics.WriteIOPS
+		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
+		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
+	}
+
 	fmt.Printf("✓ Completed %d reads in %s\n", numReads, readResult.Duration)
 	fmt.Printf("✓ Read throughput: %.2f ops/sec\n", readResult.Throughput)
 

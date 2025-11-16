@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/docker"
 )
 
 // MixedWorkloadConfig defines the configuration for a mixed workload
@@ -70,6 +71,12 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 		InsertLatencies: make([]time.Duration, 0, config.InsertOps),
 		ReadLatencies:   make([]time.Duration, 0, config.ReadOps),
 		UpdateLatencies: make([]time.Duration, 0, config.UpdateOps),
+	}
+
+	// Capture I/O stats before mixed workload
+	ioStatsBefore, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	if err != nil {
+		fmt.Printf("⚠ Failed to capture I/O stats before workload: %v\n", err)
 	}
 
 	startTime := time.Now()
@@ -146,6 +153,12 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 	wg.Wait()
 	duration := time.Since(startTime)
 
+	// Capture I/O stats after mixed workload
+	ioStatsAfter, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	if err != nil {
+		fmt.Printf("⚠ Failed to capture I/O stats after workload: %v\n", err)
+	}
+
 	// Capture end LSN after mixed workload
 	endLSN, err := p.getCurrentLSN()
 	if err != nil {
@@ -190,6 +203,12 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 
 	overallThroughput := float64(config.TotalOps) / duration.Seconds()
 
+	// Calculate I/O metrics
+	var ioMetrics docker.IOMetrics
+	if ioStatsBefore != nil && ioStatsAfter != nil {
+		ioMetrics = docker.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+	}
+
 	// Build result
 	result := &benchmark.MixedWorkloadResult{
 		KeyType:             config.KeyType,
@@ -208,6 +227,10 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 		Fragmentation:       metrics.Fragmentation,
 		TableSize:           metrics.TableSize,
 		IndexSize:           metrics.IndexSize,
+		ReadIOPS:            ioMetrics.ReadIOPS,
+		WriteIOPS:           ioMetrics.WriteIOPS,
+		ReadThroughputMB:    ioMetrics.ReadThroughputMB,
+		WriteThroughputMB:   ioMetrics.WriteThroughputMB,
 	}
 
 	return result, nil
