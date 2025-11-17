@@ -6,9 +6,9 @@ import (
 	"log"
 	"strings"
 
-	"github.com/moguls753/uuid-benchmark/cmd/benchmark/container"
-	"github.com/moguls753/uuid-benchmark/cmd/benchmark/display"
-	"github.com/moguls753/uuid-benchmark/cmd/benchmark/runner"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/container"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/display"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/runner"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
 )
 
