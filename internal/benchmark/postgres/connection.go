@@ -6,8 +6,16 @@ import (
 	"time"
 )
 
+const (
+	dbHost     = "localhost"
+	dbPort     = "5433"
+	dbUser     = "benchmark"
+	dbPassword = "benchmark123"
+	dbName     = "uuid_benchmark"
+)
+
 func (p *PostgresBenchmarker) Connect() error {
-	connStr := "host=localhost port=5432 user=benchmark password=benchmark123 dbname=uuid_benchmark sslmode=disable"
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPassword, dbName)
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return fmt.Errorf("open database: %w", err)
@@ -115,7 +123,7 @@ func (p *PostgresBenchmarker) Close() error {
 // WaitForReady waits for PostgreSQL to be ready with retry logic
 // This is used during container startup to ensure the database is accepting connections
 func WaitForReady() error {
-	connStr := "host=localhost port=5432 user=benchmark password=benchmark123 dbname=uuid_benchmark sslmode=disable"
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPassword, dbName)
 	timeout := 30 * time.Second
 	deadline := time.Now().Add(timeout)
 
