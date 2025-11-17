@@ -8,7 +8,7 @@ import (
 
 const (
 	dbHost     = "localhost"
-	dbPort     = "5433"
+	dbPort     = "5432"
 	dbUser     = "benchmark"
 	dbPassword = "benchmark123"
 	dbName     = "uuid_benchmark"
