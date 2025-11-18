@@ -28,14 +28,14 @@ type OperationLatencies struct {
 
 func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*benchmark.MixedWorkloadResult, error) {
 	// Phase 1: Create initial dataset
-	fmt.Printf("→ Creating initial dataset (%d records)...\n", config.InitialDataset)
+	fmt.Printf("Creating initial dataset (%d records)...\n", config.InitialDataset)
 	_, err := p.InsertRecords(config.KeyType, config.InitialDataset, config.BatchSize)
 	if err != nil {
 		return nil, fmt.Errorf("create initial dataset: %w", err)
 	}
 
 	// Phase 2: Reset PostgreSQL statistics to measure only mixed workload
-	fmt.Println("→ Resetting statistics...")
+	fmt.Println("Resetting statistics...")
 	err = p.ResetStats()
 	if err != nil {
 		return nil, fmt.Errorf("reset stats: %w", err)
@@ -49,7 +49,7 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 		config.UpdateOps,
 	)
 
-	fmt.Printf("→ Running mixed workload (%d inserts, %d reads, %d updates)...\n",
+	fmt.Printf("Running mixed workload (%d inserts, %d reads, %d updates)...\n",
 		config.InsertOps, config.ReadOps, config.UpdateOps)
 	fmt.Printf("  Workers: %d insert, %d read, %d update\n",
 		insertWorkers, readWorkers, updateWorkers)
@@ -73,7 +73,7 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 	// Capture I/O stats before mixed workload
 	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
-		fmt.Printf("⚠ Failed to capture I/O stats before workload: %v\n", err)
+		fmt.Printf("Warning:Failed to capture I/O stats before workload: %v\n", err)
 	}
 
 	startTime := time.Now()
@@ -153,7 +153,7 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 	// Capture I/O stats after mixed workload
 	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
-		fmt.Printf("⚠ Failed to capture I/O stats after workload: %v\n", err)
+		fmt.Printf("Warning:Failed to capture I/O stats after workload: %v\n", err)
 	}
 
 	// Capture end LSN after mixed workload
@@ -163,10 +163,10 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 	}
 	p.endLSN = endLSN
 
-	fmt.Printf("✓ Mixed workload completed in %s\n", duration)
+	fmt.Printf("Mixed workload completed in %s\n", duration)
 
 	// Phase 5: Measure final metrics
-	fmt.Println("→ Measuring final metrics...")
+	fmt.Println("Measuring final metrics...")
 	metrics, err := p.MeasureMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("measure metrics: %w", err)

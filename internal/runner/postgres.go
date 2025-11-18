@@ -30,7 +30,7 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 		return nil, fmt.Errorf("create table: %w", err)
 	}
 
-	fmt.Printf("→ Inserting %d records (connections=%d, batch=%d)...\n", numRecords, connections, batchSize)
+	fmt.Printf("Inserting %d records (connections=%d, batch=%d)...\n", numRecords, connections, batchSize)
 
 	result := &benchmark.InsertPerformanceResult{
 		KeyType:     keyType,
@@ -42,7 +42,7 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 	// Capture I/O stats before insert
 	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
-		fmt.Printf("⚠ Failed to capture I/O stats before insert: %v\n", err)
+		fmt.Printf("Warning:Failed to capture I/O stats before insert: %v\n", err)
 	}
 
 	// Execute insert operation (sequential or concurrent)
@@ -70,7 +70,7 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 	// Capture I/O stats after insert
 	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
-		fmt.Printf("⚠ Failed to capture I/O stats after insert: %v\n", err)
+		fmt.Printf("Warning:Failed to capture I/O stats after insert: %v\n", err)
 	}
 
 	// Calculate I/O metrics
@@ -82,11 +82,11 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
 	}
 
-	fmt.Printf("✓ Inserted %d records in %s\n", numRecords, result.Duration)
-	fmt.Printf("✓ Throughput: %.2f records/sec\n", result.Throughput)
+	fmt.Printf("Inserted %d records in %s\n", numRecords, result.Duration)
+	fmt.Printf("Throughput: %.2f records/sec\n", result.Throughput)
 
 	// Measure metrics (page splits, fragmentation, disk usage)
-	fmt.Println("→ Measuring metrics...")
+	fmt.Println("Measuring metrics...")
 	metrics, err := bench.MeasureMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("measure metrics: %w", err)
@@ -144,36 +144,36 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 	}
 
 	// Step 1: Insert records to create fragmentation
-	fmt.Printf("→ Inserting %d records to create index...\n", numRecords)
+	fmt.Printf("Inserting %d records to create index...\n", numRecords)
 	insertDuration, err := bench.InsertRecords(keyType, numRecords, 100) // Batch size 100 for speed
 	if err != nil {
 		return nil, fmt.Errorf("insert records: %w", err)
 	}
 	result.InsertDuration = insertDuration
-	fmt.Printf("✓ Inserted %d records in %s\n", numRecords, insertDuration)
+	fmt.Printf("Inserted %d records in %s\n", numRecords, insertDuration)
 
 	// Measure fragmentation after inserts
-	fmt.Println("→ Measuring fragmentation...")
+	fmt.Println("Measuring fragmentation...")
 	metrics, err := bench.MeasureMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("measure metrics: %w", err)
 	}
 	result.Fragmentation = metrics.Fragmentation
-	fmt.Printf("✓ Index fragmentation: %.2f%%\n", metrics.Fragmentation.FragmentationPercent)
+	fmt.Printf("Index fragmentation: %.2f%%\n", metrics.Fragmentation.FragmentationPercent)
 
 	// Step 2: Reset PostgreSQL statistics to measure ONLY the read workload
-	fmt.Println("→ Resetting PostgreSQL statistics...")
+	fmt.Println("Resetting PostgreSQL statistics...")
 	if err := bench.ResetStats(); err != nil {
 		return nil, fmt.Errorf("reset stats: %w", err)
 	}
 
 	// Step 3: Run read workload (point lookups)
-	fmt.Printf("→ Running %d point lookups...\n", numReads)
+	fmt.Printf("Running %d point lookups...\n", numReads)
 
 	// Capture I/O stats before read workload
 	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
-		fmt.Printf("⚠ Failed to capture I/O stats before reads: %v\n", err)
+		fmt.Printf("Warning:Failed to capture I/O stats before reads: %v\n", err)
 	}
 
 	readResult, err := bench.ReadRandomRecords(keyType, numReads, numRecords)
@@ -189,7 +189,7 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 	// Capture I/O stats after read workload
 	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
-		fmt.Printf("⚠ Failed to capture I/O stats after reads: %v\n", err)
+		fmt.Printf("Warning:Failed to capture I/O stats after reads: %v\n", err)
 	}
 
 	// Calculate I/O metrics
@@ -201,11 +201,11 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
 	}
 
-	fmt.Printf("✓ Completed %d reads in %s\n", numReads, readResult.Duration)
-	fmt.Printf("✓ Read throughput: %.2f ops/sec\n", readResult.Throughput)
+	fmt.Printf("Completed %d reads in %s\n", numReads, readResult.Duration)
+	fmt.Printf("Read throughput: %.2f ops/sec\n", readResult.Throughput)
 
 	// Step 4: Measure buffer hit ratios
-	fmt.Println("→ Measuring buffer pool hit ratios...")
+	fmt.Println("Measuring buffer pool hit ratios...")
 	finalMetrics, err := bench.MeasureMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("measure final metrics: %w", err)
@@ -252,20 +252,20 @@ func UpdatePerformance(keyType string, numRecords, numUpdates, batchSize int) (*
 	}
 
 	// Step 1: Insert records to create initial dataset
-	fmt.Printf("→ Inserting %d records...\n", numRecords)
+	fmt.Printf("Inserting %d records...\n", numRecords)
 	_, err := bench.InsertRecords(keyType, numRecords, 100) // Batch size 100 for speed
 	if err != nil {
 		return nil, fmt.Errorf("insert records: %w", err)
 	}
-	fmt.Printf("✓ Inserted %d records\n", numRecords)
+	fmt.Printf("Inserted %d records\n", numRecords)
 
 	// Step 2: Run update workload
-	fmt.Printf("→ Running %d updates (batch size=%d)...\n", numUpdates, batchSize)
+	fmt.Printf("Running %d updates (batch size=%d)...\n", numUpdates, batchSize)
 
 	// Capture I/O stats before updates
 	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
-		fmt.Printf("⚠ Failed to capture I/O stats before updates: %v\n", err)
+		fmt.Printf("Warning:Failed to capture I/O stats before updates: %v\n", err)
 	}
 
 	var updateResult *benchmark.UpdateBenchmarkResult
@@ -281,7 +281,7 @@ func UpdatePerformance(keyType string, numRecords, numUpdates, batchSize int) (*
 	// Capture I/O stats after updates
 	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
-		fmt.Printf("⚠ Failed to capture I/O stats after updates: %v\n", err)
+		fmt.Printf("Warning:Failed to capture I/O stats after updates: %v\n", err)
 	}
 
 	// Calculate I/O metrics
@@ -299,11 +299,11 @@ func UpdatePerformance(keyType string, numRecords, numUpdates, batchSize int) (*
 	result.LatencyP95 = updateResult.LatencyP95
 	result.LatencyP99 = updateResult.LatencyP99
 
-	fmt.Printf("✓ Completed %d updates in %s\n", numUpdates, updateResult.Duration)
-	fmt.Printf("✓ Update throughput: %.2f ops/sec\n", updateResult.Throughput)
+	fmt.Printf("Completed %d updates in %s\n", numUpdates, updateResult.Duration)
+	fmt.Printf("Update throughput: %.2f ops/sec\n", updateResult.Throughput)
 
 	// Step 3: Measure fragmentation after updates
-	fmt.Println("→ Measuring fragmentation...")
+	fmt.Println("Measuring fragmentation...")
 	metrics, err := bench.MeasureMetrics()
 	if err != nil {
 		return nil, fmt.Errorf("measure metrics: %w", err)
@@ -361,10 +361,10 @@ func MixedWorkloadInsertHeavy(keyType string, totalOps, connections, batchSize i
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
 
-	fmt.Printf("✓ Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
-	fmt.Printf("✓ Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
-	fmt.Printf("✓ Read throughput: %.2f rec/sec\n", result.ReadThroughput)
-	fmt.Printf("✓ Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
+	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
+	fmt.Printf("Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
+	fmt.Printf("Read throughput: %.2f rec/sec\n", result.ReadThroughput)
+	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
 
 	return result, nil
 }
@@ -417,10 +417,10 @@ func MixedWorkloadReadHeavy(keyType string, totalOps, connections int) (*benchma
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
 
-	fmt.Printf("✓ Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
-	fmt.Printf("✓ Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
-	fmt.Printf("✓ Read throughput: %.2f rec/sec\n", result.ReadThroughput)
-	fmt.Printf("✓ Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
+	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
+	fmt.Printf("Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
+	fmt.Printf("Read throughput: %.2f rec/sec\n", result.ReadThroughput)
+	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
 
 	return result, nil
 }
@@ -473,11 +473,11 @@ func MixedWorkloadBalanced(keyType string, totalOps, connections int) (*benchmar
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
 
-	fmt.Printf("✓ Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
-	fmt.Printf("✓ Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
-	fmt.Printf("✓ Read throughput: %.2f rec/sec\n", result.ReadThroughput)
-	fmt.Printf("✓ Update throughput: %.2f rec/sec\n", result.UpdateThroughput)
-	fmt.Printf("✓ Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
+	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
+	fmt.Printf("Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
+	fmt.Printf("Read throughput: %.2f rec/sec\n", result.ReadThroughput)
+	fmt.Printf("Update throughput: %.2f rec/sec\n", result.UpdateThroughput)
+	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
 
 	return result, nil
 }

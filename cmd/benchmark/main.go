@@ -67,7 +67,7 @@ func runInsertPerformanceForAllTypes(numRecords, batchSize, connections int) {
 	results := make(map[string]*benchmark.InsertPerformanceResult)
 
 	for _, keyType := range allKeyTypes {
-		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
 		container.Start(container.PostgresConfig)
@@ -89,7 +89,7 @@ func runReadAfterFragmentationForAllTypes(numRecords, numOps int) {
 	results := make(map[string]*benchmark.ReadAfterFragmentationResult)
 
 	for _, keyType := range allKeyTypes {
-		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
 		container.Start(container.PostgresConfig)
@@ -111,7 +111,7 @@ func runUpdatePerformanceForAllTypes(numRecords, numOps, batchSize int) {
 	results := make(map[string]*benchmark.UpdatePerformanceResult)
 
 	for _, keyType := range allKeyTypes {
-		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
 		container.Start(container.PostgresConfig)
@@ -133,7 +133,7 @@ func runMixedWorkloadInsertHeavyForAllTypes(totalOps, connections, batchSize int
 	results := make(map[string]*benchmark.MixedWorkloadResult)
 
 	for _, keyType := range allKeyTypes {
-		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
 		container.Start(container.PostgresConfig)
@@ -155,7 +155,7 @@ func runMixedWorkloadReadHeavyForAllTypes(totalOps, connections int) {
 	results := make(map[string]*benchmark.MixedWorkloadResult)
 
 	for _, keyType := range allKeyTypes {
-		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
 		container.Start(container.PostgresConfig)
@@ -177,7 +177,7 @@ func runMixedWorkloadBalancedForAllTypes(totalOps, connections int) {
 	results := make(map[string]*benchmark.MixedWorkloadResult)
 
 	for _, keyType := range allKeyTypes {
-		fmt.Printf("\n▶ Testing %s\n", strings.ToUpper(keyType))
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
 		container.Start(container.PostgresConfig)

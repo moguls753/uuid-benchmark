@@ -24,7 +24,7 @@ var PostgresConfig = Config{
 
 // Start starts a database container with the given configuration
 func Start(cfg Config) {
-	fmt.Printf("🐳 Starting fresh %s container...\n", cfg.Name)
+	fmt.Printf("Starting fresh %s container...\n", cfg.Name)
 
 	cmd := exec.Command("docker", "compose", "-f", cfg.ComposeFile, "up", "-d")
 	output, err := cmd.CombinedOutput()
@@ -33,21 +33,21 @@ func Start(cfg Config) {
 	}
 
 	// Wait for database to be ready using database-specific check
-	fmt.Printf("⏳ Waiting for %s to initialize...\n", cfg.Name)
+	fmt.Printf("Waiting for %s to initialize...\n", cfg.Name)
 	if err := cfg.WaitForReady(); err != nil {
 		log.Fatalf("%s failed to start: %v", cfg.Name, err)
 	}
 
-	fmt.Println("✅ Container ready\n")
+	fmt.Println("Container ready\n")
 }
 
 // Stop stops and removes a database container
 func Stop(composeFile string) {
-	fmt.Println("\n🧹 Cleaning up container...")
+	fmt.Println("\nCleaning up container...")
 
 	cmd := exec.Command("docker", "compose", "-f", composeFile, "down", "-v")
 	// Ignore errors on cleanup - container might already be stopped
 	cmd.Run()
 
-	fmt.Println("✅ Container stopped and removed")
+	fmt.Println("Container stopped and removed")
 }
