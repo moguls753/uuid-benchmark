@@ -6,29 +6,26 @@ import (
 	"time"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
-	"github.com/moguls753/uuid-benchmark/internal/benchmark/docker"
+	iometrics "github.com/moguls753/uuid-benchmark/internal/benchmark/io"
 )
 
-// MixedWorkloadConfig defines the configuration for a mixed workload
 type MixedWorkloadConfig struct {
-	KeyType       string
-	TotalOps      int
-	Connections   int
-	InsertOps     int
-	ReadOps       int
-	UpdateOps     int
+	KeyType        string
+	TotalOps       int
+	Connections    int
+	InsertOps      int
+	ReadOps        int
+	UpdateOps      int
 	InitialDataset int
-	BatchSize     int
+	BatchSize      int
 }
 
-// OperationLatencies tracks latencies per operation type
 type OperationLatencies struct {
 	InsertLatencies []time.Duration
 	ReadLatencies   []time.Duration
 	UpdateLatencies []time.Duration
 }
 
-// RunMixedWorkload executes a mixed workload with concurrent insert/read/update operations
 func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*benchmark.MixedWorkloadResult, error) {
 	// Phase 1: Create initial dataset
 	fmt.Printf("→ Creating initial dataset (%d records)...\n", config.InitialDataset)
@@ -74,7 +71,7 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 	}
 
 	// Capture I/O stats before mixed workload
-	ioStatsBefore, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
 		fmt.Printf("⚠ Failed to capture I/O stats before workload: %v\n", err)
 	}
@@ -154,7 +151,7 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 	duration := time.Since(startTime)
 
 	// Capture I/O stats after mixed workload
-	ioStatsAfter, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
 		fmt.Printf("⚠ Failed to capture I/O stats after workload: %v\n", err)
 	}
@@ -204,9 +201,9 @@ func (p *PostgresBenchmarker) RunMixedWorkload(config MixedWorkloadConfig) (*ben
 	overallThroughput := float64(config.TotalOps) / duration.Seconds()
 
 	// Calculate I/O metrics
-	var ioMetrics docker.IOMetrics
+	var ioMetrics iometrics.IOMetrics
 	if ioStatsBefore != nil && ioStatsAfter != nil {
-		ioMetrics = docker.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		ioMetrics = iometrics.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
 	}
 
 	// Build result

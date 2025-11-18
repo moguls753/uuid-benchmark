@@ -14,7 +14,6 @@ import (
 const noWorkerID = -1
 
 func (p *PostgresBenchmarker) InsertRecords(keyType string, numRecords, batchSize int) (time.Duration, error) {
-	// Capture start LSN before any inserts
 	startLSN, err := p.getCurrentLSN()
 	if err != nil {
 		return 0, fmt.Errorf("capture start LSN: %w", err)
@@ -50,7 +49,6 @@ func (p *PostgresBenchmarker) InsertRecords(keyType string, numRecords, batchSiz
 
 	duration := time.Since(startTime)
 
-	// Capture end LSN after all inserts
 	endLSN, err := p.getCurrentLSN()
 	if err != nil {
 		return 0, fmt.Errorf("capture end LSN: %w", err)
@@ -61,7 +59,6 @@ func (p *PostgresBenchmarker) InsertRecords(keyType string, numRecords, batchSiz
 }
 
 func (p *PostgresBenchmarker) InsertRecordsConcurrent(keyType string, numRecords, connections, batchSize int) (*benchmark.ConcurrentBenchmarkResult, error) {
-	// Capture start LSN before any inserts
 	startLSN, err := p.getCurrentLSN()
 	if err != nil {
 		return nil, fmt.Errorf("capture start LSN: %w", err)
@@ -101,7 +98,6 @@ func (p *PostgresBenchmarker) InsertRecordsConcurrent(keyType string, numRecords
 	wg.Wait()
 	duration := time.Since(startTime)
 
-	// Capture end LSN after all inserts
 	endLSN, err := p.getCurrentLSN()
 	if err != nil {
 		return nil, fmt.Errorf("capture end LSN: %w", err)

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
-	"github.com/moguls753/uuid-benchmark/internal/benchmark/docker"
+	iometrics "github.com/moguls753/uuid-benchmark/internal/benchmark/io"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres"
 )
 
@@ -40,7 +40,7 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 	}
 
 	// Capture I/O stats before insert
-	ioStatsBefore, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
 		fmt.Printf("⚠ Failed to capture I/O stats before insert: %v\n", err)
 	}
@@ -68,14 +68,14 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 	}
 
 	// Capture I/O stats after insert
-	ioStatsAfter, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
 		fmt.Printf("⚠ Failed to capture I/O stats after insert: %v\n", err)
 	}
 
 	// Calculate I/O metrics
 	if ioStatsBefore != nil && ioStatsAfter != nil {
-		ioMetrics := docker.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		ioMetrics := iometrics.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
 		result.ReadIOPS = ioMetrics.ReadIOPS
 		result.WriteIOPS = ioMetrics.WriteIOPS
 		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
@@ -171,7 +171,7 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 	fmt.Printf("→ Running %d point lookups...\n", numReads)
 
 	// Capture I/O stats before read workload
-	ioStatsBefore, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
 		fmt.Printf("⚠ Failed to capture I/O stats before reads: %v\n", err)
 	}
@@ -187,14 +187,14 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 	result.LatencyP99 = readResult.LatencyP99
 
 	// Capture I/O stats after read workload
-	ioStatsAfter, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
 		fmt.Printf("⚠ Failed to capture I/O stats after reads: %v\n", err)
 	}
 
 	// Calculate I/O metrics
 	if ioStatsBefore != nil && ioStatsAfter != nil {
-		ioMetrics := docker.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		ioMetrics := iometrics.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
 		result.ReadIOPS = ioMetrics.ReadIOPS
 		result.WriteIOPS = ioMetrics.WriteIOPS
 		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
@@ -263,7 +263,7 @@ func UpdatePerformance(keyType string, numRecords, numUpdates, batchSize int) (*
 	fmt.Printf("→ Running %d updates (batch size=%d)...\n", numUpdates, batchSize)
 
 	// Capture I/O stats before updates
-	ioStatsBefore, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
 		fmt.Printf("⚠ Failed to capture I/O stats before updates: %v\n", err)
 	}
@@ -279,14 +279,14 @@ func UpdatePerformance(keyType string, numRecords, numUpdates, batchSize int) (*
 	}
 
 	// Capture I/O stats after updates
-	ioStatsAfter, err := docker.GetContainerIOStats("uuid-bench-postgres")
+	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
 	if err != nil {
 		fmt.Printf("⚠ Failed to capture I/O stats after updates: %v\n", err)
 	}
 
 	// Calculate I/O metrics
 	if ioStatsBefore != nil && ioStatsAfter != nil {
-		ioMetrics := docker.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		ioMetrics := iometrics.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
 		result.ReadIOPS = ioMetrics.ReadIOPS
 		result.WriteIOPS = ioMetrics.WriteIOPS
 		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
