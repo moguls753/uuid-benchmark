@@ -21,7 +21,6 @@ func (p *PostgresBenchmarker) Connect() error {
 		return fmt.Errorf("open database: %w", err)
 	}
 
-	// Test connection
 	err = db.Ping()
 	if err != nil {
 		return fmt.Errorf("ping database: %w", err)
@@ -29,35 +28,35 @@ func (p *PostgresBenchmarker) Connect() error {
 
 	p.db = db
 
-	// Enable pgstattuple extension for index statistics
 	_, err = p.db.Exec("CREATE EXTENSION IF NOT EXISTS pgstattuple")
 	if err != nil {
 		return fmt.Errorf("enable pgstattuple extension: %w", err)
 	}
 
-	// Enable pg_walinspect extension for WAL analysis (PostgreSQL 15+), page splits counts
 	_, err = p.db.Exec("CREATE EXTENSION IF NOT EXISTS pg_walinspect")
 	if err != nil {
 		return fmt.Errorf("enable pg_walinspect extension: %w", err)
 	}
 
+	_, err = p.db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`)
+	if err != nil {
+		return fmt.Errorf("enable uuid-ossp extension: %w", err)
+	}
+
 	return nil
 }
 
-// CreateTable creates the benchmark table with the specified key type
 func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 	p.keyType = keyType
 	p.tableName = fmt.Sprintf("bench_%s", keyType)
 	p.indexName = fmt.Sprintf("%s_pkey", p.tableName)
 
-	// Drop table if exists
 	dropSQL := fmt.Sprintf("DROP TABLE IF EXISTS %s", p.tableName)
 	_, err := p.db.Exec(dropSQL)
 	if err != nil {
 		return fmt.Errorf("drop table: %w", err)
 	}
 
-	// Create table based on key type
 	var createSQL string
 	switch keyType {
 	case "bigserial":

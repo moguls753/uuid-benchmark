@@ -6,21 +6,9 @@ import (
 	"time"
 )
 
-type Benchmarker interface {
-	Connect() error
-	CreateTable(keyType string) error
-	InsertRecords(keyType string, numRecords, batchSize int) (time.Duration, error)
-	InsertRecordsConcurrent(keyType string, numRecords, connections, batchSize int) (*ConcurrentBenchmarkResult, error)
-	ReadRandomRecords(keyType string, numReads, numTotalRecords int) (*ReadBenchmarkResult, error)
-	ReadRandomRecordsConcurrent(keyType string, numReads, connections, numTotalRecords int) (*ConcurrentBenchmarkResult, error)
-	ReadRangeScans(keyType string, numScans, rangeSize, numTotalRecords int) (*ReadBenchmarkResult, error)
-	ReadSequentialScan(keyType string) (time.Duration, int64, error)
-	UpdateRandomRecords(keyType string, numUpdates, numTotalRecords int) (*UpdateBenchmarkResult, error)
-	UpdateRandomRecordsConcurrent(keyType string, numUpdates, connections, numTotalRecords int) (*ConcurrentBenchmarkResult, error)
-	UpdateBatchRecords(keyType string, numUpdates, batchSize, numTotalRecords int) (*UpdateBenchmarkResult, error)
-	MeasureMetrics() (*BenchmarkResult, error)
-	Close() error
-}
+// Note: The Benchmarker interface was removed as it was not enforced and contained
+// only legacy method signatures from the pre-pgbench architecture.
+// PostgresBenchmarker implements pgbench-based methods directly without interface constraints.
 
 type BenchmarkResult struct {
 	InsertDuration      time.Duration
@@ -40,30 +28,10 @@ type IndexFragmentationStats struct {
 	EmptyPages           int64
 }
 
+// ConcurrentBenchmarkResult holds results from concurrent pgbench operations
 type ConcurrentBenchmarkResult struct {
 	Duration     time.Duration
 	TotalOps     int
-	Throughput   float64
-	LatencyP50   time.Duration
-	LatencyP95   time.Duration
-	LatencyP99   time.Duration
-	SuccessCount int
-	ErrorCount   int
-}
-
-type ReadBenchmarkResult struct {
-	Duration     time.Duration
-	TotalReads   int
-	Throughput   float64
-	LatencyP50   time.Duration
-	LatencyP95   time.Duration
-	LatencyP99   time.Duration
-	RowsReturned int64
-}
-
-type UpdateBenchmarkResult struct {
-	Duration     time.Duration
-	TotalUpdates int
 	Throughput   float64
 	LatencyP50   time.Duration
 	LatencyP95   time.Duration

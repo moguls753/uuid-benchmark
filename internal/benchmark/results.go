@@ -58,22 +58,6 @@ type UpdatePerformanceResult struct {
 	WriteThroughputMB float64
 }
 
-type ConcurrentInsertResult struct {
-	KeyType       string
-	NumRecords    int
-	BatchSize     int
-	Connections   int
-	Duration      time.Duration
-	Throughput    float64
-	PageSplits    int
-	TableSize     int64
-	IndexSize     int64
-	Fragmentation IndexFragmentationStats
-	LatencyP50    time.Duration
-	LatencyP95    time.Duration
-	LatencyP99    time.Duration
-}
-
 type MixedWorkloadResult struct {
 	KeyType             string
 	NumRecords          int

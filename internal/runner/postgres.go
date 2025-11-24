@@ -46,9 +46,10 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 	}
 
 	// Execute insert operation (sequential or concurrent)
+	// Using pgbench-based implementation for methodologically sound benchmarks
 	if connections == 1 {
 		// Sequential insert
-		duration, err := bench.InsertRecords(keyType, numRecords, batchSize)
+		duration, err := bench.InsertRecordsPgbench(keyType, numRecords, batchSize)
 		if err != nil {
 			return nil, fmt.Errorf("insert records: %w", err)
 		}
@@ -56,7 +57,7 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 		result.Throughput = float64(numRecords) / duration.Seconds()
 	} else {
 		// Concurrent insert
-		concResult, err := bench.InsertRecordsConcurrent(keyType, numRecords, connections, batchSize)
+		concResult, err := bench.InsertRecordsPgbenchConcurrent(keyType, numRecords, connections, batchSize)
 		if err != nil {
 			return nil, fmt.Errorf("insert records concurrent: %w", err)
 		}
@@ -145,7 +146,7 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 
 	// Step 1: Insert records to create fragmentation
 	fmt.Printf("Inserting %d records to create index...\n", numRecords)
-	insertDuration, err := bench.InsertRecords(keyType, numRecords, 100) // Batch size 100 for speed
+	insertDuration, err := bench.InsertRecordsPgbench(keyType, numRecords, 100) // Batch size 100 for speed
 	if err != nil {
 		return nil, fmt.Errorf("insert records: %w", err)
 	}
@@ -176,15 +177,15 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 		fmt.Printf("Warning:Failed to capture I/O stats before reads: %v\n", err)
 	}
 
-	readResult, err := bench.ReadRandomRecords(keyType, numReads, numRecords)
+	// Use pgbench for read workload
+	readDuration, err := bench.ReadRecordsPgbench(keyType, numRecords, numReads)
 	if err != nil {
 		return nil, fmt.Errorf("read records: %w", err)
 	}
-	result.ReadDuration = readResult.Duration
-	result.ReadThroughput = readResult.Throughput
-	result.LatencyP50 = readResult.LatencyP50
-	result.LatencyP95 = readResult.LatencyP95
-	result.LatencyP99 = readResult.LatencyP99
+	result.ReadDuration = readDuration
+	result.ReadThroughput = float64(numReads) / readDuration.Seconds()
+	// Note: Sequential pgbench doesn't provide latency percentiles
+	// For latency, would need concurrent mode
 
 	// Capture I/O stats after read workload
 	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
@@ -201,8 +202,8 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
 	}
 
-	fmt.Printf("Completed %d reads in %s\n", numReads, readResult.Duration)
-	fmt.Printf("Read throughput: %.2f ops/sec\n", readResult.Throughput)
+	fmt.Printf("Completed %d reads in %s\n", numReads, readDuration)
+	fmt.Printf("Read throughput: %.2f ops/sec\n", result.ReadThroughput)
 
 	// Step 4: Measure buffer hit ratios
 	fmt.Println("Measuring buffer pool hit ratios...")
@@ -253,7 +254,7 @@ func UpdatePerformance(keyType string, numRecords, numUpdates, batchSize int) (*
 
 	// Step 1: Insert records to create initial dataset
 	fmt.Printf("Inserting %d records...\n", numRecords)
-	_, err := bench.InsertRecords(keyType, numRecords, 100) // Batch size 100 for speed
+	_, err := bench.InsertRecordsPgbench(keyType, numRecords, 100) // Batch size 100 for speed
 	if err != nil {
 		return nil, fmt.Errorf("insert records: %w", err)
 	}
@@ -268,12 +269,8 @@ func UpdatePerformance(keyType string, numRecords, numUpdates, batchSize int) (*
 		fmt.Printf("Warning:Failed to capture I/O stats before updates: %v\n", err)
 	}
 
-	var updateResult *benchmark.UpdateBenchmarkResult
-	if batchSize > 1 {
-		updateResult, err = bench.UpdateBatchRecords(keyType, numUpdates, batchSize, numRecords)
-	} else {
-		updateResult, err = bench.UpdateRandomRecords(keyType, numUpdates, numRecords)
-	}
+	// Use pgbench for update workload
+	updateDuration, err := bench.UpdateRecordsPgbench(keyType, numRecords, numUpdates, batchSize)
 	if err != nil {
 		return nil, fmt.Errorf("update records: %w", err)
 	}
@@ -293,14 +290,12 @@ func UpdatePerformance(keyType string, numRecords, numUpdates, batchSize int) (*
 		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
 	}
 
-	result.UpdateDuration = updateResult.Duration
-	result.UpdateThroughput = updateResult.Throughput
-	result.LatencyP50 = updateResult.LatencyP50
-	result.LatencyP95 = updateResult.LatencyP95
-	result.LatencyP99 = updateResult.LatencyP99
+	result.UpdateDuration = updateDuration
+	result.UpdateThroughput = float64(numUpdates) / updateDuration.Seconds()
+	// Note: Sequential pgbench doesn't provide latency percentiles
 
-	fmt.Printf("Completed %d updates in %s\n", numUpdates, updateResult.Duration)
-	fmt.Printf("Update throughput: %.2f ops/sec\n", updateResult.Throughput)
+	fmt.Printf("Completed %d updates in %s\n", numUpdates, updateDuration)
+	fmt.Printf("Update throughput: %.2f ops/sec\n", result.UpdateThroughput)
 
 	// Step 3: Measure fragmentation after updates
 	fmt.Println("Measuring fragmentation...")
@@ -339,24 +334,12 @@ func MixedWorkloadInsertHeavy(keyType string, totalOps, connections, batchSize i
 	}
 
 	// Configure mixed workload: 90% insert, 10% read
-	insertOps := int(float64(totalOps) * 0.90)
-	readOps := int(float64(totalOps) * 0.10)
-	updateOps := 0
-
-	config := postgres.MixedWorkloadConfig{
-		KeyType:        keyType,
-		TotalOps:       totalOps,
-		Connections:    connections,
-		InsertOps:      insertOps,
-		ReadOps:        readOps,
-		UpdateOps:      updateOps,
-		InitialDataset: 100000, // 100k initial dataset
-		BatchSize:      batchSize,
-	}
+	initialDataset := 100000 // 100k initial dataset
 
 	fmt.Printf("\n=== Mixed Workload: Insert-Heavy (90%% insert, 10%% read) - %s ===\n", keyType)
 
-	result, err := bench.RunMixedWorkload(config)
+	// Use pgbench for mixed workload (90% insert, 10% read)
+	result, err := bench.RunMixedWorkloadPgbench(keyType, initialDataset, totalOps, connections, 90, 10, 0)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
@@ -395,24 +378,12 @@ func MixedWorkloadReadHeavy(keyType string, totalOps, connections int) (*benchma
 	}
 
 	// Configure mixed workload: 10% insert, 90% read
-	insertOps := int(float64(totalOps) * 0.10)
-	readOps := int(float64(totalOps) * 0.90)
-	updateOps := 0
-
-	config := postgres.MixedWorkloadConfig{
-		KeyType:        keyType,
-		TotalOps:       totalOps,
-		Connections:    connections,
-		InsertOps:      insertOps,
-		ReadOps:        readOps,
-		UpdateOps:      updateOps,
-		InitialDataset: 1000000, // 1M initial dataset for realistic read testing
-		BatchSize:      100,
-	}
+	initialDataset := 1000000 // 1M initial dataset for realistic read testing
 
 	fmt.Printf("\n=== Mixed Workload: Read-Heavy (10%% insert, 90%% read) - %s ===\n", keyType)
 
-	result, err := bench.RunMixedWorkload(config)
+	// Use pgbench for mixed workload (10% insert, 90% read)
+	result, err := bench.RunMixedWorkloadPgbench(keyType, initialDataset, totalOps, connections, 10, 90, 0)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
@@ -451,24 +422,12 @@ func MixedWorkloadBalanced(keyType string, totalOps, connections int) (*benchmar
 	}
 
 	// Configure mixed workload: 50% insert, 30% read, 20% update
-	insertOps := int(float64(totalOps) * 0.50)
-	readOps := int(float64(totalOps) * 0.30)
-	updateOps := int(float64(totalOps) * 0.20)
-
-	config := postgres.MixedWorkloadConfig{
-		KeyType:        keyType,
-		TotalOps:       totalOps,
-		Connections:    connections,
-		InsertOps:      insertOps,
-		ReadOps:        readOps,
-		UpdateOps:      updateOps,
-		InitialDataset: 500000, // 500k initial dataset for balanced workload
-		BatchSize:      100,
-	}
+	initialDataset := 500000 // 500k initial dataset for balanced workload
 
 	fmt.Printf("\n=== Mixed Workload: Balanced (50%% insert, 30%% read, 20%% update) - %s ===\n", keyType)
 
-	result, err := bench.RunMixedWorkload(config)
+	// Use pgbench for mixed workload (50% insert, 30% read, 20% update)
+	result, err := bench.RunMixedWorkloadPgbench(keyType, initialDataset, totalOps, connections, 50, 30, 20)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
