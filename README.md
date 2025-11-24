@@ -19,24 +19,17 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 ./uuid-benchmark -scenario=mixed-balanced -num-ops=100000 -connections=4
 ```
 
+## Options
+
+- `-scenario` - Scenario to run (required)
+- `-num-records` - Dataset size for insert scenarios (default: 100000)
+- `-num-ops` - Number of operations for read/update/mixed (default: 10000)
+- `-connections` - Concurrent workers (default: 1)
+- `-batch-size` - Records per transaction (default: 100)
+
 ## Scenarios
 
 - `insert-performance` - Page splits, fragmentation, disk usage
 - `read-after-fragmentation` - Buffer pool hit ratios
 - `update-performance` - Update throughput
 - `mixed-insert-heavy`, `mixed-read-heavy`, `mixed-balanced` - Mixed workloads
-
-## Output
-
-```
-COMPARISON - Insert Performance
-======================================
-Metric         BIGSERIAL    UUIDV4
---------------------------------------
-Throughput     74095 rec/s  65002 rec/s
-Page Splits    27           51
-Fragmentation  0.00%        48.08%
-Index Size     240.0 KB     432.0 KB
-```
-
-Each UUID type runs in a fresh PostgreSQL 18 container for isolated measurements.
