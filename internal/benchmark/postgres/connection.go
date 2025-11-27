@@ -91,6 +91,14 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 				created_at TIMESTAMP DEFAULT NOW()
 			)
 		`, p.tableName)
+	case "ulid_monotonic":
+		createSQL = fmt.Sprintf(`
+			CREATE TABLE %s (
+				id TEXT PRIMARY KEY,
+				data TEXT,
+				created_at TIMESTAMP DEFAULT NOW()
+			)
+		`, p.tableName)
 	case "uuidv1":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (

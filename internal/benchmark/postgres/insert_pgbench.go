@@ -21,7 +21,7 @@ func (p *PostgresBenchmarker) InsertRecordsPgbench(keyType string, numRecords, b
 	startTime := time.Now()
 	var duration time.Duration
 
-	if keyType == "ulid" {
+	if keyType == "ulid" || keyType == "ulid_monotonic" {
 		// Special handling for ULID: pre-load data via psql
 		cfg := ULIDLoaderConfig{
 			ContainerName: "uuid-bench-postgres",
@@ -30,7 +30,15 @@ func (p *PostgresBenchmarker) InsertRecordsPgbench(keyType string, numRecords, b
 			BatchSize:     batchSize,
 		}
 
-		result, err := LoadULIDData(cfg)
+		var result *ULIDLoadResult
+		var err error
+
+		if keyType == "ulid_monotonic" {
+			result, err = LoadMonotonicULIDData(cfg)
+		} else {
+			result, err = LoadULIDData(cfg)
+		}
+
 		if err != nil {
 			return 0, fmt.Errorf("load ULID data: %w", err)
 		}
@@ -108,7 +116,7 @@ func (p *PostgresBenchmarker) InsertRecordsPgbenchConcurrent(keyType string, num
 
 	startTime := time.Now()
 
-	if keyType == "ulid" {
+	if keyType == "ulid" || keyType == "ulid_monotonic" {
 		// ULID: pre-load data (no concurrency benefit for loading)
 		cfg := ULIDLoaderConfig{
 			ContainerName: "uuid-bench-postgres",
@@ -117,7 +125,15 @@ func (p *PostgresBenchmarker) InsertRecordsPgbenchConcurrent(keyType string, num
 			BatchSize:     batchSize,
 		}
 
-		result, err := LoadULIDData(cfg)
+		var result *ULIDLoadResult
+		var err error
+
+		if keyType == "ulid_monotonic" {
+			result, err = LoadMonotonicULIDData(cfg)
+		} else {
+			result, err = LoadULIDData(cfg)
+		}
+
 		if err != nil {
 			return nil, fmt.Errorf("load ULID data: %w", err)
 		}

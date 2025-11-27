@@ -144,9 +144,8 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 		NumReads:   numReads,
 	}
 
-	// Step 1: Insert records to create fragmentation
 	fmt.Printf("Inserting %d records to create index...\n", numRecords)
-	insertDuration, err := bench.InsertRecordsPgbench(keyType, numRecords, 100) // Batch size 100 for speed
+	insertDuration, err := bench.InsertRecordsPgbench(keyType, numRecords, 100)
 	if err != nil {
 		return nil, fmt.Errorf("insert records: %w", err)
 	}
