@@ -1,4 +1,4 @@
-package main
+package display
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/statistics"
 )
 
-func displayInsertPerformanceStatistics(results map[string]map[string]statistics.Stats, keyTypes []string, numRecords, connections, batchSize, numRuns int) {
+func InsertPerformanceStatistics(results map[string]map[string]statistics.Stats, keyTypes []string, numRecords, connections, batchSize, numRuns int) {
 	fmt.Println("\n" + strings.Repeat("=", 100))
 	fmt.Printf("Insert Performance - Statistical Summary (%d runs per UUID type)\n", numRuns)
 	fmt.Println(strings.Repeat("=", 100))

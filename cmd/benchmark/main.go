@@ -127,7 +127,7 @@ func runInsertPerformanceForAllTypes(numRecords, batchSize, connections, numRuns
 			statsResults[keyType] = aggregateInsertPerformanceResults(runs)
 		}
 
-		displayInsertPerformanceStatistics(statsResults, allKeyTypes, numRecords, connections, batchSize, numRuns)
+		display.InsertPerformanceStatistics(statsResults, allKeyTypes, numRecords, connections, batchSize, numRuns)
 	}
 }
 
