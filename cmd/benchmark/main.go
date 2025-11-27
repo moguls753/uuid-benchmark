@@ -11,6 +11,7 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/statistics"
 	"github.com/moguls753/uuid-benchmark/internal/container"
 	"github.com/moguls753/uuid-benchmark/internal/display"
+	"github.com/moguls753/uuid-benchmark/internal/export"
 	"github.com/moguls753/uuid-benchmark/internal/runner"
 )
 
@@ -23,6 +24,7 @@ func main() {
 	connections := flag.Int("connections", 1, "Number of concurrent connections")
 	batchSize := flag.Int("batch-size", 100, "Batch size for inserts/updates")
 	numRuns := flag.Int("num-runs", 1, "Number of runs per UUID type (for statistical analysis)")
+	output := flag.String("output", "", "Output CSV file for statistical results (only in multi-run mode)")
 	flag.Parse()
 
 	fmt.Println("UUID Benchmark - PostgreSQL")
@@ -44,7 +46,7 @@ func main() {
 
 	switch *scenario {
 	case "insert-performance":
-		runInsertPerformanceForAllTypes(*numRecords, *batchSize, *connections, *numRuns)
+		runInsertPerformanceForAllTypes(*numRecords, *batchSize, *connections, *numRuns, *output)
 
 	case "read-after-fragmentation":
 		runReadAfterFragmentationForAllTypes(*numRecords, *numOps, *numRuns)
@@ -69,7 +71,7 @@ func main() {
 	fmt.Println("All scenarios completed successfully!")
 }
 
-func runInsertPerformanceForAllTypes(numRecords, batchSize, connections, numRuns int) {
+func runInsertPerformanceForAllTypes(numRecords, batchSize, connections, numRuns int, outputFile string) {
 	if numRuns == 1 {
 		// Single run mode (fast, for testing)
 		results := make(map[string]*benchmark.InsertPerformanceResult)
@@ -128,6 +130,29 @@ func runInsertPerformanceForAllTypes(numRecords, batchSize, connections, numRuns
 		}
 
 		display.InsertPerformanceStatistics(statsResults, allKeyTypes, numRecords, connections, batchSize, numRuns)
+
+		// Export to CSV if output file specified
+		if outputFile != "" {
+			fmt.Printf("\nExporting results to CSV...\n")
+
+			// Export statistical summary
+			if err := export.InsertPerformanceStatsToCSV(statsResults, allKeyTypes, outputFile); err != nil {
+				log.Printf("Warning: Failed to export stats CSV: %v", err)
+			} else {
+				fmt.Printf("✓ Statistical summary: %s\n", outputFile)
+			}
+
+			// Export raw runs (for detailed plotting)
+			rawFile := strings.Replace(outputFile, ".csv", "_raw.csv", 1)
+			if rawFile == outputFile {
+				rawFile = outputFile + ".raw"
+			}
+			if err := export.InsertPerformanceRawRunsToCSV(statsResults, allKeyTypes, rawFile); err != nil {
+				log.Printf("Warning: Failed to export raw runs CSV: %v", err)
+			} else {
+				fmt.Printf("✓ Raw runs data: %s\n", rawFile)
+			}
+		}
 	}
 }
 
