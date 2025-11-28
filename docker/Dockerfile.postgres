@@ -1,0 +1,23 @@
+FROM postgres:18
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    postgresql-server-dev-18 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build and install pg-ulid extension (C implementation)
+RUN cd /tmp && \
+    git clone https://github.com/andrielfn/pg-ulid.git && \
+    cd pg-ulid && \
+    make && \
+    make install && \
+    cd / && \
+    rm -rf /tmp/pg-ulid
+
+# Clean up build dependencies to reduce image size
+RUN apt-get purge -y --auto-remove \
+    build-essential \
+    git \
+    postgresql-server-dev-18

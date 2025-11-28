@@ -43,6 +43,11 @@ func (p *PostgresBenchmarker) Connect() error {
 		return fmt.Errorf("enable uuid-ossp extension: %w", err)
 	}
 
+	_, err = p.db.Exec("CREATE EXTENSION IF NOT EXISTS ulid")
+	if err != nil {
+		return fmt.Errorf("enable ulid extension: %w", err)
+	}
+
 	return nil
 }
 

@@ -1,6 +1,9 @@
 services:
   postgres:
-    image: postgres:18
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    image: uuid-benchmark-postgres:18
     container_name: uuid-bench-postgres
     command:
       - "postgres"

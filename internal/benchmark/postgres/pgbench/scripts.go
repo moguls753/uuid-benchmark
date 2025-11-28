@@ -34,6 +34,10 @@ func GenerateInsertScript(keyType, tableName string) string {
 		// Use uuid_generate_v1() from uuid-ossp extension
 		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (uuid_generate_v1(), 'test_data_' || :client_id);`, tableName)
 
+	case "ulid", "ulid_monotonic":
+		// Use gen_ulid() from pg-ulid extension
+		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (gen_ulid(), 'test_data_' || :client_id);`, tableName)
+
 	default:
 		return fmt.Sprintf(`-- Unknown key type: %s`, keyType)
 	}
@@ -57,7 +61,7 @@ SELECT * FROM (
 ) AS random_id, %s
 WHERE %s.id = random_id.id;`, tableName, tableName, tableName)
 
-	case "ulid":
+	case "ulid", "ulid_monotonic":
 		// ULID stored as TEXT, similar to UUID approach
 		return fmt.Sprintf(`\set offset random(0, :num_records - 1)
 SELECT * FROM (
@@ -84,7 +88,7 @@ UPDATE %s SET data = 'updated_' || :client_id WHERE id = :id;`, tableName)
 UPDATE %s SET data = 'updated_' || :client_id
 WHERE id = (SELECT id FROM %s OFFSET :offset LIMIT 1);`, tableName, tableName)
 
-	case "ulid":
+	case "ulid", "ulid_monotonic":
 		// ULID stored as TEXT
 		return fmt.Sprintf(`\set offset random(0, :num_records - 1)
 UPDATE %s SET data = 'updated_' || :client_id
