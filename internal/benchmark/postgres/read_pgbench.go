@@ -8,29 +8,22 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres/pgbench"
 )
 
-// ReadRecordsPgbench performs random point lookups using pgbench
 func (p *PostgresBenchmarker) ReadRecordsPgbench(keyType string, numTotalRecords, numReads int) (time.Duration, error) {
-	// Generate SELECT script
 	script := pgbench.GenerateSelectScript(keyType, p.tableName)
 
-	// Copy script to container
 	scriptName := fmt.Sprintf("select_%s.sql", keyType)
 	containerPath, err := pgbench.CopyScriptToContainer("uuid-bench-postgres", script, scriptName)
 	if err != nil {
 		return 0, fmt.Errorf("copy script to container: %w", err)
 	}
 
-	// Execute via pgbench
 	execCfg := pgbench.ExecutorConfig{
 		ContainerName: "uuid-bench-postgres",
-		Connections:   1, // Sequential reads
+		Connections:   1,
 		Transactions:  numReads,
 		ScriptPath:    containerPath,
 	}
 
-	// Set pgbench variable for num_records (used in script for BIGSERIAL random range)
-	// We need to pass this via environment or script customization
-	// For now, we'll use a workaround: modify the script to include the value
 	scriptWithVars := fmt.Sprintf("\\set num_records %d\n%s", numTotalRecords, script)
 	containerPath, err = pgbench.CopyScriptToContainer("uuid-bench-postgres", scriptWithVars, scriptName)
 	if err != nil {
@@ -53,27 +46,21 @@ func (p *PostgresBenchmarker) ReadRecordsPgbench(keyType string, numTotalRecords
 	return duration, nil
 }
 
-// ReadRecordsPgbenchConcurrent performs concurrent random point lookups using pgbench
 func (p *PostgresBenchmarker) ReadRecordsPgbenchConcurrent(keyType string, numTotalRecords, numReads, connections int) (*benchmark.ConcurrentBenchmarkResult, error) {
-	// Generate SELECT script
 	script := pgbench.GenerateSelectScript(keyType, p.tableName)
 
-	// Add num_records variable
 	scriptWithVars := fmt.Sprintf("\\set num_records %d\n%s", numTotalRecords, script)
 
-	// Copy script to container
 	scriptName := fmt.Sprintf("select_%s_concurrent.sql", keyType)
 	containerPath, err := pgbench.CopyScriptToContainer("uuid-bench-postgres", scriptWithVars, scriptName)
 	if err != nil {
 		return nil, fmt.Errorf("copy script to container: %w", err)
 	}
 
-	// Calculate transactions per client
 	transactionsPerClient := numReads / connections
 
 	startTime := time.Now()
 
-	// Execute via pgbench with concurrency
 	execCfg := pgbench.ExecutorConfig{
 		ContainerName: "uuid-bench-postgres",
 		Connections:   connections,
@@ -90,7 +77,6 @@ func (p *PostgresBenchmarker) ReadRecordsPgbenchConcurrent(keyType string, numTo
 		return nil, fmt.Errorf("pgbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
 	}
 
-	// Parse pgbench output
 	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout)
 	if err != nil {
 		return nil, fmt.Errorf("parse pgbench output: %w", err)

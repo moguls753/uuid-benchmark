@@ -11,6 +11,8 @@ services:
       - "checkpoint_timeout=1h"
       - "-c"
       - "max_wal_size=10GB"
+      - "-c"
+      - "shared_preload_libraries=pgx_ulid"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-benchmark}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-benchmark123}

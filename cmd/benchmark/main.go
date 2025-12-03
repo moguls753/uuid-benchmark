@@ -15,10 +15,10 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/runner"
 )
 
-var allKeyTypes = []string{"bigserial", "uuidv4", "uuidv7", "ulid", "uuidv1"}
+var allKeyTypes = []string{"bigserial", "uuidv4", "uuidv7", "ulid", "ulid_monotonic", "uuidv1"}
 
 func main() {
-	scenario := flag.String("scenario", "insert-performance", "Scenario to run (insert-performance, read-after-fragmentation, update-performance, mixed-insert-heavy, mixed-read-heavy, mixed-balanced)")
+	scenario := flag.String("scenario", "insert-performance", "Scenario to run (insert-performance, read-after-fragmentation, update-performance, mixed-insert-heavy, mixed-read-heavy, mixed-balanced, all)")
 	numRecords := flag.Int("num-records", 100000, "Number of records for insert operations")
 	numOps := flag.Int("num-ops", 10000, "Number of operations for read/update/mixed scenarios")
 	connections := flag.Int("connections", 1, "Number of concurrent connections")
@@ -46,22 +46,25 @@ func main() {
 
 	switch *scenario {
 	case "insert-performance":
-		runInsertPerformanceForAllTypes(*numRecords, *batchSize, *connections, *numRuns, *output)
+		runInsertPerformance(*numRecords, *batchSize, *connections, *numRuns, *output)
 
 	case "read-after-fragmentation":
-		runReadAfterFragmentationForAllTypes(*numRecords, *numOps, *numRuns)
+		runReadAfterFragmentation(*numRecords, *numOps, *numRuns)
 
 	case "update-performance":
-		runUpdatePerformanceForAllTypes(*numRecords, *numOps, *batchSize, *numRuns)
+		runUpdatePerformance(*numRecords, *numOps, *batchSize, *numRuns)
 
 	case "mixed-insert-heavy":
-		runMixedWorkloadInsertHeavyForAllTypes(*numOps, *connections, *batchSize, *numRuns)
+		runMixedWorkloadInsertHeavy(*numOps, *connections, *batchSize, *numRuns)
 
 	case "mixed-read-heavy":
-		runMixedWorkloadReadHeavyForAllTypes(*numOps, *connections, *numRuns)
+		runMixedWorkloadReadHeavy(*numOps, *connections, *numRuns)
 
 	case "mixed-balanced":
-		runMixedWorkloadBalancedForAllTypes(*numOps, *connections, *numRuns)
+		runMixedWorkloadBalanced(*numOps, *connections, *numRuns)
+
+	case "all":
+		runAllScenarios(*numRecords, *numOps, *connections, *batchSize, *numRuns, *output)
 
 	default:
 		log.Fatalf("Invalid scenario: %s", *scenario)
@@ -71,9 +74,8 @@ func main() {
 	fmt.Println("All scenarios completed successfully!")
 }
 
-func runInsertPerformanceForAllTypes(numRecords, batchSize, connections, numRuns int, outputFile string) {
+func runInsertPerformance(numRecords, batchSize, connections, numRuns int, outputFile string) {
 	if numRuns == 1 {
-		// Single run mode (fast, for testing)
 		results := make(map[string]*benchmark.InsertPerformanceResult)
 
 		for _, keyType := range allKeyTypes {
@@ -94,7 +96,6 @@ func runInsertPerformanceForAllTypes(numRecords, batchSize, connections, numRuns
 
 		display.InsertPerformance(results, allKeyTypes, connections, batchSize)
 	} else {
-		// Multi-run mode with statistics
 		statsResults := make(map[string]map[string]statistics.Stats)
 
 		for _, keyType := range allKeyTypes {
@@ -118,31 +119,22 @@ func runInsertPerformanceForAllTypes(numRecords, batchSize, connections, numRuns
 				container.Stop(container.PostgresConfig.ComposeFile)
 
 				fmt.Println("done")
-
-				// Brief pause between runs
-				if i < numRuns-1 {
-					time.Sleep(3 * time.Second)
-				}
 			}
 
-			// Aggregate statistics
 			statsResults[keyType] = aggregateInsertPerformanceResults(runs)
 		}
 
 		display.InsertPerformanceStatistics(statsResults, allKeyTypes, numRecords, connections, batchSize, numRuns)
 
-		// Export to CSV if output file specified
 		if outputFile != "" {
 			fmt.Printf("\nExporting results to CSV...\n")
 
-			// Export statistical summary
 			if err := export.InsertPerformanceStatsToCSV(statsResults, allKeyTypes, outputFile); err != nil {
 				log.Printf("Warning: Failed to export stats CSV: %v", err)
 			} else {
 				fmt.Printf("✓ Statistical summary: %s\n", outputFile)
 			}
 
-			// Export raw runs (for detailed plotting)
 			rawFile := strings.Replace(outputFile, ".csv", "_raw.csv", 1)
 			if rawFile == outputFile {
 				rawFile = outputFile + ".raw"
@@ -156,7 +148,6 @@ func runInsertPerformanceForAllTypes(numRecords, batchSize, connections, numRuns
 	}
 }
 
-// aggregateInsertPerformanceResults extracts metrics from runs and calculates statistics
 func aggregateInsertPerformanceResults(runs []*benchmark.InsertPerformanceResult) map[string]statistics.Stats {
 	numRuns := len(runs)
 
@@ -191,23 +182,23 @@ func aggregateInsertPerformanceResults(runs []*benchmark.InsertPerformanceResult
 	}
 
 	return map[string]statistics.Stats{
-		"throughput":         statistics.Calculate(throughput),
-		"page_splits":        statistics.Calculate(pageSplits),
-		"fragmentation":      statistics.Calculate(fragmentation),
-		"avg_leaf_density":   statistics.Calculate(avgLeafDensity),
-		"table_size_mb":      statistics.Calculate(tableSizeMB),
-		"index_size_mb":      statistics.Calculate(indexSizeMB),
-		"p50_latency_us":     statistics.Calculate(p50Latency),
-		"p95_latency_us":     statistics.Calculate(p95Latency),
-		"p99_latency_us":     statistics.Calculate(p99Latency),
-		"read_iops":          statistics.Calculate(readIOPS),
-		"write_iops":         statistics.Calculate(writeIOPS),
-		"read_throughput_mb": statistics.Calculate(readThroughputMB),
+		"throughput":          statistics.Calculate(throughput),
+		"page_splits":         statistics.Calculate(pageSplits),
+		"fragmentation":       statistics.Calculate(fragmentation),
+		"avg_leaf_density":    statistics.Calculate(avgLeafDensity),
+		"table_size_mb":       statistics.Calculate(tableSizeMB),
+		"index_size_mb":       statistics.Calculate(indexSizeMB),
+		"p50_latency_us":      statistics.Calculate(p50Latency),
+		"p95_latency_us":      statistics.Calculate(p95Latency),
+		"p99_latency_us":      statistics.Calculate(p99Latency),
+		"read_iops":           statistics.Calculate(readIOPS),
+		"write_iops":          statistics.Calculate(writeIOPS),
+		"read_throughput_mb":  statistics.Calculate(readThroughputMB),
 		"write_throughput_mb": statistics.Calculate(writeThroughputMB),
 	}
 }
 
-func runReadAfterFragmentationForAllTypes(numRecords, numOps, numRuns int) {
+func runReadAfterFragmentation(numRecords, numOps, numRuns int) {
 	results := make(map[string]*benchmark.ReadAfterFragmentationResult)
 
 	for _, keyType := range allKeyTypes {
@@ -229,7 +220,7 @@ func runReadAfterFragmentationForAllTypes(numRecords, numOps, numRuns int) {
 	display.ReadAfterFragmentation(results, allKeyTypes)
 }
 
-func runUpdatePerformanceForAllTypes(numRecords, numOps, batchSize, numRuns int) {
+func runUpdatePerformance(numRecords, numOps, batchSize, numRuns int) {
 	results := make(map[string]*benchmark.UpdatePerformanceResult)
 
 	for _, keyType := range allKeyTypes {
@@ -251,7 +242,7 @@ func runUpdatePerformanceForAllTypes(numRecords, numOps, batchSize, numRuns int)
 	display.UpdatePerformance(results, allKeyTypes)
 }
 
-func runMixedWorkloadInsertHeavyForAllTypes(totalOps, connections, batchSize, numRuns int) {
+func runMixedWorkloadInsertHeavy(totalOps, connections, batchSize, numRuns int) {
 	results := make(map[string]*benchmark.MixedWorkloadResult)
 
 	for _, keyType := range allKeyTypes {
@@ -273,7 +264,7 @@ func runMixedWorkloadInsertHeavyForAllTypes(totalOps, connections, batchSize, nu
 	display.MixedWorkload(results, allKeyTypes, "Insert-Heavy (90% insert, 10% read)")
 }
 
-func runMixedWorkloadReadHeavyForAllTypes(totalOps, connections, numRuns int) {
+func runMixedWorkloadReadHeavy(totalOps, connections, numRuns int) {
 	results := make(map[string]*benchmark.MixedWorkloadResult)
 
 	for _, keyType := range allKeyTypes {
@@ -295,7 +286,7 @@ func runMixedWorkloadReadHeavyForAllTypes(totalOps, connections, numRuns int) {
 	display.MixedWorkload(results, allKeyTypes, "Read-Heavy (10% insert, 90% read)")
 }
 
-func runMixedWorkloadBalancedForAllTypes(totalOps, connections, numRuns int) {
+func runMixedWorkloadBalanced(totalOps, connections, numRuns int) {
 	results := make(map[string]*benchmark.MixedWorkloadResult)
 
 	for _, keyType := range allKeyTypes {
@@ -315,4 +306,42 @@ func runMixedWorkloadBalancedForAllTypes(totalOps, connections, numRuns int) {
 	}
 
 	display.MixedWorkload(results, allKeyTypes, "Balanced (50% insert, 30% read, 20% update)")
+}
+
+func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, output string) {
+	fmt.Println("\n" + strings.Repeat("=", 100))
+	fmt.Println("RUNNING ALL SCENARIOS - COMPREHENSIVE BENCHMARK SUITE")
+	fmt.Println(strings.Repeat("=", 100))
+	fmt.Println()
+
+	startTime := time.Now()
+
+	fmt.Println("\n[1/6] INSERT PERFORMANCE")
+	fmt.Println(strings.Repeat("=", 100))
+	runInsertPerformance(numRecords, batchSize, connections, numRuns, output)
+
+	fmt.Println("\n[2/6] READ AFTER FRAGMENTATION")
+	fmt.Println(strings.Repeat("=", 100))
+	runReadAfterFragmentation(numRecords, numOps, numRuns)
+
+	fmt.Println("\n[3/6] UPDATE PERFORMANCE")
+	fmt.Println(strings.Repeat("=", 100))
+	runUpdatePerformance(numRecords, numOps, batchSize, numRuns)
+
+	fmt.Println("\n[4/6] MIXED INSERT-HEAVY")
+	fmt.Println(strings.Repeat("=", 100))
+	runMixedWorkloadInsertHeavy(numOps, connections, batchSize, numRuns)
+
+	fmt.Println("\n[5/6] MIXED READ-HEAVY")
+	fmt.Println(strings.Repeat("=", 100))
+	runMixedWorkloadReadHeavy(numOps, connections, numRuns)
+
+	fmt.Println("\n[6/6] MIXED BALANCED")
+	fmt.Println(strings.Repeat("=", 100))
+	runMixedWorkloadBalanced(numOps, connections, numRuns)
+
+	totalDuration := time.Since(startTime)
+	fmt.Println("\n" + strings.Repeat("=", 100))
+	fmt.Printf("ALL SCENARIOS COMPLETED IN %s\n", totalDuration.Round(time.Second))
+	fmt.Println(strings.Repeat("=", 100))
 }

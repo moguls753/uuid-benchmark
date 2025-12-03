@@ -1,23 +1,41 @@
 FROM postgres:18
 
-# Install build dependencies
+# Install Rust toolchain and build dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     git \
     postgresql-server-dev-18 \
+    curl \
+    ca-certificates \
+    pkg-config \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Build and install pg-ulid extension (C implementation)
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install cargo-pgrx
+RUN cargo install --locked cargo-pgrx --version 0.16.0
+
+# Initialize pgrx for PostgreSQL 18
+RUN cargo pgrx init --pg18 /usr/bin/pg_config
+
+# Build and install pgx_ulid extension (Rust implementation)
 RUN cd /tmp && \
-    git clone https://github.com/andrielfn/pg-ulid.git && \
-    cd pg-ulid && \
-    make && \
-    make install && \
+    git clone https://github.com/pksunkara/pgx_ulid.git && \
+    cd pgx_ulid && \
+    cargo pgrx install --release && \
     cd / && \
-    rm -rf /tmp/pg-ulid
+    rm -rf /tmp/pgx_ulid
+
+# Configure PostgreSQL for monotonic ULID support
+RUN echo "shared_preload_libraries = 'pgx_ulid'" >> /usr/share/postgresql/postgresql.conf.sample
 
 # Clean up build dependencies to reduce image size
 RUN apt-get purge -y --auto-remove \
     build-essential \
     git \
-    postgresql-server-dev-18
+    postgresql-server-dev-18 \
+    curl && \
+    rm -rf /root/.cargo /root/.rustup

@@ -43,9 +43,9 @@ func (p *PostgresBenchmarker) Connect() error {
 		return fmt.Errorf("enable uuid-ossp extension: %w", err)
 	}
 
-	_, err = p.db.Exec("CREATE EXTENSION IF NOT EXISTS ulid")
+	_, err = p.db.Exec("CREATE EXTENSION IF NOT EXISTS pgx_ulid")
 	if err != nil {
-		return fmt.Errorf("enable ulid extension: %w", err)
+		return fmt.Errorf("enable pgx_ulid extension: %w", err)
 	}
 
 	return nil
@@ -91,7 +91,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 	case "ulid":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
-				id TEXT PRIMARY KEY,
+				id ulid PRIMARY KEY,
 				data TEXT,
 				created_at TIMESTAMP DEFAULT NOW()
 			)
@@ -99,7 +99,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 	case "ulid_monotonic":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
-				id TEXT PRIMARY KEY,
+				id ulid PRIMARY KEY,
 				data TEXT,
 				created_at TIMESTAMP DEFAULT NOW()
 			)
@@ -124,7 +124,6 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 	return nil
 }
 
-// Close closes the database connection
 func (p *PostgresBenchmarker) Close() error {
 	if p.db != nil {
 		return p.db.Close()
@@ -132,8 +131,6 @@ func (p *PostgresBenchmarker) Close() error {
 	return nil
 }
 
-// WaitForReady waits for PostgreSQL to be ready with retry logic
-// This is used during container startup to ensure the database is accepting connections
 func WaitForReady() error {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPassword, dbName)
 	timeout := 30 * time.Second
@@ -144,11 +141,11 @@ func WaitForReady() error {
 		if err == nil {
 			if err := db.Ping(); err == nil {
 				db.Close()
-				return nil // Success!
+				return nil
 			}
 			db.Close()
 		}
-		time.Sleep(500 * time.Millisecond) // Retry every 500ms
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	return fmt.Errorf("timeout waiting for PostgreSQL after %v", timeout)

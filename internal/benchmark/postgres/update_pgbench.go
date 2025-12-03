@@ -8,25 +8,20 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres/pgbench"
 )
 
-// UpdateRecordsPgbench performs random updates using pgbench
 func (p *PostgresBenchmarker) UpdateRecordsPgbench(keyType string, numTotalRecords, numUpdates, batchSize int) (time.Duration, error) {
-	// Generate UPDATE script
 	script := pgbench.GenerateUpdateScript(keyType, p.tableName)
 
-	// Add num_records variable
 	scriptWithVars := fmt.Sprintf("\\set num_records %d\n%s", numTotalRecords, script)
 
-	// Copy script to container
 	scriptName := fmt.Sprintf("update_%s.sql", keyType)
 	containerPath, err := pgbench.CopyScriptToContainer("uuid-bench-postgres", scriptWithVars, scriptName)
 	if err != nil {
 		return 0, fmt.Errorf("copy script to container: %w", err)
 	}
 
-	// Execute via pgbench
 	execCfg := pgbench.ExecutorConfig{
 		ContainerName: "uuid-bench-postgres",
-		Connections:   1, // Sequential updates
+		Connections:   1,
 		Transactions:  numUpdates,
 		ScriptPath:    containerPath,
 	}
@@ -47,27 +42,21 @@ func (p *PostgresBenchmarker) UpdateRecordsPgbench(keyType string, numTotalRecor
 	return duration, nil
 }
 
-// UpdateRecordsPgbenchConcurrent performs concurrent random updates using pgbench
 func (p *PostgresBenchmarker) UpdateRecordsPgbenchConcurrent(keyType string, numTotalRecords, numUpdates, connections, batchSize int) (*benchmark.ConcurrentBenchmarkResult, error) {
-	// Generate UPDATE script
 	script := pgbench.GenerateUpdateScript(keyType, p.tableName)
 
-	// Add num_records variable
 	scriptWithVars := fmt.Sprintf("\\set num_records %d\n%s", numTotalRecords, script)
 
-	// Copy script to container
 	scriptName := fmt.Sprintf("update_%s_concurrent.sql", keyType)
 	containerPath, err := pgbench.CopyScriptToContainer("uuid-bench-postgres", scriptWithVars, scriptName)
 	if err != nil {
 		return nil, fmt.Errorf("copy script to container: %w", err)
 	}
 
-	// Calculate transactions per client
 	transactionsPerClient := numUpdates / connections
 
 	startTime := time.Now()
 
-	// Execute via pgbench with concurrency
 	execCfg := pgbench.ExecutorConfig{
 		ContainerName: "uuid-bench-postgres",
 		Connections:   connections,
@@ -84,7 +73,6 @@ func (p *PostgresBenchmarker) UpdateRecordsPgbenchConcurrent(keyType string, num
 		return nil, fmt.Errorf("pgbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
 	}
 
-	// Parse pgbench output
 	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout)
 	if err != nil {
 		return nil, fmt.Errorf("parse pgbench output: %w", err)

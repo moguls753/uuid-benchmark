@@ -8,9 +8,7 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres/pgbench"
 )
 
-// InsertRecordsPgbench performs inserts using pgbench for all key types
 func (p *PostgresBenchmarker) InsertRecordsPgbench(keyType string, numRecords, batchSize int) (time.Duration, error) {
-	// Capture LSN before inserts
 	startLSN, err := p.getCurrentLSN()
 	if err != nil {
 		return 0, fmt.Errorf("capture start LSN: %w", err)
@@ -20,21 +18,17 @@ func (p *PostgresBenchmarker) InsertRecordsPgbench(keyType string, numRecords, b
 	startTime := time.Now()
 	var duration time.Duration
 
-	// Use pgbench for all key types (native server-side generation)
 	script := pgbench.GenerateInsertScript(keyType, p.tableName)
 	if batchSize > 1 {
 		script = pgbench.GenerateMultipleInserts(keyType, p.tableName, batchSize)
 	}
 
-	// Copy script to container
 	scriptName := fmt.Sprintf("insert_%s.sql", keyType)
 	containerPath, err := pgbench.CopyScriptToContainer("uuid-bench-postgres", script, scriptName)
 	if err != nil {
 		return 0, fmt.Errorf("copy script to container: %w", err)
 	}
 
-	// Calculate transactions
-	// For batched inserts, each transaction processes batchSize records
 	transactions := numRecords
 	if batchSize > 1 {
 		transactions = numRecords / batchSize
@@ -43,10 +37,9 @@ func (p *PostgresBenchmarker) InsertRecordsPgbench(keyType string, numRecords, b
 		}
 	}
 
-	// Execute via pgbench
 	execCfg := pgbench.ExecutorConfig{
 		ContainerName: "uuid-bench-postgres",
-		Connections:   1, // Sequential execution
+		Connections:   1,
 		Transactions:  transactions,
 		ScriptPath:    containerPath,
 	}
@@ -60,16 +53,13 @@ func (p *PostgresBenchmarker) InsertRecordsPgbench(keyType string, numRecords, b
 		return 0, fmt.Errorf("pgbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
 	}
 
-	// Parse pgbench output for duration
 	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout)
 	if err != nil {
-		// Fallback: use measured time
 		duration = time.Since(startTime)
 	} else {
 		duration = parsed.Duration
 	}
 
-	// Capture LSN after inserts
 	endLSN, err := p.getCurrentLSN()
 	if err != nil {
 		return 0, fmt.Errorf("capture end LSN: %w", err)
@@ -79,9 +69,7 @@ func (p *PostgresBenchmarker) InsertRecordsPgbench(keyType string, numRecords, b
 	return duration, nil
 }
 
-// InsertRecordsPgbenchConcurrent performs concurrent inserts using pgbench's -c flag
 func (p *PostgresBenchmarker) InsertRecordsPgbenchConcurrent(keyType string, numRecords, connections, batchSize int) (*benchmark.ConcurrentBenchmarkResult, error) {
-	// Capture LSN before inserts
 	startLSN, err := p.getCurrentLSN()
 	if err != nil {
 		return nil, fmt.Errorf("capture start LSN: %w", err)
@@ -90,26 +78,22 @@ func (p *PostgresBenchmarker) InsertRecordsPgbenchConcurrent(keyType string, num
 
 	startTime := time.Now()
 
-	// Use pgbench for all key types
 	script := pgbench.GenerateInsertScript(keyType, p.tableName)
 	if batchSize > 1 {
 		script = pgbench.GenerateMultipleInserts(keyType, p.tableName, batchSize)
 	}
 
-	// Copy script to container
 	scriptName := fmt.Sprintf("insert_%s_concurrent.sql", keyType)
 	containerPath, err := pgbench.CopyScriptToContainer("uuid-bench-postgres", script, scriptName)
 	if err != nil {
 		return nil, fmt.Errorf("copy script to container: %w", err)
 	}
 
-	// Calculate transactions per client
 	transactionsPerClient := numRecords / connections
 	if batchSize > 1 {
 		transactionsPerClient = (numRecords / batchSize) / connections
 	}
 
-	// Execute via pgbench with concurrency
 	execCfg := pgbench.ExecutorConfig{
 		ContainerName: "uuid-bench-postgres",
 		Connections:   connections,
@@ -126,13 +110,11 @@ func (p *PostgresBenchmarker) InsertRecordsPgbenchConcurrent(keyType string, num
 		return nil, fmt.Errorf("pgbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
 	}
 
-	// Parse pgbench output
 	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout)
 	if err != nil {
 		return nil, fmt.Errorf("parse pgbench output: %w", err)
 	}
 
-	// Capture LSN after inserts
 	endLSN, err := p.getCurrentLSN()
 	if err != nil {
 		return nil, fmt.Errorf("capture end LSN: %w", err)
