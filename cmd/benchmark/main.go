@@ -308,6 +308,139 @@ func runMixedWorkloadBalanced(totalOps, connections, numRuns int) {
 	display.MixedWorkload(results, allKeyTypes, "Balanced (50% insert, 30% read, 20% update)")
 }
 
+// Helper functions for runAllScenarios - collect results without displaying
+func collectInsertPerformanceResults(numRecords, batchSize, connections int) map[string]*benchmark.InsertPerformanceResult {
+	results := make(map[string]*benchmark.InsertPerformanceResult)
+
+	for _, keyType := range allKeyTypes {
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		container.Start(container.PostgresConfig)
+
+		result, err := runner.InsertPerformance(keyType, numRecords, batchSize, connections)
+		if err != nil {
+			container.Stop(container.PostgresConfig.ComposeFile)
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		container.Stop(container.PostgresConfig.ComposeFile)
+	}
+
+	return results
+}
+
+func collectReadAfterFragmentationResults(numRecords, numOps int) map[string]*benchmark.ReadAfterFragmentationResult {
+	results := make(map[string]*benchmark.ReadAfterFragmentationResult)
+
+	for _, keyType := range allKeyTypes {
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		container.Start(container.PostgresConfig)
+
+		result, err := runner.ReadAfterFragmentation(keyType, numRecords, numOps)
+		if err != nil {
+			container.Stop(container.PostgresConfig.ComposeFile)
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		container.Stop(container.PostgresConfig.ComposeFile)
+	}
+
+	return results
+}
+
+func collectUpdatePerformanceResults(numRecords, numOps, batchSize int) map[string]*benchmark.UpdatePerformanceResult {
+	results := make(map[string]*benchmark.UpdatePerformanceResult)
+
+	for _, keyType := range allKeyTypes {
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		container.Start(container.PostgresConfig)
+
+		result, err := runner.UpdatePerformance(keyType, numRecords, numOps, batchSize)
+		if err != nil {
+			container.Stop(container.PostgresConfig.ComposeFile)
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		container.Stop(container.PostgresConfig.ComposeFile)
+	}
+
+	return results
+}
+
+func collectMixedWorkloadInsertHeavyResults(totalOps, connections, batchSize int) map[string]*benchmark.MixedWorkloadResult {
+	results := make(map[string]*benchmark.MixedWorkloadResult)
+
+	for _, keyType := range allKeyTypes {
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		container.Start(container.PostgresConfig)
+
+		result, err := runner.MixedWorkloadInsertHeavy(keyType, totalOps, connections, batchSize)
+		if err != nil {
+			container.Stop(container.PostgresConfig.ComposeFile)
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		container.Stop(container.PostgresConfig.ComposeFile)
+	}
+
+	return results
+}
+
+func collectMixedWorkloadReadHeavyResults(totalOps, connections int) map[string]*benchmark.MixedWorkloadResult {
+	results := make(map[string]*benchmark.MixedWorkloadResult)
+
+	for _, keyType := range allKeyTypes {
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		container.Start(container.PostgresConfig)
+
+		result, err := runner.MixedWorkloadReadHeavy(keyType, totalOps, connections)
+		if err != nil {
+			container.Stop(container.PostgresConfig.ComposeFile)
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		container.Stop(container.PostgresConfig.ComposeFile)
+	}
+
+	return results
+}
+
+func collectMixedWorkloadBalancedResults(totalOps, connections int) map[string]*benchmark.MixedWorkloadResult {
+	results := make(map[string]*benchmark.MixedWorkloadResult)
+
+	for _, keyType := range allKeyTypes {
+		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
+		fmt.Println(strings.Repeat("-", 70))
+
+		container.Start(container.PostgresConfig)
+
+		result, err := runner.MixedWorkloadBalanced(keyType, totalOps, connections)
+		if err != nil {
+			container.Stop(container.PostgresConfig.ComposeFile)
+			log.Fatalf("Scenario failed for %s: %v", keyType, err)
+		}
+
+		results[keyType] = result
+		container.Stop(container.PostgresConfig.ComposeFile)
+	}
+
+	return results
+}
+
 func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, output string) {
 	fmt.Println("\n" + strings.Repeat("=", 100))
 	fmt.Println("RUNNING ALL SCENARIOS - COMPREHENSIVE BENCHMARK SUITE")
@@ -316,32 +449,45 @@ func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, ou
 
 	startTime := time.Now()
 
+	// Collect all results first
 	fmt.Println("\n[1/6] INSERT PERFORMANCE")
 	fmt.Println(strings.Repeat("=", 100))
-	runInsertPerformance(numRecords, batchSize, connections, numRuns, output)
+	insertResults := collectInsertPerformanceResults(numRecords, batchSize, connections)
 
 	fmt.Println("\n[2/6] READ AFTER FRAGMENTATION")
 	fmt.Println(strings.Repeat("=", 100))
-	runReadAfterFragmentation(numRecords, numOps, numRuns)
+	readResults := collectReadAfterFragmentationResults(numRecords, numOps)
 
 	fmt.Println("\n[3/6] UPDATE PERFORMANCE")
 	fmt.Println(strings.Repeat("=", 100))
-	runUpdatePerformance(numRecords, numOps, batchSize, numRuns)
+	updateResults := collectUpdatePerformanceResults(numRecords, numOps, batchSize)
 
 	fmt.Println("\n[4/6] MIXED INSERT-HEAVY")
 	fmt.Println(strings.Repeat("=", 100))
-	runMixedWorkloadInsertHeavy(numOps, connections, batchSize, numRuns)
+	mixedInsertHeavyResults := collectMixedWorkloadInsertHeavyResults(numOps, connections, batchSize)
 
 	fmt.Println("\n[5/6] MIXED READ-HEAVY")
 	fmt.Println(strings.Repeat("=", 100))
-	runMixedWorkloadReadHeavy(numOps, connections, numRuns)
+	mixedReadHeavyResults := collectMixedWorkloadReadHeavyResults(numOps, connections)
 
 	fmt.Println("\n[6/6] MIXED BALANCED")
 	fmt.Println(strings.Repeat("=", 100))
-	runMixedWorkloadBalanced(numOps, connections, numRuns)
+	mixedBalancedResults := collectMixedWorkloadBalancedResults(numOps, connections)
 
 	totalDuration := time.Since(startTime)
 	fmt.Println("\n" + strings.Repeat("=", 100))
 	fmt.Printf("ALL SCENARIOS COMPLETED IN %s\n", totalDuration.Round(time.Second))
 	fmt.Println(strings.Repeat("=", 100))
+
+	// Display all tables
+	fmt.Println("\n" + strings.Repeat("=", 100))
+	fmt.Println("BENCHMARK RESULTS SUMMARY")
+	fmt.Println(strings.Repeat("=", 100))
+
+	display.InsertPerformance(insertResults, allKeyTypes, connections, batchSize)
+	display.ReadAfterFragmentation(readResults, allKeyTypes)
+	display.UpdatePerformance(updateResults, allKeyTypes)
+	display.MixedWorkload(mixedInsertHeavyResults, allKeyTypes, "Insert-Heavy (90% insert, 10% read)")
+	display.MixedWorkload(mixedReadHeavyResults, allKeyTypes, "Read-Heavy (10% insert, 90% read)")
+	display.MixedWorkload(mixedBalancedResults, allKeyTypes, "Balanced (50% insert, 30% read, 20% update)")
 }

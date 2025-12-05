@@ -109,6 +109,13 @@ func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentation
 	fmt.Println()
 	fmt.Println(strings.Repeat("-", 70))
 
+	// Duration
+	fmt.Printf("%-20s", "Duration")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].ReadDuration.Round(time.Millisecond))
+	}
+	fmt.Println()
+
 	// Read throughput
 	fmt.Printf("%-20s", "Read Throughput")
 	for _, keyType := range keyTypes {
@@ -195,6 +202,13 @@ func UpdatePerformance(results map[string]*benchmark.UpdatePerformanceResult, ke
 	fmt.Println()
 	fmt.Println(strings.Repeat("-", 70))
 
+	// Duration
+	fmt.Printf("%-20s", "Duration")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].UpdateDuration.Round(time.Millisecond))
+	}
+	fmt.Println()
+
 	// Update throughput
 	fmt.Printf("%-20s", "Update Throughput")
 	for _, keyType := range keyTypes {
@@ -266,6 +280,13 @@ func MixedWorkload(results map[string]*benchmark.MixedWorkloadResult, keyTypes [
 	}
 	fmt.Println()
 	fmt.Println(strings.Repeat("-", 70))
+
+	// Duration
+	fmt.Printf("%-20s", "Duration")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].Duration.Round(time.Millisecond))
+	}
+	fmt.Println()
 
 	// Overall throughput
 	fmt.Printf("%-20s", "Overall Throughput")
