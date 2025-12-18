@@ -8,23 +8,20 @@ import (
 	"path/filepath"
 )
 
-// ExecutorConfig holds configuration for pgbench execution
 type ExecutorConfig struct {
 	ContainerName string
-	Connections   int    // Number of concurrent clients (-c flag)
-	Transactions  int    // Total transactions to run (-t flag)
-	ScriptPath    string // Path to SQL script inside container
-	Duration      int    // Duration in seconds (-T flag, alternative to -t)
+	Connections   int
+	Transactions  int
+	ScriptPath    string
+	Duration      int
 }
 
-// ExecuteResult holds the output from pgbench execution
 type ExecuteResult struct {
 	Stdout   string
 	Stderr   string
 	ExitCode int
 }
 
-// Execute runs pgbench inside the container with the given configuration
 func Execute(cfg ExecutorConfig) (*ExecuteResult, error) {
 	if cfg.ContainerName == "" {
 		return nil, fmt.Errorf("container name is required")
@@ -36,21 +33,19 @@ func Execute(cfg ExecutorConfig) (*ExecuteResult, error) {
 		return nil, fmt.Errorf("either transactions (-t) or duration (-T) must be specified")
 	}
 
-	// Build pgbench command
 	args := []string{
 		"exec",
 		cfg.ContainerName,
 		"pgbench",
 		"-U", "benchmark",
 		"-d", "uuid_benchmark",
-		"-n",                                      // Skip vacuum (we have custom tables, not pgbench defaults)
+		"-n",
 		"-c", fmt.Sprintf("%d", cfg.Connections),
-		"-j", fmt.Sprintf("%d", cfg.Connections), // Number of threads (match connections)
+		"-j", fmt.Sprintf("%d", cfg.Connections),
 		"-f", cfg.ScriptPath,
-		"--progress=1", // Show progress every 1 second
+		"--progress=1",
 	}
 
-	// Add either transactions or duration
 	if cfg.Transactions > 0 {
 		args = append(args, "-t", fmt.Sprintf("%d", cfg.Transactions))
 	} else {
@@ -82,16 +77,13 @@ func Execute(cfg ExecutorConfig) (*ExecuteResult, error) {
 	return result, nil
 }
 
-// CopyScriptToContainer copies a SQL script to the container's /tmp directory
 func CopyScriptToContainer(containerName, scriptContent, scriptName string) (string, error) {
-	// Create temporary file on host
 	tmpFile, err := os.CreateTemp("", scriptName)
 	if err != nil {
 		return "", fmt.Errorf("failed to create temp file: %w", err)
 	}
 	defer os.Remove(tmpFile.Name())
 
-	// Write script content
 	if _, err := tmpFile.WriteString(scriptContent); err != nil {
 		return "", fmt.Errorf("failed to write script: %w", err)
 	}
@@ -99,7 +91,6 @@ func CopyScriptToContainer(containerName, scriptContent, scriptName string) (str
 		return "", fmt.Errorf("failed to close temp file: %w", err)
 	}
 
-	// Copy to container
 	containerPath := filepath.Join("/tmp", scriptName)
 	cmd := exec.Command("docker", "cp", tmpFile.Name(), fmt.Sprintf("%s:%s", containerName, containerPath))
 
@@ -113,7 +104,6 @@ func CopyScriptToContainer(containerName, scriptContent, scriptName string) (str
 	return containerPath, nil
 }
 
-// ExecuteSQL executes arbitrary SQL via psql (for setup/teardown, not workload)
 func ExecuteSQL(containerName, sql string) error {
 	cmd := exec.Command("docker", "exec", containerName,
 		"psql", "-U", "benchmark", "-d", "uuid_benchmark", "-c", sql)
@@ -128,7 +118,6 @@ func ExecuteSQL(containerName, sql string) error {
 	return nil
 }
 
-// ExecuteSQLFile executes a SQL file inside the container via psql
 func ExecuteSQLFile(containerName, filePath string) (*ExecuteResult, error) {
 	cmd := exec.Command("docker", "exec", containerName,
 		"psql", "-U", "benchmark", "-d", "uuid_benchmark", "-f", filePath)

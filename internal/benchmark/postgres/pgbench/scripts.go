@@ -12,7 +12,6 @@ const (
 	ScriptUpdate ScriptType = "update"
 )
 
-// Uses server-side generation for fair comparison (no network overhead)
 func GenerateInsertScript(keyType, tableName string) string {
 	switch keyType {
 	case "bigserial":
