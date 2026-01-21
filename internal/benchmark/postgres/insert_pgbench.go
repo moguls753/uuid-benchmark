@@ -53,7 +53,7 @@ func (p *PostgresBenchmarker) InsertRecordsPgbench(keyType string, numRecords, b
 		return 0, fmt.Errorf("pgbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
 	}
 
-	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout)
+	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout, "uuid-bench-postgres")
 	if err != nil {
 		duration = time.Since(startTime)
 	} else {
@@ -110,7 +110,7 @@ func (p *PostgresBenchmarker) InsertRecordsPgbenchConcurrent(keyType string, num
 		return nil, fmt.Errorf("pgbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
 	}
 
-	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout)
+	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout, "uuid-bench-postgres")
 	if err != nil {
 		return nil, fmt.Errorf("parse pgbench output: %w", err)
 	}

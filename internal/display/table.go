@@ -65,6 +65,27 @@ func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, ke
 	}
 	fmt.Println()
 
+	// Latency p50
+	fmt.Printf("%-15s", "Latency p50")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].LatencyP50.Round(time.Microsecond))
+	}
+	fmt.Println()
+
+	// Latency p95
+	fmt.Printf("%-15s", "Latency p95")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].LatencyP95.Round(time.Microsecond))
+	}
+	fmt.Println()
+
+	// Latency p99
+	fmt.Printf("%-15s", "Latency p99")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].LatencyP99.Round(time.Microsecond))
+	}
+	fmt.Println()
+
 	// Read IOPS
 	fmt.Printf("%-15s", "Read IOPS")
 	for _, keyType := range keyTypes {
@@ -321,6 +342,27 @@ func MixedWorkload(results map[string]*benchmark.MixedWorkloadResult, keyTypes [
 		}
 		fmt.Println()
 	}
+
+	// Latency p50
+	fmt.Printf("%-20s", "Latency p50")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].LatencyP50.Round(time.Microsecond))
+	}
+	fmt.Println()
+
+	// Latency p95
+	fmt.Printf("%-20s", "Latency p95")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].LatencyP95.Round(time.Microsecond))
+	}
+	fmt.Println()
+
+	// Latency p99
+	fmt.Printf("%-20s", "Latency p99")
+	for _, keyType := range keyTypes {
+		fmt.Printf("%-20s", results[keyType].LatencyP99.Round(time.Microsecond))
+	}
+	fmt.Println()
 
 	// Buffer hit ratio
 	fmt.Printf("%-20s", "Buffer Hit Ratio")

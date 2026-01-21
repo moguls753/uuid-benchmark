@@ -1,0 +1,113 @@
+UUID Benchmark - PostgreSQL
+======================================================================
+Scenario:     insert-performance
+Records:      10000
+Connections:  10
+Testing:      [bigserial uuidv4 uuidv7 ulid ulid_monotonic uuidv1]
+======================================================================
+
+
+Testing BIGSERIAL
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+Inserting 10000 records (connections=10, batch=1)...
+Inserted 10000 records in 1.167213121s
+Throughput: 21818.67 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+
+Testing UUIDV4
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+Inserting 10000 records (connections=10, batch=1)...
+Inserted 10000 records in 1.149727626s
+Throughput: 22115.38 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+
+Testing UUIDV7
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+Inserting 10000 records (connections=10, batch=1)...
+Inserted 10000 records in 1.150572459s
+Throughput: 21452.23 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+
+Testing ULID
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+Inserting 10000 records (connections=10, batch=1)...
+Inserted 10000 records in 1.168042702s
+Throughput: 22230.27 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+
+Testing ULID_MONOTONIC
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+Inserting 10000 records (connections=10, batch=1)...
+Inserted 10000 records in 1.189372479s
+Throughput: 21132.45 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+
+Testing UUIDV1
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+Inserting 10000 records (connections=10, batch=1)...
+Inserted 10000 records in 1.18707889s
+Throughput: 21416.81 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+
+
+COMPARISON - Insert Performance
+======================================================================
+Metric         BIGSERIAL           UUIDV4              UUIDV7              ULID                ULID_MONOTONIC      UUIDV1              
+----------------------------------------------------------------------
+Duration       1.167s              1.15s               1.151s              1.168s              1.189s              1.187s              
+Throughput     21819 rec/s         22115 rec/s         21452 rec/s         22230 rec/s         21132 rec/s         21417 rec/s         
+Page Splits    27                  46                  38                  49                  49                  38                  
+Index Size     240.0 KB            392.0 KB            328.0 KB            416.0 KB            416.0 KB            328.0 KB            
+Fragmentation  0.00%               46.81%              0.00%               0.00%               0.00%               0.00%               
+Leaf Density   87.86%              73.42%              88.40%              88.75%              88.75%              88.40%              
+Latency p50    434µs               431µs               438µs               430µs               435µs               440µs               
+Latency p95    517µs               492µs               522µs               483µs               532µs               543µs               
+Latency p99    554µs               556µs               652µs               610µs               654µs               674µs               
+Read IOPS      0.0                 0.0                 0.0                 0.0                 0.0                 0.0                 
+Write IOPS     3405.0              3442.8              3447.8              3404.0              3345.3              3367.1              
+Read MB/s      0.00                0.00                0.00                0.00                0.00                0.00                
+Write MB/s     14.92               15.29               15.21               15.10               14.84               14.84               
+
+All scenarios completed successfully!

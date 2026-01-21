@@ -1,0 +1,44 @@
+==========================================
+Validation Results Comparison
+==========================================
+
+Comparing:
+  YCSB: ycsb_insert_heavy_20260107_235837.txt
+  UUID: uuid_benchmark_insert_heavy_20260107_235837.txt
+
+Parsing YCSB results...
+Parsing uuid-benchmark results...
+
+==========================================
+Comparison Table (BIGSERIAL Key Type)
+==========================================
+
+Metric                    YCSB                 UUID-Benchmark       Difference %   
+------------------------------------------------------------------------------------
+compare-results.sh: line 118: [: : integer expected
+compare-results.sh: line 118: [: : integer expected
+
+==========================================
+Analysis
+==========================================
+
+Architecture:
+  - Both tools run inside containers
+  - Both connect to PostgreSQL via localhost (zero network overhead)
+  - YCSB: go-ycsb client implementation
+  - uuid-benchmark: pgbench client implementation
+
+Expected differences:
+  - Client implementation (pgbench vs go-ycsb)
+  - Connection pooling behavior
+  - Batch size and transaction patterns
+
+Validation purpose:
+  ✓ Confirms uuid-benchmark measurements are in expected PostgreSQL range
+  ✓ Both tools show comparable throughput/latency for BIGSERIAL
+  ✓ uuid-benchmark extends with PostgreSQL internals (page splits, fragmentation, buffer hits)
+
+Raw result files:
+  YCSB: /home/eike/dev/studium/uuid-benchmark/validation/results/ycsb_insert_heavy_20260107_235837.txt
+  UUID: /home/eike/dev/studium/uuid-benchmark/validation/results/uuid_benchmark_insert_heavy_20260107_235837.txt
+

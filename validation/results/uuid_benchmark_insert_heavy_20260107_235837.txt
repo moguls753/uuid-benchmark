@@ -1,0 +1,152 @@
+UUID Benchmark - PostgreSQL
+======================================================================
+Scenario:     mixed-insert-heavy
+Records:      100000
+Connections:  10
+Batch Size:   100
+Testing:      [bigserial uuidv4 uuidv7 ulid ulid_monotonic uuidv1]
+======================================================================
+
+
+Testing BIGSERIAL
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+
+=== Mixed Workload: Insert-Heavy (90% insert, 10% read) - bigserial ===
+Creating initial dataset (100000 records)...
+Resetting statistics...
+Running mixed workload (9000 inserts, 1000 reads, 0 updates)...
+Measuring metrics...
+Overall throughput: 25762.37 ops/sec
+Insert throughput: 0.00 rec/sec
+Read throughput: 0.00 rec/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+
+Testing UUIDV4
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+
+=== Mixed Workload: Insert-Heavy (90% insert, 10% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Resetting statistics...
+Running mixed workload (9000 inserts, 1000 reads, 0 updates)...
+Measuring metrics...
+Overall throughput: 11594.88 ops/sec
+Insert throughput: 0.00 rec/sec
+Read throughput: 0.00 rec/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+
+Testing UUIDV7
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+
+=== Mixed Workload: Insert-Heavy (90% insert, 10% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Resetting statistics...
+Running mixed workload (9000 inserts, 1000 reads, 0 updates)...
+Measuring metrics...
+Overall throughput: 10982.08 ops/sec
+Insert throughput: 0.00 rec/sec
+Read throughput: 0.00 rec/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+
+Testing ULID
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+
+=== Mixed Workload: Insert-Heavy (90% insert, 10% read) - ulid ===
+Creating initial dataset (100000 records)...
+Resetting statistics...
+Running mixed workload (9000 inserts, 1000 reads, 0 updates)...
+Measuring metrics...
+Overall throughput: 11985.42 ops/sec
+Insert throughput: 0.00 rec/sec
+Read throughput: 0.00 rec/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+
+Testing ULID_MONOTONIC
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+
+=== Mixed Workload: Insert-Heavy (90% insert, 10% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Resetting statistics...
+Running mixed workload (9000 inserts, 1000 reads, 0 updates)...
+Measuring metrics...
+Overall throughput: 11132.31 ops/sec
+Insert throughput: 0.00 rec/sec
+Read throughput: 0.00 rec/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+
+Testing UUIDV1
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+
+=== Mixed Workload: Insert-Heavy (90% insert, 10% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Resetting statistics...
+Running mixed workload (9000 inserts, 1000 reads, 0 updates)...
+Measuring metrics...
+Overall throughput: 11025.92 ops/sec
+Insert throughput: 0.00 rec/sec
+Read throughput: 0.00 rec/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+
+
+COMPARISON - Mixed Workload: Insert-Heavy (90% insert, 10% read)
+======================================================================
+Metric              BIGSERIAL           UUIDV4              UUIDV7              ULID                ULID_MONOTONIC      UUIDV1              
+----------------------------------------------------------------------
+Duration            482ms               951ms               996ms               925ms               995ms               999ms               
+Overall Throughput  25762 ops/s         11595 ops/s         10982 ops/s         11985 ops/s         11132 ops/s         11026 ops/s         
+Insert Throughput   0 rec/s             0 rec/s             0 rec/s             0 rec/s             0 rec/s             0 rec/s             
+Read Throughput     0 rec/s             0 rec/s             0 rec/s             0 rec/s             0 rec/s             0 rec/s             
+Latency p50         400µs               415µs               419µs               421µs               432µs               429µs               
+Latency p95         4.201ms             4.577ms             4.383ms             4.038ms             4.091ms             5.554ms             
+Latency p99         5.052ms             6.483ms             5.793ms             5.566ms             6.151ms             7.671ms             
+Buffer Hit Ratio    99.99%              100.00%             100.00%             100.00%             100.00%             100.00%             
+Index Hit Ratio     100.00%             100.00%             100.00%             100.00%             100.00%             100.00%             
+Index Size          2.3 MB              4.4 MB              3.3 MB              4.2 MB              4.2 MB              3.3 MB              
+Fragmentation       0.00%               49.46%              0.00%               0.00%               0.00%               0.00%               
+Read IOPS           0.0                 0.0                 0.0                 0.0                 0.0                 0.0                 
+Write IOPS          0.0                 0.0                 0.0                 0.0                 0.0                 0.0                 
+Read MB/s           0.00                0.00                0.00                0.00                0.00                0.00                
+Write MB/s          0.00                0.00                0.00                0.00                0.00                0.00                
+
+All scenarios completed successfully!

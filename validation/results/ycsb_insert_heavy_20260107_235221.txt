@@ -1,0 +1,53 @@
+Using request distribution 'uniform' a keyrange of [0 99999]
+***************** properties *****************
+"pg.user"="benchmark"
+"threadcount"="10"
+"pg.db"="uuid_benchmark"
+"insertproportion"="0.9"
+"requestdistribution"="uniform"
+"pg.password"="benchmark123"
+"table"="usertable"
+"command"="load"
+"readproportion"="0.1"
+"updateproportion"="0.0"
+"recordcount"="100000"
+"workload"="core"
+"pg.tablename"="ycsb_bigserial"
+"scanproportion"="0.0"
+"readallfields"="true"
+"pg.host"="localhost"
+"pg.port"="5432"
+"dotransactions"="false"
+"operationcount"="100000"
+**********************************************
+**********************************************
+Run finished, takes 4.362694721s
+INSERT - Takes(s): 4.4, Count: 100000, OPS: 22926.2, Avg(us): 421, Min(us): 224, Max(us): 9951, 50th(us): 393, 90th(us): 474, 95th(us): 521, 99th(us): 718, 99.9th(us): 2975, 99.99th(us): 9823
+TOTAL  - Takes(s): 4.4, Count: 100000, OPS: 22927.2, Avg(us): 421, Min(us): 224, Max(us): 9951, 50th(us): 393, 90th(us): 474, 95th(us): 521, 99th(us): 718, 99.9th(us): 2975, 99.99th(us): 9823
+Using request distribution 'uniform' a keyrange of [0 99999]
+***************** properties *****************
+"threadcount"="10"
+"command"="run"
+"pg.host"="localhost"
+"table"="usertable"
+"workload"="core"
+"pg.db"="uuid_benchmark"
+"recordcount"="100000"
+"readproportion"="0.1"
+"operationcount"="100000"
+"scanproportion"="0.0"
+"pg.password"="benchmark123"
+"insertproportion"="0.9"
+"pg.port"="5432"
+"dotransactions"="true"
+"readallfields"="true"
+"requestdistribution"="uniform"
+"updateproportion"="0.0"
+"pg.user"="benchmark"
+"pg.tablename"="ycsb_bigserial"
+**********************************************
+**********************************************
+Run finished, takes 4.019021456s
+INSERT - Takes(s): 4.0, Count: 89926, OPS: 22383.6, Avg(us): 418, Min(us): 231, Max(us): 11775, 50th(us): 393, 90th(us): 478, 95th(us): 512, 99th(us): 726, 99.9th(us): 2751, 99.99th(us): 11743
+READ   - Takes(s): 4.0, Count: 10074, OPS: 2509.1, Avg(us): 97, Min(us): 38, Max(us): 1555, 50th(us): 87, 90th(us): 131, 95th(us): 166, 99th(us): 277, 99.9th(us): 678, 99.99th(us): 1446
+TOTAL  - Takes(s): 4.0, Count: 100000, OPS: 24890.1, Avg(us): 386, Min(us): 38, Max(us): 11775, 50th(us): 390, 90th(us): 474, 95th(us): 504, 99th(us): 704, 99.9th(us): 2479, 99.99th(us): 10783

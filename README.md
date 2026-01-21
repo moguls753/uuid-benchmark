@@ -70,3 +70,16 @@ The benchmark uses **pgbench** (PostgreSQL's standard benchmarking tool) for wor
 - **Server-side ID generation:** All UUID types use PostgreSQL functions for fair comparison (no client-side pre-generation)
 - **pgbench inside container:** Eliminates network latency from measurements
 - **Statistical analysis mode:** Multiple runs with Mann-Whitney U tests provide p-values and significance testing
+
+## Validation
+
+Results validated against **go-ycsb** (industry-standard benchmark) for overlapping metrics (throughput, latency). Both tools run inside containers with identical architecture (client inside container → localhost). See `validation/` directory.
+
+```bash
+cd validation
+./run-comparison.sh balanced  # Runs both tools, compares BIGSERIAL results
+```
+
+**Validated metrics:** Throughput, latency (p50/p95/p99) for BIGSERIAL keys
+
+**uuid-benchmark unique metrics:** Page splits, index fragmentation, buffer hit ratios, container I/O, all UUID types

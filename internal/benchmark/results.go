@@ -70,6 +70,9 @@ type MixedWorkloadResult struct {
 	InsertThroughput    float64
 	ReadThroughput      float64
 	UpdateThroughput    float64
+	LatencyP50          time.Duration
+	LatencyP95          time.Duration
+	LatencyP99          time.Duration
 	BufferHitRatio      float64
 	IndexBufferHitRatio float64
 	Fragmentation       IndexFragmentationStats

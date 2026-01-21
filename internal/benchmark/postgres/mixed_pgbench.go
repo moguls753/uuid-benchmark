@@ -66,7 +66,7 @@ func (p *PostgresBenchmarker) RunMixedWorkloadPgbench(keyType string, initialDat
 
 	duration := time.Since(startTime)
 
-	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout)
+	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout, "uuid-bench-postgres")
 	if err != nil {
 		return nil, fmt.Errorf("parse pgbench output: %w", err)
 	}
@@ -100,6 +100,9 @@ func (p *PostgresBenchmarker) RunMixedWorkloadPgbench(keyType string, initialDat
 		InsertThroughput:    0,
 		ReadThroughput:      0,
 		UpdateThroughput:    0,
+		LatencyP50:          parsed.P50,
+		LatencyP95:          parsed.P95,
+		LatencyP99:          parsed.P99,
 		BufferHitRatio:      metrics.BufferHitRatio,
 		IndexBufferHitRatio: metrics.IndexBufferHitRatio,
 		Fragmentation:       metrics.Fragmentation,

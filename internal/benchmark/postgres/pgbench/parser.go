@@ -19,11 +19,14 @@ type PgbenchResult struct {
 	P99               time.Duration // 99th percentile latency
 	Transactions      int           // Number of actually processed transactions
 	Duration          time.Duration // Total duration
+	ContainerName     string        // Container name for log file parsing
 }
 
 // ParsePgbenchOutput parses the stdout from pgbench and extracts metrics
-func ParsePgbenchOutput(output string) (*PgbenchResult, error) {
-	result := &PgbenchResult{}
+func ParsePgbenchOutput(output, containerName string) (*PgbenchResult, error) {
+	result := &PgbenchResult{
+		ContainerName: containerName,
+	}
 
 	// Example pgbench output:
 	// transaction type: Custom query
@@ -130,6 +133,17 @@ func ParsePgbenchOutput(output string) (*PgbenchResult, error) {
 	}
 	if result.Transactions == 0 {
 		return nil, fmt.Errorf("failed to parse transaction count from pgbench output")
+	}
+
+	// If percentiles weren't in stdout (common case), parse from log files
+	if result.P50 == 0 && result.P95 == 0 && result.P99 == 0 && containerName != "" {
+		p50, p95, p99, err := ParseLogFilesForPercentiles(containerName)
+		if err == nil {
+			result.P50 = p50
+			result.P95 = p95
+			result.P99 = p99
+		}
+		// Silently ignore log parsing errors - percentiles are optional
 	}
 
 	return result, nil

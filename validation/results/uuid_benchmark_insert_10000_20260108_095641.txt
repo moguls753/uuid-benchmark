@@ -1,0 +1,12 @@
+UUID Benchmark - PostgreSQL
+======================================================================
+Scenario:     insert-performance
+Records:      10000
+Connections:  10
+Testing:      [bigserial uuidv4 uuidv7 ulid ulid_monotonic uuidv1]
+======================================================================
+
+
+Testing BIGSERIAL
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...

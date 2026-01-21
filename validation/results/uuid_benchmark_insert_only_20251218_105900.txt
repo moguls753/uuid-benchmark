@@ -1,0 +1,41 @@
+UUID Benchmark - PostgreSQL
+======================================================================
+Scenario:     insert-performance
+Records:      1000000
+Connections:  10
+Batch Size:   100
+Testing:      [bigserial]
+======================================================================
+
+
+Testing BIGSERIAL
+----------------------------------------------------------------------
+Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+
+Inserting 1000000 records (connections=10, batch=100)...
+Inserted 1000000 records in 10.25144071s
+Throughput: 981.50 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+
+
+COMPARISON - Insert Performance
+======================================================================
+Metric         BIGSERIAL           
+----------------------------------------------------------------------
+Duration       10.251s             
+Throughput     981 rec/s           
+Page Splits    2741                
+Index Size     21.4 MB             
+Fragmentation  0.00%               
+Leaf Density   90.01%              
+Read IOPS      0.0                 
+Write IOPS     1908.5              
+Read MB/s      0.00                
+Write MB/s     37.20               
+
+All scenarios completed successfully!

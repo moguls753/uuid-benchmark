@@ -1,0 +1,58 @@
+Using request distribution 'uniform' a keyrange of [0 999999]
+***************** properties *****************
+"pg.user"="benchmark"
+"table"="usertable"
+"operationcount"="100000"
+"recordcount"="1000000"
+"insertproportion"="1.0"
+"readallfields"="true"
+"pg.password"="benchmark123"
+"pg.db"="uuid_benchmark"
+"requestdistribution"="uniform"
+"command"="load"
+"threadcount"="10"
+"workload"="core"
+"pg.port"="5432"
+"dotransactions"="false"
+"readproportion"="0.0"
+"pg.host"="localhost"
+"scanproportion"="0.0"
+"updateproportion"="0.0"
+"pg.tablename"="ycsb_bigserial"
+**********************************************
+INSERT - Takes(s): 10.0, Count: 249086, OPS: 24912.8, Avg(us): 390, Min(us): 234, Max(us): 10367, 50th(us): 366, 90th(us): 442, 95th(us): 465, 99th(us): 659, 99.9th(us): 2913, 99.99th(us): 8751
+TOTAL  - Takes(s): 10.0, Count: 249086, OPS: 24913.7, Avg(us): 390, Min(us): 234, Max(us): 10367, 50th(us): 366, 90th(us): 442, 95th(us): 465, 99th(us): 659, 99.9th(us): 2913, 99.99th(us): 8751
+INSERT - Takes(s): 20.0, Count: 505733, OPS: 25289.0, Avg(us): 384, Min(us): 227, Max(us): 10367, 50th(us): 364, 90th(us): 437, 95th(us): 456, 99th(us): 597, 99.9th(us): 2289, 99.99th(us): 8591
+TOTAL  - Takes(s): 20.0, Count: 505733, OPS: 25289.5, Avg(us): 384, Min(us): 227, Max(us): 10367, 50th(us): 364, 90th(us): 437, 95th(us): 456, 99th(us): 597, 99.9th(us): 2289, 99.99th(us): 8591
+INSERT - Takes(s): 30.0, Count: 760121, OPS: 25338.8, Avg(us): 384, Min(us): 220, Max(us): 10663, 50th(us): 364, 90th(us): 437, 95th(us): 455, 99th(us): 586, 99.9th(us): 2149, 99.99th(us): 8599
+TOTAL  - Takes(s): 30.0, Count: 760121, OPS: 25339.1, Avg(us): 384, Min(us): 220, Max(us): 10663, 50th(us): 364, 90th(us): 437, 95th(us): 455, 99th(us): 586, 99.9th(us): 2149, 99.99th(us): 8599
+**********************************************
+Run finished, takes 39.615298539s
+INSERT - Takes(s): 39.6, Count: 1000000, OPS: 25243.9, Avg(us): 385, Min(us): 195, Max(us): 26207, 50th(us): 364, 90th(us): 437, 95th(us): 456, 99th(us): 597, 99.9th(us): 2197, 99.99th(us): 10191
+TOTAL  - Takes(s): 39.6, Count: 1000000, OPS: 25244.2, Avg(us): 385, Min(us): 195, Max(us): 26207, 50th(us): 364, 90th(us): 437, 95th(us): 456, 99th(us): 597, 99.9th(us): 2197, 99.99th(us): 10191
+Using request distribution 'uniform' a keyrange of [0 999999]
+***************** properties *****************
+"insertproportion"="1.0"
+"pg.db"="uuid_benchmark"
+"table"="usertable"
+"operationcount"="100000"
+"readproportion"="0.0"
+"pg.port"="5432"
+"updateproportion"="0.0"
+"pg.user"="benchmark"
+"scanproportion"="0.0"
+"pg.tablename"="ycsb_bigserial"
+"command"="run"
+"threadcount"="10"
+"readallfields"="true"
+"workload"="core"
+"dotransactions"="true"
+"requestdistribution"="uniform"
+"pg.host"="localhost"
+"pg.password"="benchmark123"
+"recordcount"="1000000"
+**********************************************
+**********************************************
+Run finished, takes 3.85136912s
+INSERT - Takes(s): 3.9, Count: 100000, OPS: 25972.8, Avg(us): 374, Min(us): 224, Max(us): 2389, 50th(us): 362, 90th(us): 433, 95th(us): 450, 99th(us): 540, 99.9th(us): 1292, 99.99th(us): 2137
+TOTAL  - Takes(s): 3.9, Count: 100000, OPS: 25973.3, Avg(us): 374, Min(us): 224, Max(us): 2389, 50th(us): 362, 90th(us): 433, 95th(us): 450, 99th(us): 540, 99.9th(us): 1292, 99.99th(us): 2137

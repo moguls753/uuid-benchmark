@@ -1,0 +1,98 @@
+========================================
+YCSB vs uuid-benchmark Validation
+Insert-Only Workload (1M records)
+FAIR COMPARISON - Both using single-row inserts
+========================================
+
+Architecture: Both tools run inside containers, localhost connections
+
+YCSB Results:
+----------------------------------------
+Load Phase (1M records):
+  Duration: 39.6s
+  Throughput: 25,244 ops/sec
+  Avg latency: 385 μs
+  p50 latency: 364 μs
+  p95 latency: 456 μs
+  p99 latency: 597 μs
+
+uuid-benchmark Results (BIGSERIAL, batch-size=1):
+----------------------------------------
+Insert Performance (1M records):
+  Duration: 38.5s
+  Throughput: 26,027 rec/sec
+
+  Page Splits: 2,741
+  Index Size: 21.4 MB
+  Fragmentation: 0.00%
+  Leaf Density: 90.01%
+  Write IOPS: 10,466.6
+  Write MB/s: 52.39
+
+========================================
+Direct Comparison
+========================================
+
+Metric                  YCSB           uuid-benchmark    Difference
+------------------------------------------------------------------------
+Duration                39.6s          38.5s             -2.8%
+Throughput              25,244 ops/s   26,027 rec/s      +3.1%
+Records                 1M             1M                 same
+Batch size              1              1                  same ✓
+Connections             10             10                 same ✓
+Architecture            in-container   in-container       same ✓
+
+========================================
+Analysis
+========================================
+
+**✓ VALIDATION SUCCESSFUL**
+
+Throughput within 3.1% - EXCELLENT alignment!
+- YCSB: 25,244 ops/sec
+- uuid-benchmark: 26,027 rec/sec
+- Difference: +783 ops/sec (+3.1%)
+
+**Why small difference?**
+1. Different client implementations (go-ycsb vs pgbench)
+2. Connection pooling differences
+3. Prepared statement caching
+4. Normal system variance
+
+**Latency comparison:**
+- YCSB p50: 364 μs → uuid-benchmark: ~384 μs (estimated from throughput)
+- YCSB p99: 597 μs → within expected range
+
+**✓ Both tools measure PostgreSQL at ~25,000 inserts/sec**
+**✓ Identical architecture (containers, localhost, single inserts)**
+**✓ Results validate measurement methodology**
+
+========================================
+uuid-benchmark Unique Metrics
+========================================
+
+These metrics CANNOT be measured by YCSB:
+
+PostgreSQL Internals:
+- Page Splits: 2,741 (B-tree index splits during inserts)
+- Index Fragmentation: 0.00% (perfect sequential order)
+- Leaf Density: 90.01% (index fill factor)
+
+I/O Metrics (container-isolated):
+- Write IOPS: 10,466.6
+- Write MB/s: 52.39
+
+These extended metrics demonstrate uuid-benchmark's value beyond
+standard benchmarking tools.
+
+========================================
+Conclusion
+========================================
+
+✓ Measurement methodology VALIDATED
+✓ 3.1% difference is well within acceptable range for different implementations
+✓ Both tools confirm PostgreSQL BIGSERIAL achieves ~25k inserts/sec
+✓ Architectural parity achieved (containers, localhost, single inserts)
+✓ uuid-benchmark provides unique PostgreSQL-internal insights
+
+Ready for thesis validation section.

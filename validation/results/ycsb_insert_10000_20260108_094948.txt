@@ -1,0 +1,52 @@
+Using request distribution 'uniform' a keyrange of [0 9999]
+***************** properties *****************
+"threadcount"="10"
+"dotransactions"="false"
+"recordcount"="10000"
+"pg.db"="uuid_benchmark"
+"workload"="core"
+"scanproportion"="0.0"
+"pg.host"="localhost"
+"operationcount"="10000"
+"command"="load"
+"pg.password"="benchmark123"
+"pg.tablename"="ycsb_bigserial"
+"readallfields"="true"
+"updateproportion"="0.0"
+"pg.user"="benchmark"
+"table"="usertable"
+"readproportion"="0.0"
+"pg.port"="5432"
+"requestdistribution"="uniform"
+"insertproportion"="1.0"
+**********************************************
+**********************************************
+Run finished, takes 523.818833ms
+INSERT - Takes(s): 0.5, Count: 10000, OPS: 19125.8, Avg(us): 495, Min(us): 283, Max(us): 8655, 50th(us): 450, 90th(us): 634, 95th(us): 689, 99th(us): 937, 99.9th(us): 2399, 99.99th(us): 8639
+TOTAL  - Takes(s): 0.5, Count: 10000, OPS: 19135.0, Avg(us): 495, Min(us): 283, Max(us): 8655, 50th(us): 450, 90th(us): 634, 95th(us): 689, 99th(us): 937, 99.9th(us): 2399, 99.99th(us): 8639
+Using request distribution 'uniform' a keyrange of [0 9999]
+***************** properties *****************
+"operationcount"="10000"
+"pg.port"="5432"
+"recordcount"="10000"
+"command"="run"
+"table"="usertable"
+"pg.db"="uuid_benchmark"
+"dotransactions"="true"
+"scanproportion"="0.0"
+"pg.user"="benchmark"
+"threadcount"="10"
+"requestdistribution"="uniform"
+"readallfields"="true"
+"workload"="core"
+"insertproportion"="1.0"
+"pg.password"="benchmark123"
+"pg.host"="localhost"
+"readproportion"="0.0"
+"updateproportion"="0.0"
+"pg.tablename"="ycsb_bigserial"
+**********************************************
+**********************************************
+Run finished, takes 509.746672ms
+INSERT - Takes(s): 0.5, Count: 10000, OPS: 20003.9, Avg(us): 482, Min(us): 269, Max(us): 15407, 50th(us): 426, 90th(us): 609, 95th(us): 663, 99th(us): 985, 99.9th(us): 9943, 99.99th(us): 15375
+TOTAL  - Takes(s): 0.5, Count: 10000, OPS: 20003.8, Avg(us): 482, Min(us): 269, Max(us): 15407, 50th(us): 426, 90th(us): 609, 95th(us): 663, 99th(us): 985, 99.9th(us): 9943, 99.99th(us): 15375

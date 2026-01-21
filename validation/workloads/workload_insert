@@ -1,0 +1,15 @@
+# YCSB Workload: Insert Only (matches insert-performance scenario)
+# 100% insert operations
+
+recordcount=10000
+operationcount=10000
+workload=core
+
+readallfields=true
+
+readproportion=0.0
+updateproportion=0.0
+scanproportion=0.0
+insertproportion=1.0
+
+requestdistribution=uniform
