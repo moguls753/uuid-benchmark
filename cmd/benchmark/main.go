@@ -17,7 +17,44 @@ import (
 
 var allKeyTypes = []string{"bigserial", "uuidv4", "uuidv7", "ulid", "ulid_monotonic", "uuidv1"}
 
+// Database configuration
+type dbConfig struct {
+	name          string
+	containerCfg  container.Config
+	insertFunc    func(string, int, int, int) (*benchmark.InsertPerformanceResult, error)
+	readFunc      func(string, int, int) (*benchmark.ReadAfterFragmentationResult, error)
+	updateFunc    func(string, int, int, int) (*benchmark.UpdatePerformanceResult, error)
+	mixedInsert   func(string, int, int, int) (*benchmark.MixedWorkloadResult, error)
+	mixedRead     func(string, int, int) (*benchmark.MixedWorkloadResult, error)
+	mixedBalanced func(string, int, int) (*benchmark.MixedWorkloadResult, error)
+}
+
+var postgresDB = dbConfig{
+	name:          "PostgreSQL",
+	containerCfg:  container.PostgresConfig,
+	insertFunc:    runner.InsertPerformance,
+	readFunc:      runner.ReadAfterFragmentation,
+	updateFunc:    runner.UpdatePerformance,
+	mixedInsert:   runner.MixedWorkloadInsertHeavy,
+	mixedRead:     runner.MixedWorkloadReadHeavy,
+	mixedBalanced: runner.MixedWorkloadBalanced,
+}
+
+var mysqlDB = dbConfig{
+	name:          "MySQL",
+	containerCfg:  container.MySQLConfig,
+	insertFunc:    runner.MySQLInsertPerformance,
+	readFunc:      runner.MySQLReadAfterFragmentation,
+	updateFunc:    runner.MySQLUpdatePerformance,
+	mixedInsert:   runner.MySQLMixedWorkloadInsertHeavy,
+	mixedRead:     runner.MySQLMixedWorkloadReadHeavy,
+	mixedBalanced: runner.MySQLMixedWorkloadBalanced,
+}
+
+var currentDB dbConfig
+
 func main() {
+	database := flag.String("database", "postgres", "Database to benchmark (postgres, mysql)")
 	scenario := flag.String("scenario", "insert-performance", "Scenario to run (insert-performance, read-after-fragmentation, update-performance, mixed-insert-heavy, mixed-read-heavy, mixed-balanced, all)")
 	numRecords := flag.Int("num-records", 100000, "Number of records for insert operations")
 	numOps := flag.Int("num-ops", 10000, "Number of operations for read/update/mixed scenarios")
@@ -27,8 +64,19 @@ func main() {
 	output := flag.String("output", "", "Output CSV file for statistical results (only in multi-run mode)")
 	flag.Parse()
 
-	fmt.Println("UUID Benchmark - PostgreSQL")
+	// Select database configuration
+	switch strings.ToLower(*database) {
+	case "postgres", "postgresql", "pg":
+		currentDB = postgresDB
+	case "mysql", "my":
+		currentDB = mysqlDB
+	default:
+		log.Fatalf("Invalid database: %s (use 'postgres' or 'mysql')", *database)
+	}
+
+	fmt.Printf("UUID Benchmark - %s\n", currentDB.name)
 	fmt.Println(strings.Repeat("=", 70))
+	fmt.Printf("Database:     %s\n", currentDB.name)
 	fmt.Printf("Scenario:     %s\n", *scenario)
 	fmt.Printf("Records:      %d\n", *numRecords)
 	if *connections > 1 {
@@ -82,16 +130,16 @@ func runInsertPerformance(numRecords, batchSize, connections, numRuns int, outpu
 			fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 			fmt.Println(strings.Repeat("-", 70))
 
-			container.Start(container.PostgresConfig)
+			container.Start(currentDB.containerCfg)
 
-			result, err := runner.InsertPerformance(keyType, numRecords, batchSize, connections)
+			result, err := currentDB.insertFunc(keyType, numRecords, batchSize, connections)
 			if err != nil {
-				container.Stop(container.PostgresConfig.ComposeFile)
+				container.Stop(currentDB.containerCfg.ComposeFile)
 				log.Fatalf("Scenario failed for %s: %v", keyType, err)
 			}
 
 			results[keyType] = result
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 		}
 
 		display.InsertPerformance(results, allKeyTypes, connections, batchSize)
@@ -107,16 +155,16 @@ func runInsertPerformance(numRecords, batchSize, connections, numRuns int, outpu
 			for i := 0; i < numRuns; i++ {
 				fmt.Printf("  Run %d/%d... ", i+1, numRuns)
 
-				container.Start(container.PostgresConfig)
+				container.Start(currentDB.containerCfg)
 
-				result, err := runner.InsertPerformance(keyType, numRecords, batchSize, connections)
+				result, err := currentDB.insertFunc(keyType, numRecords, batchSize, connections)
 				if err != nil {
-					container.Stop(container.PostgresConfig.ComposeFile)
+					container.Stop(currentDB.containerCfg.ComposeFile)
 					log.Fatalf("Run %d failed for %s: %v", i+1, keyType, err)
 				}
 
 				runs[i] = result
-				container.Stop(container.PostgresConfig.ComposeFile)
+				container.Stop(currentDB.containerCfg.ComposeFile)
 
 				fmt.Println("done")
 			}
@@ -205,16 +253,16 @@ func runReadAfterFragmentation(numRecords, numOps, numRuns int) {
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.ReadAfterFragmentation(keyType, numRecords, numOps)
+		result, err := currentDB.readFunc(keyType, numRecords, numOps)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	display.ReadAfterFragmentation(results, allKeyTypes)
@@ -227,16 +275,16 @@ func runUpdatePerformance(numRecords, numOps, batchSize, numRuns int) {
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.UpdatePerformance(keyType, numRecords, numOps, batchSize)
+		result, err := currentDB.updateFunc(keyType, numRecords, numOps, batchSize)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	display.UpdatePerformance(results, allKeyTypes)
@@ -249,16 +297,16 @@ func runMixedWorkloadInsertHeavy(totalOps, connections, batchSize, numRuns int) 
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.MixedWorkloadInsertHeavy(keyType, totalOps, connections, batchSize)
+		result, err := currentDB.mixedInsert(keyType, totalOps, connections, batchSize)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	display.MixedWorkload(results, allKeyTypes, "Insert-Heavy (90% insert, 10% read)")
@@ -271,16 +319,16 @@ func runMixedWorkloadReadHeavy(totalOps, connections, numRuns int) {
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.MixedWorkloadReadHeavy(keyType, totalOps, connections)
+		result, err := currentDB.mixedRead(keyType, totalOps, connections)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	display.MixedWorkload(results, allKeyTypes, "Read-Heavy (10% insert, 90% read)")
@@ -293,16 +341,16 @@ func runMixedWorkloadBalanced(totalOps, connections, numRuns int) {
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.MixedWorkloadBalanced(keyType, totalOps, connections)
+		result, err := currentDB.mixedBalanced(keyType, totalOps, connections)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	display.MixedWorkload(results, allKeyTypes, "Balanced (50% insert, 30% read, 20% update)")
@@ -316,16 +364,16 @@ func collectInsertPerformanceResults(numRecords, batchSize, connections int) map
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.InsertPerformance(keyType, numRecords, batchSize, connections)
+		result, err := currentDB.insertFunc(keyType, numRecords, batchSize, connections)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	return results
@@ -338,16 +386,16 @@ func collectReadAfterFragmentationResults(numRecords, numOps int) map[string]*be
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.ReadAfterFragmentation(keyType, numRecords, numOps)
+		result, err := currentDB.readFunc(keyType, numRecords, numOps)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	return results
@@ -360,16 +408,16 @@ func collectUpdatePerformanceResults(numRecords, numOps, batchSize int) map[stri
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.UpdatePerformance(keyType, numRecords, numOps, batchSize)
+		result, err := currentDB.updateFunc(keyType, numRecords, numOps, batchSize)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	return results
@@ -382,16 +430,16 @@ func collectMixedWorkloadInsertHeavyResults(totalOps, connections, batchSize int
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.MixedWorkloadInsertHeavy(keyType, totalOps, connections, batchSize)
+		result, err := currentDB.mixedInsert(keyType, totalOps, connections, batchSize)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	return results
@@ -404,16 +452,16 @@ func collectMixedWorkloadReadHeavyResults(totalOps, connections int) map[string]
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.MixedWorkloadReadHeavy(keyType, totalOps, connections)
+		result, err := currentDB.mixedRead(keyType, totalOps, connections)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	return results
@@ -426,16 +474,16 @@ func collectMixedWorkloadBalancedResults(totalOps, connections int) map[string]*
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
 		fmt.Println(strings.Repeat("-", 70))
 
-		container.Start(container.PostgresConfig)
+		container.Start(currentDB.containerCfg)
 
-		result, err := runner.MixedWorkloadBalanced(keyType, totalOps, connections)
+		result, err := currentDB.mixedBalanced(keyType, totalOps, connections)
 		if err != nil {
-			container.Stop(container.PostgresConfig.ComposeFile)
+			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
 		}
 
 		results[keyType] = result
-		container.Stop(container.PostgresConfig.ComposeFile)
+		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
 	return results

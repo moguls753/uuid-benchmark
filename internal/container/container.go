@@ -5,6 +5,7 @@ import (
 	"log"
 	"os/exec"
 
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/mysql"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres"
 )
 
@@ -18,6 +19,12 @@ var PostgresConfig = Config{
 	Name:         "PostgreSQL",
 	ComposeFile:  "docker/docker-compose.postgres.yml",
 	WaitForReady: postgres.WaitForReady,
+}
+
+var MySQLConfig = Config{
+	Name:         "MySQL",
+	ComposeFile:  "docker/docker-compose.mysql.yml",
+	WaitForReady: mysql.WaitForReady,
 }
 
 func Start(cfg Config) {
@@ -34,7 +41,7 @@ func Start(cfg Config) {
 		log.Fatalf("%s failed to start: %v", cfg.Name, err)
 	}
 
-	fmt.Println("Container ready\n")
+	fmt.Println("Container ready")
 }
 
 func Stop(composeFile string) {

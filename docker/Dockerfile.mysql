@@ -1,0 +1,8 @@
+FROM mysql:8-debian
+
+# Remove MySQL repo that has GPG issues, install sysbench from Debian repos
+RUN rm -f /etc/apt/sources.list.d/mysql.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        sysbench \
+    && rm -rf /var/lib/apt/lists/*
