@@ -119,21 +119,6 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 
 	// Reconciliation multi-block writes: pages split into multiple on-disk
 	// blocks during checkpoint. Triggered by fsync in MeasureMetrics.
-	// Debug: trace where getWiredTigerStat fails
-	if wt, ok := statusAfter["wiredTiger"]; !ok {
-		fmt.Println("  DEBUG: wiredTiger key missing from serverStatus")
-	} else if wtMap, ok := wt.(bson.M); !ok {
-		fmt.Printf("  DEBUG: wiredTiger is %T, not bson.M\n", wt)
-	} else if sec, ok := wtMap["reconciliation"]; !ok {
-		fmt.Println("  DEBUG: reconciliation key missing from wiredTiger")
-	} else if secMap, ok := sec.(bson.M); !ok {
-		fmt.Printf("  DEBUG: reconciliation is %T, not bson.M\n", sec)
-	} else if val, ok := secMap["leaf page multi-block writes"]; !ok {
-		fmt.Println("  DEBUG: 'leaf page multi-block writes' key missing")
-	} else {
-		fmt.Printf("  DEBUG: stat found, type=%T value=%v\n", val, val)
-	}
-
 	leafBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "leaf page multi-block writes")
 	leafAfter := getWiredTigerStat(statusAfter, "reconciliation", "leaf page multi-block writes")
 	intBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "internal page multi-block writes")
@@ -180,23 +165,32 @@ func getWiredTigerStat(status bson.M, section, statName string) int64 {
 	if !ok {
 		return 0
 	}
-	wtMap, ok := wt.(bson.M)
-	if !ok {
+	secVal := bsonLookup(wt, section)
+	if secVal == nil {
 		return 0
 	}
-	sec, ok := wtMap[section]
-	if !ok {
-		return 0
-	}
-	secMap, ok := sec.(bson.M)
-	if !ok {
-		return 0
-	}
-	val, ok := secMap[statName]
-	if !ok {
+	val := bsonLookup(secVal, statName)
+	if val == nil {
 		return 0
 	}
 	return toInt64(val)
+}
+
+// bsonLookup finds a key in a bson.M or bson.D value.
+// The MongoDB Go driver v2 decodes nested documents as bson.D (ordered),
+// not bson.M (map), so we must handle both types.
+func bsonLookup(doc any, key string) any {
+	switch d := doc.(type) {
+	case bson.M:
+		return d[key]
+	case bson.D:
+		for _, elem := range d {
+			if elem.Key == key {
+				return elem.Value
+			}
+		}
+	}
+	return nil
 }
 
 
