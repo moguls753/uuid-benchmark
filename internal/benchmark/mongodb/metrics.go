@@ -119,6 +119,21 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 
 	// Reconciliation multi-block writes: pages split into multiple on-disk
 	// blocks during checkpoint. Triggered by fsync in MeasureMetrics.
+	// Debug: trace where getWiredTigerStat fails
+	if wt, ok := statusAfter["wiredTiger"]; !ok {
+		fmt.Println("  DEBUG: wiredTiger key missing from serverStatus")
+	} else if wtMap, ok := wt.(bson.M); !ok {
+		fmt.Printf("  DEBUG: wiredTiger is %T, not bson.M\n", wt)
+	} else if sec, ok := wtMap["reconciliation"]; !ok {
+		fmt.Println("  DEBUG: reconciliation key missing from wiredTiger")
+	} else if secMap, ok := sec.(bson.M); !ok {
+		fmt.Printf("  DEBUG: reconciliation is %T, not bson.M\n", sec)
+	} else if val, ok := secMap["leaf page multi-block writes"]; !ok {
+		fmt.Println("  DEBUG: 'leaf page multi-block writes' key missing")
+	} else {
+		fmt.Printf("  DEBUG: stat found, type=%T value=%v\n", val, val)
+	}
+
 	leafBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "leaf page multi-block writes")
 	leafAfter := getWiredTigerStat(statusAfter, "reconciliation", "leaf page multi-block writes")
 	intBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "internal page multi-block writes")
