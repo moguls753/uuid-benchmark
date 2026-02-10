@@ -32,6 +32,7 @@ func (m *MongoDBBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, error
 		result.Fragmentation = fragStats
 	}
 
+	fmt.Printf("  DEBUG: metricsBefore is nil: %v\n", m.metricsBefore == nil)
 	pageSplits, err := m.countPageSplits()
 	if err != nil {
 		fmt.Printf("Warning: Could not count page splits: %v\n", err)
