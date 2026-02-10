@@ -119,11 +119,15 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 
 	// Reconciliation multi-block writes: pages split into multiple on-disk
 	// blocks during checkpoint. Triggered by fsync in MeasureMetrics.
-	splitsBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "leaf page multi-block writes") +
-		getWiredTigerStat(m.metricsBefore, "reconciliation", "internal page multi-block writes")
+	leafBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "leaf page multi-block writes")
+	leafAfter := getWiredTigerStat(statusAfter, "reconciliation", "leaf page multi-block writes")
+	intBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "internal page multi-block writes")
+	intAfter := getWiredTigerStat(statusAfter, "reconciliation", "internal page multi-block writes")
+	fmt.Printf("  Reconciliation: leaf before=%d after=%d, internal before=%d after=%d\n",
+		leafBefore, leafAfter, intBefore, intAfter)
 
-	splitsAfter := getWiredTigerStat(statusAfter, "reconciliation", "leaf page multi-block writes") +
-		getWiredTigerStat(statusAfter, "reconciliation", "internal page multi-block writes")
+	splitsBefore := leafBefore + intBefore
+	splitsAfter := leafAfter + intAfter
 
 	delta := splitsAfter - splitsBefore
 	if delta < 0 {
