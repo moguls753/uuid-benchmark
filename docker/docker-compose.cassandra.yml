@@ -19,8 +19,8 @@ services:
           cpus: '4'
           memory: 8G
         reservations:
-          cpus: '2'
-          memory: 4G
+          cpus: '4'
+          memory: 8G
     networks:
       - benchmark_network
 

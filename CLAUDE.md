@@ -1,12 +1,14 @@
-# CLAUDE.md
+# UUID Benchmark
 
 ## Project Purpose
 
-Bachelor thesis benchmarking UUID performance (UUIDv1, UUIDv4, UUIDv7, ULID, ULID monotonic) vs sequential integer keys (BIGSERIAL/AUTO_INCREMENT) across multiple databases. Focus on measuring:
-- Page splits and index fragmentation
+Bachelor thesis benchmarking UUID performance (UUIDv1, UUIDv4, UUIDv7, ULID, ULID monotonic) vs sequential integer keys (BIGSERIAL/AUTO_INCREMENT). The thesis proposal (submitted to FernUniversität in Hagen) targets 4 database systems — PostgreSQL, MySQL, MongoDB, Cassandra — to address the research gap of missing cross-database and cross-architecture (B-tree vs LSM-tree) UUID performance evaluations. Currently PostgreSQL and MySQL are implemented; MongoDB and Cassandra are planned.
+
+Focus on measuring:
+- Page splits and index fragmentation (B-tree DBs) / compaction overhead (LSM-tree)
 - Disk usage (table/index size)
 - Query performance (throughput, latency percentiles p50/p95/p99)
-- Memory efficiency (buffer pool hit ratios)
+- Memory efficiency (buffer pool / cache hit ratios)
 - I/O metrics (IOPS, throughput via cgroup v2)
 
 ## Implementation Status
@@ -17,13 +19,39 @@ Bachelor thesis benchmarking UUID performance (UUIDv1, UUIDv4, UUIDv7, ULID, ULI
 - Statistical analysis (Mann-Whitney U, median, mean, stddev, CV, multi-run mode)
 - CSV export (summary stats + raw per-run data)
 - Docker orchestration (fresh container per UUID type for isolation)
+- YCSB validation (BIGSERIAL throughput/latency matches within ~8%)
 
 **Not implemented:**
-- Cassandra: Docker Compose config exists (`docker/docker-compose.cassandra.yml`), no Go code
-- MongoDB: Docker Compose config exists (`docker/docker-compose.mongo.yml`), no Go code
+- MongoDB: Docker Compose config exists (`docker/docker-compose.mongo.yml`), no Go code. Approach: custom Go workload binary inside container (see MongoDB section below)
+- Cassandra: Docker Compose config exists (`docker/docker-compose.cassandra.yml`), no Go code. Approach: custom Go workload binary inside container (see Cassandra section below)
 
 **Known limitation:**
 - MySQL UUIDv7/ULID generation is NOT time-ordered. Sysbench Lua scripts use `sysbench.rand.unique()` (random bytes), not proper UUID libraries. In MySQL benchmarks, UUIDv7 and ULID behave like UUIDv4.
+
+## Remaining Implementation Roadmap
+
+**Phase 1: Shared workload binary infrastructure**
+- Build `cmd/workload/main.go` — a standalone Go binary that accepts CLI flags (db-type, operation, num-records, num-ops, threads, key-type, connection-string) and outputs JSON results (throughput, p50/p95/p99, duration)
+- Compile as static binary (`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build`)
+- Pattern: `docker cp` binary into container → `docker exec` → parse JSON stdout
+- Proper UUID generation using Go libraries (`github.com/google/uuid` for v4/v7, `github.com/oklog/ulid` for ULID) — fixes the MySQL limitation where sysbench used random bytes
+
+**Phase 2: MongoDB implementation**
+- `internal/benchmark/mongodb/` — MongoDBBenchmarker struct, connection, metrics collection
+- `internal/runner/mongodb.go` — scenario orchestration (same pattern as postgres.go/mysql.go)
+- Metrics via `db.serverStatus()` and `db.collection.stats()` from Go driver
+- Update `cmd/benchmark/main.go` with `mongodbDB` config entry
+
+**Phase 3: Cassandra implementation**
+- `internal/benchmark/cassandra/` — CassandraBenchmarker struct, connection, metrics collection
+- `internal/runner/cassandra.go` — scenario orchestration
+- Metrics via `nodetool tablestats` (parsed from `docker exec` output)
+- Update `cmd/benchmark/main.go` with `cassandraDB` config entry
+
+**Phase 4: Benchmark runs and thesis**
+- Full benchmark runs at scale (1M, 10M, 100M records) across all 4 databases
+- 3+ runs per configuration for statistical significance
+- Data analysis, visualization, thesis writing
 
 ## Build & Run
 
@@ -46,7 +74,7 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-database` | `postgres` | Database to test: `postgres`, `mysql` |
+| `-database` | `postgres` | Database to test: `postgres`, `mysql` (planned: `mongodb`, `cassandra`) |
 | `-scenario` | `insert-performance` | Scenario: `insert-performance`, `read-after-fragmentation`, `update-performance`, `mixed-insert-heavy`, `mixed-read-heavy`, `mixed-balanced`, `all` |
 | `-num-records` | `100000` | Dataset size for insert operations |
 | `-num-ops` | `10000` | Number of operations for read/update/mixed scenarios |
@@ -60,13 +88,21 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 ## Architecture
 
 ```
-cmd/benchmark/
-└── main.go                          # CLI, orchestration loop, container lifecycle
+cmd/
+├── benchmark/
+│   └── main.go                          # CLI, orchestration loop, container lifecycle
+└── workload/
+    └── main.go                          # Standalone workload binary for MongoDB/Cassandra
+                                         # Compiled static, docker cp'd into container
+                                         # Accepts: --db-type, --op, --num-records, --key-type, etc.
+                                         # Outputs: JSON (throughput, p50/p95/p99, duration)
 
 internal/
 ├── runner/
 │   ├── postgres.go                  # PostgreSQL scenario orchestration
-│   └── mysql.go                     # MySQL scenario orchestration
+│   ├── mysql.go                     # MySQL scenario orchestration
+│   ├── mongodb.go                   # MongoDB scenario orchestration (planned)
+│   └── cassandra.go                 # Cassandra scenario orchestration (planned)
 ├── benchmark/
 │   ├── benchmark.go                 # Shared interfaces
 │   ├── results.go                   # Result structs (InsertPerformanceResult, etc.)
@@ -96,6 +132,25 @@ internal/
 │   │       ├── executor.go          # sysbench CLI wrapper (runs inside container)
 │   │       ├── parser.go            # Parse sysbench output
 │   │       └── scripts.go           # Generate Lua scripts per UUID type
+│   ├── mongodb/                         # (planned)
+│   │   ├── mongodb.go                   # MongoDBBenchmarker struct
+│   │   ├── connection.go               # DB setup, collection creation, WaitForReady
+│   │   ├── metrics.go                   # WiredTiger stats, cache hit ratio, fragmentation
+│   │   ├── insert.go                    # Insert workload via workload binary
+│   │   ├── read.go                      # Read workload via workload binary
+│   │   ├── update.go                    # Update workload via workload binary
+│   │   └── mixed.go                     # Mixed workloads via workload binary
+│   ├── cassandra/                       # (planned)
+│   │   ├── cassandra.go                 # CassandraBenchmarker struct
+│   │   ├── connection.go               # DB setup, keyspace/table creation, WaitForReady
+│   │   ├── metrics.go                   # nodetool tablestats parsing, compaction metrics
+│   │   ├── insert.go                    # Insert workload via workload binary
+│   │   ├── read.go                      # Read workload via workload binary
+│   │   ├── update.go                    # Update workload via workload binary
+│   │   └── mixed.go                     # Mixed workloads via workload binary
+│   ├── workload/
+│   │   ├── executor.go                  # Build, docker cp, docker exec workload binary
+│   │   └── parser.go                    # Parse JSON output from workload binary
 │   └── statistics/
 │       ├── stats.go                 # Median, Mean, StdDev, CV, Calculate()
 │       └── hypothesis.go            # Mann-Whitney U test, p-values, Compare()
@@ -124,7 +179,9 @@ display.ComparisonTable(results)
 
 **Fresh container per UUID type** ensures isolated, reproducible measurements. WAL accumulation (PostgreSQL) or innodb_metrics counters (MySQL) from previous types would contaminate results.
 
-**Workload execution inside containers** -- pgbench and sysbench run inside the Docker container (localhost connection, zero network overhead). Go orchestrates from outside.
+**Workload execution inside containers** -- pgbench, sysbench, and the custom Go workload binary all run inside Docker containers (localhost connection, zero network overhead). Go orchestrator manages lifecycle from outside.
+
+**Shared workload binary for NoSQL databases** -- MongoDB and Cassandra use a single `cmd/workload/main.go` binary compiled statically (`CGO_ENABLED=0`), `docker cp`'d into the container, and executed via `docker exec`. This binary handles proper UUID generation using Go libraries (fixing the MySQL limitation where sysbench used random bytes) and outputs JSON results for the orchestrator to parse.
 
 ## Scenarios
 
@@ -144,7 +201,7 @@ display.ComparisonTable(results)
 **Docker:** `docker/docker-compose.postgres.yml` + `docker/Dockerfile.postgres`
 - Base: `postgres:18`, custom build with Rust toolchain for pgx_ulid
 - Container: `uuid-bench-postgres`, port `5432`
-- Config: `checkpoint_timeout=1h`, `max_wal_size=10GB`, 4-8GB memory, 4 CPUs
+- Config: `checkpoint_timeout=1h`, `max_wal_size=10GB`, 8GB memory, 4 CPUs
 
 **Extensions:**
 - `pgstattuple` -- index fragmentation (`pgstatindex()` → `leaf_fragmentation`, `avg_leaf_density`)
@@ -191,17 +248,150 @@ FROM pg_stat_database WHERE datname = 'uuid_benchmark'
 
 **Connection:** `localhost:3307`, user `benchmark`, password `benchmark123`, database `uuid_benchmark`
 
-### Cassandra (not implemented)
-
-**Docker:** `docker/docker-compose.cassandra.yml`
-- Base: `cassandra:5`, port `9042` (CQL) / `7199` (JMX)
-- No Go benchmark code exists
-
-### MongoDB (not implemented)
+### MongoDB (not implemented — planned)
 
 **Docker:** `docker/docker-compose.mongo.yml`
-- Base: `mongo:8`, port `27017`
-- No Go benchmark code exists
+- Base: `mongo:8` (WiredTiger storage engine, B-tree indexes)
+- Container: `uuid-bench-mongodb`, port `27017`
+- Config: 4 CPUs, 8GB memory limit, 4GB reservation
+
+**Storage engine:** WiredTiger with B-tree indexes. The `_id` field always gets a mandatory B-tree index. Non-clustered (data and index are separate structures, like PostgreSQL). WiredTiger has its own cache separate from OS page cache.
+
+**Workload tool:** Custom Go workload binary (`cmd/workload/main.go`). No standard MongoDB benchmark tool supports custom `_id` generation with proper UUID types:
+- `mongosh`: Single-threaded, `benchRun()` removed in MongoDB 6.0+
+- `mongo-perf`: Unmaintained since 2019, needs legacy shell
+- `YCSB`: Keys are strings (`user123`), would need fork for Binary UUID `_id`
+- Custom Go binary: Full control, proper BSON Binary types, runs inside container
+
+**UUID storage:** BSON `Binary(subtype 0x04)` for all UUID types (16 bytes, efficient). ULID stored as `Binary(subtype 0x00)`. ObjectId (12 bytes, time-ordered) as additional MongoDB-native comparison point.
+
+**UUID generation:** Client-side via Go libraries inside the workload binary. Proper time-ordered generation for UUIDv7/ULID using `github.com/google/uuid` and `github.com/oklog/ulid`.
+
+**Key types in MongoDB:**
+
+| Key Type | BSON Type | Storage | Time-ordered? |
+|----------|-----------|---------|--------------|
+| Sequential int | Int64 | 8 bytes | Yes |
+| ObjectId | ObjectId | 12 bytes | Yes (native MongoDB) |
+| UUIDv1 | Binary(0x04) | 16 bytes | Partially (bad byte order) |
+| UUIDv4 | Binary(0x04) | 16 bytes | No (random) |
+| UUIDv7 | Binary(0x04) | 16 bytes | Yes |
+| ULID | Binary(0x00) | 16 bytes | Yes |
+| ULID monotonic | Binary(0x00) | 16 bytes | Yes |
+
+**Metrics collection** (via Go driver calling MongoDB commands from inside container):
+
+```javascript
+// Page splits (WiredTiger cache stats — delta before/after workload)
+db.serverStatus().wiredTiger.cache["in-memory page splits"]
+db.serverStatus().wiredTiger.cache["pages split during eviction"]
+
+// Cache hit ratio (analogous to buffer pool hit ratio)
+pages_requested = wiredTiger.cache["pages requested from the cache"]
+pages_read = wiredTiger.cache["pages read into cache"]
+hit_ratio = 1 - (pages_read / pages_requested)
+
+// Index fragmentation proxy
+db.bench.stats().freeStorageSize / db.bench.stats().storageSize
+
+// Collection and index sizes
+db.bench.stats().storageSize       // compressed on-disk data size
+db.bench.stats().totalIndexSize    // total index size
+db.bench.stats().indexSizes        // per-index breakdown
+
+// B-tree depth (unique to MongoDB — PG/MySQL don't expose this)
+db.bench.stats({indexDetails: true})  // btree["maximum tree depth"] per index
+
+// Leaf pages per index
+db.bench.stats({indexDetails: true})  // btree["row-store leaf pages"]
+```
+
+**Connection:** `localhost:27017`, user `benchmark`, password `benchmark123`, database `uuid_benchmark`
+
+### Cassandra (not implemented — planned)
+
+**Docker:** `docker/docker-compose.cassandra.yml`
+- Base: `cassandra:5` (LSM-tree storage engine)
+- Container: `uuid-bench-cassandra`, port `9042` (CQL) / `7199` (JMX)
+- Config: 4 CPUs, 8GB memory limit, 4G heap (`MAX_HEAP_SIZE`), 1G new gen (`HEAP_NEWSIZE`)
+
+**Storage engine:** LSM-tree. Fundamentally different from B-tree databases:
+- Writes go to in-memory MemTable → flushed to immutable SSTables on disk
+- No page splits during writes (append-only)
+- Compaction merges SSTables periodically (the key overhead metric, replaces page splits)
+- Read amplification: may need to check multiple SSTables per read (bloom filters help)
+
+**Workload tool:** Custom Go workload binary (`cmd/workload/main.go`), same as MongoDB. `cassandra-stress` (built-in) supports `uuid`, `timeuuid`, and `bigint` natively but CANNOT generate UUIDv7 or ULID — same limitation as sysbench. The Go binary gives consistent methodology across all databases.
+
+**UUID storage and types:**
+
+| Key Type | CQL Type | Storage | Time-ordered in Cassandra? |
+|----------|----------|---------|---------------------------|
+| Sequential int | `bigint` | 8 bytes | Yes |
+| UUIDv1 | `timeuuid` | 16 bytes | Yes (native, time-sorted) |
+| UUIDv4 | `uuid` | 16 bytes | No (random, byte-order) |
+| UUIDv7 | `uuid` | 16 bytes | Yes (timestamp in MSB, byte-order = time-order) |
+| ULID | `blob` | 16 bytes | Yes (timestamp in MSB, byte-order = time-order) |
+| ULID monotonic | `blob` | 16 bytes | Yes |
+
+**UUID generation:** Client-side via Go libraries inside the workload binary.
+
+**Schema per key type:**
+```sql
+-- Example for UUIDv7
+CREATE TABLE uuid_benchmark.bench (
+    id uuid PRIMARY KEY,
+    payload blob
+) WITH compaction = {'class': 'SizeTieredCompactionStrategy'};
+
+-- Example for ULID (stored as blob, byte-order preserves time-order)
+CREATE TABLE uuid_benchmark.bench (
+    id blob PRIMARY KEY,
+    payload blob
+) WITH compaction = {'class': 'SizeTieredCompactionStrategy'};
+```
+
+**Compaction strategy:** SizeTieredCompactionStrategy (STCS) is the Cassandra default and most commonly used. STCS groups similarly-sized SSTables for compaction, which makes the impact of random vs sorted keys more visible — random keys produce SSTables with highly overlapping key ranges, forcing more compaction work. LCS (Leveled) would sort data into non-overlapping levels, potentially masking the UUID ordering effect.
+
+**Metrics collection** (via `docker exec nodetool tablestats` parsed from Go):
+
+```bash
+# Primary metric source — run before and after each workload phase
+docker exec uuid-bench-cassandra nodetool tablestats uuid_benchmark.bench
+
+# Key metrics from tablestats:
+# - SSTable count                    (more = more read amplification)
+# - Space used (live)                (actual data)
+# - Space used (total)               (total/live = space amplification ratio)
+# - Bloom filter false positives     (random keys may cause more)
+# - Bloom filter false ratio
+# - Memtable switch count            (write pressure)
+# - Local read latency / write latency (ms)
+# - Key cache hit rate               (analogous to buffer pool hit ratio)
+# - Compacted partition mean bytes
+
+# Compaction history — shows merge activity during workload
+docker exec uuid-bench-cassandra nodetool compactionhistory
+
+# Cache hit ratios
+docker exec uuid-bench-cassandra nodetool info
+# Reports: Key Cache hit rate, Row Cache hit rate
+```
+
+**Metric mapping (LSM-tree equivalents):**
+
+| B-tree Concept | Cassandra LSM-tree Equivalent | Why It Matters |
+|----------------|-------------------------------|----------------|
+| Page splits | Compaction count + bytes compacted | Random keys → more overlapping SSTables → more compaction work |
+| Fragmentation | SSTable count + space amplification ratio | More SSTables = more scattered data |
+| Buffer pool hit ratio | Key cache hit rate | Same concept — reads served from memory vs disk |
+| Leaf density | N/A | LSM-tree doesn't have B-tree leaves |
+| Index size | Bloom filter space + index summary size | Different index structure |
+| Table size | Space used (live) from tablestats | Direct comparison |
+
+**Key hypothesis:** LSM-tree architecture may be less sensitive to random UUIDs for writes (MemTable absorbs randomness), but read performance may still suffer due to higher SSTable count and read amplification with random keys.
+
+**Connection:** `localhost:9042`, keyspace `uuid_benchmark`, no authentication (Cassandra default)
 
 ## I/O Metrics
 
@@ -213,13 +403,18 @@ Uses Linux cgroup v2 for container-isolated I/O measurement:
 
 ## Cross-Database Metric Comparability
 
-| Metric | PostgreSQL | MySQL | Comparable? |
-|--------|-----------|-------|-------------|
-| Throughput (ops/sec) | pgbench | sysbench | Yes |
-| Latency (p50/p95/p99) | pgbench | sysbench | Yes |
-| Page splits | WAL analysis (exact) | innodb_metrics delta (global counter) | Yes (both count splits) |
-| Fragmentation | Physical page ordering % | B-tree overhead ratio | **No** (different definitions) |
-| Buffer pool hit ratio | pg_stat_database | performance_schema | Yes (same concept) |
-| Leaf density | pgstatindex (exact %) | Estimated 90% | **No** (MySQL doesn't expose) |
-| Disk size | pg_relation_size | information_schema | Yes (note: MySQL clustered index includes data) |
-| I/O | cgroup v2 | cgroup v2 | Yes |
+| Metric | PostgreSQL | MySQL | MongoDB | Cassandra | Comparable? |
+|--------|-----------|-------|---------|-----------|-------------|
+| Throughput (ops/sec) | pgbench | sysbench | Go workload binary | Go workload binary | Yes |
+| Latency (p50/p95/p99) | pgbench | sysbench | Go workload binary | Go workload binary | Yes |
+| Page splits / compaction | WAL analysis (exact) | innodb_metrics delta | WiredTiger cache splits delta | Compaction count + bytes | **Conceptually** (B-tree splits vs LSM compaction) |
+| Fragmentation | Physical page ordering % | B-tree overhead ratio | freeStorageSize/storageSize | SSTable count + space amplification | **No** (4 different definitions) |
+| Cache hit ratio | pg_stat_database | performance_schema | WiredTiger cache (pages requested vs read) | Key cache hit rate (nodetool info) | Yes (same concept) |
+| Leaf density | pgstatindex (exact %) | Estimated 90% | Leaf pages from indexDetails | N/A (no B-tree leaves) | **No** |
+| B-tree depth | Not exposed | Not exposed | btree["maximum tree depth"] | N/A | MongoDB-only |
+| SSTable count | N/A | N/A | N/A | nodetool tablestats | Cassandra-only |
+| Read amplification | N/A | N/A | N/A | Bloom filter false positives | Cassandra-only |
+| Disk size | pg_relation_size | information_schema | db.collection.stats() | nodetool tablestats | Yes |
+| I/O | cgroup v2 | cgroup v2 | cgroup v2 | cgroup v2 | Yes |
+
+**Note on cross-architecture comparison:** B-tree databases (PostgreSQL, MySQL, MongoDB) share comparable concepts (page splits, fragmentation, leaf density). Cassandra's LSM-tree architecture uses fundamentally different mechanisms (compaction, SSTables, bloom filters). The thesis discusses these as architecture-specific effects rather than forcing direct comparisons where they don't apply.
