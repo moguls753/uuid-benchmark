@@ -64,7 +64,7 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 | `-num-runs` | `1` | Runs per UUID type for statistical analysis |
 | `-output` | (none) | CSV file for statistical results (multi-run mode only) |
 
-**UUID Types Tested:** BIGSERIAL/AUTO_INCREMENT, UUIDv1, UUIDv4, UUIDv7, ULID (non-monotonic), ULID (monotonic)
+**UUID Types Tested:** Sequential integer (BIGSERIAL/AUTO_INCREMENT/bigint), UUIDv1, UUIDv4, UUIDv7, ULID (non-monotonic), ULID (monotonic)
 
 ## Architecture
 

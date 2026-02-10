@@ -16,7 +16,7 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/runner"
 )
 
-var allKeyTypes = []string{"bigserial", "uuidv4", "uuidv7", "ulid", "ulid_monotonic", "uuidv1"}
+var allKeyTypes = []string{"sequential", "uuidv4", "uuidv7", "ulid", "ulid_monotonic", "uuidv1"}
 
 // Database configuration
 type dbConfig struct {

@@ -64,7 +64,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 
 	var createSQL string
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BIGSERIAL PRIMARY KEY,

@@ -14,7 +14,7 @@ const (
 
 func GenerateInsertScript(keyType, tableName string) string {
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		return fmt.Sprintf(`INSERT INTO %s (data) VALUES ('test_data_' || :client_id);`, tableName)
 
 	case "uuidv4":
@@ -39,7 +39,7 @@ func GenerateInsertScript(keyType, tableName string) string {
 
 func GenerateSelectScript(keyType, tableName string) string {
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		return fmt.Sprintf(`\set id random(1, :num_records)
 SELECT * FROM %s WHERE id = :id;`, tableName)
 
@@ -64,7 +64,7 @@ WHERE %s.id = random_id.id;`, tableName, tableName, tableName)
 
 func GenerateUpdateScript(keyType, tableName string) string {
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		return fmt.Sprintf(`\set id random(1, :num_records)
 UPDATE %s SET data = 'updated_' || :client_id WHERE id = :id;`, tableName)
 

@@ -64,7 +64,7 @@ func (c *CassandraBenchmarker) CreateTable(keyType string) error {
 
 	var createSQL string
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s.%s (
 				id bigint PRIMARY KEY,

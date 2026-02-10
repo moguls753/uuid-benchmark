@@ -1,10 +1,10 @@
 # UUID Benchmark
 
-Benchmarks UUID types (UUIDv1, UUIDv4, UUIDv7, ULID non-monotonic, ULID monotonic) vs BIGSERIAL in PostgreSQL. Measures page splits, fragmentation, buffer pool efficiency, and throughput.
+Benchmarks UUID types (UUIDv1, UUIDv4, UUIDv7, ULID non-monotonic, ULID monotonic) vs sequential integer keys across PostgreSQL, MySQL, MongoDB, and Cassandra. Measures page splits, fragmentation, buffer pool / cache hit ratios, disk usage, throughput, and latency percentiles.
 
 ## Requirements
 
-- Go 1.21+
+- Go 1.25+
 - Docker & Docker Compose
 - Linux (for I/O metrics)
 
@@ -13,18 +13,22 @@ Benchmarks UUID types (UUIDv1, UUIDv4, UUIDv7, ULID non-monotonic, ULID monotoni
 ```bash
 go build -o uuid-benchmark cmd/benchmark/main.go
 
-# Run all scenarios (comprehensive thesis benchmark)
-./uuid-benchmark -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
+# Run all scenarios for a database
+./uuid-benchmark -database=postgres -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
+./uuid-benchmark -database=mysql -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
+./uuid-benchmark -database=mongodb -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
+./uuid-benchmark -database=cassandra -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
 
 # Run single scenario (tests all UUID types automatically)
-./uuid-benchmark -scenario=insert-performance -num-records=100000 -connections=10
+./uuid-benchmark -database=postgres -scenario=insert-performance -num-records=100000 -connections=10
 
 # Run with statistical analysis (5 runs per UUID type)
-./uuid-benchmark -scenario=insert-performance -num-records=100000 -num-runs=5 -output=results.csv
+./uuid-benchmark -database=mongodb -scenario=insert-performance -num-records=100000 -num-runs=5 -output=results.csv
 ```
 
 ## Options
 
+- `-database` - Database to benchmark: `postgres`, `mysql`, `mongodb`, `cassandra` (default: postgres)
 - `-scenario` - Scenario to run: `insert-performance`, `read-after-fragmentation`, `update-performance`, `mixed-insert-heavy`, `mixed-read-heavy`, `mixed-balanced`, `all`
 - `-num-records` - Dataset size for insert scenarios (default: 100000)
 - `-num-ops` - Number of operations for read/update/mixed (default: 10000)
@@ -45,41 +49,44 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 
 ## How It Works
 
-The benchmark uses **pgbench** (PostgreSQL's standard benchmarking tool) for workload execution, extended with custom metrics collection via Go.
+Each database uses a workload tool that runs **inside the Docker container** (localhost connection, zero network overhead):
 
-**Architecture:** The Go application orchestrates Docker containers and metrics collection, while pgbench executes SQL workloads inside the PostgreSQL container. This ensures all database operations happen on localhost (loopback interface) with zero network overhead.
+| Database | Workload Tool | UUID Generation |
+|---|---|---|
+| PostgreSQL | pgbench with custom SQL scripts | Server-side (PostgreSQL functions) |
+| MySQL | sysbench with custom Lua scripts | Client-side (sysbench random bytes) |
+| MongoDB | Custom Go binary | Client-side (Go UUID/ULID libraries) |
+| Cassandra | Custom Go binary | Client-side (Go UUID/ULID libraries) |
 
-**Workflow:** For each UUID type (BIGSERIAL, UUIDv4, UUIDv7, ULID, ULID_MONOTONIC, UUIDv1), the benchmark:
-1. Starts a **fresh PostgreSQL container** to ensure isolated measurements
-2. Creates the benchmark table with the appropriate ID type (e.g., `id UUID PRIMARY KEY` for UUIDv7, `id ulid PRIMARY KEY` for ULID)
-3. Generates a SQL script in Go and copies it into the container
-4. Executes the workload via **pgbench inside the container** using server-side ID generation functions (`gen_random_uuid()`, `uuidv7()`, `gen_ulid()`, etc.)
-5. Collects metrics after the workload completes
-6. Stops and removes the container
+**Workflow:** For each key type (SEQUENTIAL, UUIDv4, UUIDv7, ULID, ULID_MONOTONIC, UUIDv1), the benchmark:
+1. Starts a **fresh database container** to ensure isolated measurements
+2. Creates the benchmark table/collection with the appropriate key type
+3. Executes the workload inside the container
+4. Collects database-specific metrics after the workload completes
+5. Stops and removes the container (including volumes)
 
-**Metrics collected:**
-- **Page Splits:** Counted via WAL analysis (`pg_walinspect` extension) - indicates B-tree index fragmentation during inserts
-- **Index Fragmentation:** Measured via `pgstatindex()` - shows % of index pages that are out-of-order
-- **Buffer Pool Hit Ratios:** Measures memory efficiency - % of reads served from cache vs disk
-- **Table/Index Size:** Disk usage in MB
-- **Throughput & Latency:** Transactions per second, p50/p95/p99 latency from pgbench
-- **I/O Metrics:** Read/write IOPS and throughput via Linux cgroup v2 (container-isolated)
+**Metrics collected per database:**
+
+| Metric | PostgreSQL | MySQL | MongoDB | Cassandra |
+|---|---|---|---|---|
+| Page splits / compaction | WAL analysis | innodb_metrics | WiredTiger cache splits | SSTable count delta |
+| Fragmentation | pgstatindex | B-tree overhead ratio | freeStorageSize/storageSize | Space amplification |
+| Cache hit ratio | pg_stat_database | performance_schema | WiredTiger cache | Key cache (nodetool) |
+| Disk size | pg_relation_size | information_schema | collStats | nodetool tablestats |
+| Throughput & latency | pgbench | sysbench | Go workload binary | Go workload binary |
+| I/O | cgroup v2 | cgroup v2 | cgroup v2 | cgroup v2 |
 
 **Key Design Decisions:**
-- **Fresh container per UUID type:** Ensures clean WAL state and prevents contamination of page split counts
-- **Server-side ID generation:** All UUID types use PostgreSQL functions for fair comparison (no client-side pre-generation)
-- **pgbench inside container:** Eliminates network latency from measurements
+- **Fresh container per UUID type:** Prevents metric contamination between runs
+- **Workload inside container:** Eliminates network latency from measurements
+- **Custom Go workload binary for NoSQL:** Enables proper UUID generation with Go libraries (`github.com/google/uuid`, `github.com/oklog/ulid`) — no existing MongoDB/Cassandra benchmark tool supports custom UUID `_id` generation
 - **Statistical analysis mode:** Multiple runs with Mann-Whitney U tests provide p-values and significance testing
 
 ## Validation
 
-Results validated against **go-ycsb** (industry-standard benchmark) for overlapping metrics (throughput, latency). Both tools run inside containers with identical architecture (client inside container → localhost). See `validation/` directory.
+PostgreSQL results validated against **go-ycsb** (industry-standard benchmark) for overlapping metrics (throughput, latency). Both tools run inside containers with identical architecture (client inside container → localhost). See `validation/` directory.
 
 ```bash
 cd validation
-./run-comparison.sh balanced  # Runs both tools, compares BIGSERIAL results
+./run-comparison.sh balanced  # Runs both tools, compares sequential int results
 ```
-
-**Validated metrics:** Throughput, latency (p50/p95/p99) for BIGSERIAL keys
-
-**uuid-benchmark unique metrics:** Page splits, index fragmentation, buffer hit ratios, container I/O, all UUID types

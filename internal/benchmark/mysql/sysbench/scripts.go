@@ -16,7 +16,7 @@ const (
 // UUIDs are generated client-side in Go and passed to sysbench
 func GenerateInsertScript(keyType, tableName string) string {
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		return fmt.Sprintf(`
 -- Sysbench INSERT script for BIGINT AUTO_INCREMENT
 sysbench.cmdline.options = {
@@ -73,7 +73,7 @@ end
 // GenerateSelectScript generates a sysbench Lua script for SELECT operations
 func GenerateSelectScript(keyType, tableName string) string {
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		return fmt.Sprintf(`
 -- Sysbench SELECT script for BIGINT PRIMARY KEY
 sysbench.cmdline.options = {
@@ -128,7 +128,7 @@ end
 // GenerateUpdateScript generates a sysbench Lua script for UPDATE operations
 func GenerateUpdateScript(keyType, tableName string) string {
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		return fmt.Sprintf(`
 -- Sysbench UPDATE script for BIGINT PRIMARY KEY
 sysbench.cmdline.options = {
@@ -189,7 +189,7 @@ func GenerateMixedScript(keyType, tableName string, insertWeight, readWeight, up
 	readThreshold := insertWeight + readWeight
 
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		return fmt.Sprintf(`
 -- Sysbench MIXED script for BIGINT AUTO_INCREMENT
 -- Weights: INSERT=%d%%, READ=%d%%, UPDATE=%d%%
@@ -282,7 +282,7 @@ func GenerateBatchInsertScript(keyType, tableName string, batchSize int) string 
 	}
 
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		// Build VALUES clause for batch insert
 		return fmt.Sprintf(`
 -- Sysbench BATCH INSERT script for BIGINT AUTO_INCREMENT (batch size: %d)

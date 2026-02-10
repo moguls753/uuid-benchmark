@@ -64,20 +64,20 @@ func displayMetricTable(results map[string]map[string]statistics.Stats, keyTypes
 }
 
 func displayComparisons(results map[string]map[string]statistics.Stats, keyTypes []string, metric string) {
-	fmt.Println("\nStatistical Comparisons (vs BIGSERIAL):")
+	fmt.Println("\nStatistical Comparisons (vs SEQUENTIAL):")
 	fmt.Println("┌─────────────────────────┬─────────────┬──────────┬───────────┬──────────────┐")
 	fmt.Println("│ Comparison              │ Median Diff │ p-value  │ Overlap?  │ Significant? │")
 	fmt.Println("├─────────────────────────┼─────────────┼──────────┼───────────┼──────────────┤")
 
-	bigserialStats := results["bigserial"][metric]
+	sequentialStats := results["sequential"][metric]
 
 	for _, keyType := range keyTypes {
-		if keyType == "bigserial" {
+		if keyType == "sequential" {
 			continue
 		}
 
 		stats := results[keyType][metric]
-		comp := statistics.Compare(bigserialStats, stats)
+		comp := statistics.Compare(sequentialStats, stats)
 
 		significance := ""
 		if !comp.HasOverlap {
@@ -97,7 +97,7 @@ func displayComparisons(results map[string]map[string]statistics.Stats, keyTypes
 			overlap = "Yes"
 		}
 
-		fmt.Printf("│ BIGSERIAL vs %-10s │ %+10.1f%% │ %8.4f │ %-9s │ %-12s │\n",
+		fmt.Printf("│ SEQUENTIAL vs %-9s │ %+10.1f%% │ %8.4f │ %-9s │ %-12s │\n",
 			strings.ToUpper(keyType),
 			comp.MedianDiffPct,
 			comp.PValue,

@@ -58,7 +58,7 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 
 	var createSQL string
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BIGINT AUTO_INCREMENT PRIMARY KEY,

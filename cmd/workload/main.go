@@ -45,7 +45,7 @@ func init() {
 func main() {
 	dbType := flag.String("db-type", "", "Database type: mongodb or cassandra")
 	op := flag.String("op", "", "Operation: insert, read, update, mixed-insert-heavy, mixed-read-heavy, mixed-balanced")
-	keyType := flag.String("key-type", "", "Key type: bigserial, uuidv1, uuidv4, uuidv7, ulid, ulid_monotonic")
+	keyType := flag.String("key-type", "", "Key type: sequential, uuidv1, uuidv4, uuidv7, ulid, ulid_monotonic")
 	numRecords := flag.Int("num-records", 0, "Number of records")
 	numOps := flag.Int("num-ops", 0, "Number of operations (for read/update/mixed)")
 	batchSize := flag.Int("batch-size", 1, "Batch size for inserts")
@@ -100,7 +100,7 @@ func newKeyGenerator(keyType string, counter *atomic.Int64) *keyGenerator {
 // generateMongoKey returns a key suitable for MongoDB _id field.
 func (kg *keyGenerator) generateMongoKey() any {
 	switch kg.keyType {
-	case "bigserial":
+	case "sequential":
 		return kg.counter.Add(1)
 	case "uuidv1":
 		u, _ := uuid.NewUUID()
@@ -127,7 +127,7 @@ func (kg *keyGenerator) generateMongoKey() any {
 // generateCassandraKey returns a key suitable for Cassandra primary key.
 func (kg *keyGenerator) generateCassandraKey() any {
 	switch kg.keyType {
-	case "bigserial":
+	case "sequential":
 		return kg.counter.Add(1)
 	case "uuidv1":
 		u, _ := uuid.NewUUID()
@@ -890,7 +890,7 @@ func fetchCassandraIDs(session *gocql.Session, keyType string, limit int) ([]any
 	var ids []any
 
 	switch keyType {
-	case "bigserial":
+	case "sequential":
 		var id int64
 		for iter.Scan(&id) {
 			ids = append(ids, id)

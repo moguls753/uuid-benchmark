@@ -13,7 +13,7 @@ func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, ke
 	fmt.Println()
 	fmt.Println()
 	fmt.Println("COMPARISON - Insert Performance")
-	fmt.Println(strings.Repeat("=", 70))
+	fmt.Println(strings.Repeat("=", 135))
 
 	// Header
 	fmt.Printf("%-15s", "Metric")
@@ -21,7 +21,7 @@ func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, ke
 		fmt.Printf("%-20s", strings.ToUpper(keyType))
 	}
 	fmt.Println()
-	fmt.Println(strings.Repeat("-", 70))
+	fmt.Println(strings.Repeat("-", 135))
 
 	// Duration
 	fmt.Printf("%-15s", "Duration")
@@ -120,7 +120,7 @@ func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentation
 	fmt.Println()
 	fmt.Println()
 	fmt.Println("COMPARISON - Read After Fragmentation")
-	fmt.Println(strings.Repeat("=", 70))
+	fmt.Println(strings.Repeat("=", 135))
 
 	// Header
 	fmt.Printf("%-20s", "Metric")
@@ -128,7 +128,7 @@ func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentation
 		fmt.Printf("%-20s", strings.ToUpper(keyType))
 	}
 	fmt.Println()
-	fmt.Println(strings.Repeat("-", 70))
+	fmt.Println(strings.Repeat("-", 135))
 
 	// Duration
 	fmt.Printf("%-20s", "Duration")
@@ -213,7 +213,7 @@ func UpdatePerformance(results map[string]*benchmark.UpdatePerformanceResult, ke
 	fmt.Println()
 	fmt.Println()
 	fmt.Println("COMPARISON - Update Performance")
-	fmt.Println(strings.Repeat("=", 70))
+	fmt.Println(strings.Repeat("=", 135))
 
 	// Header
 	fmt.Printf("%-20s", "Metric")
@@ -221,7 +221,7 @@ func UpdatePerformance(results map[string]*benchmark.UpdatePerformanceResult, ke
 		fmt.Printf("%-20s", strings.ToUpper(keyType))
 	}
 	fmt.Println()
-	fmt.Println(strings.Repeat("-", 70))
+	fmt.Println(strings.Repeat("-", 135))
 
 	// Duration
 	fmt.Printf("%-20s", "Duration")
@@ -292,7 +292,7 @@ func MixedWorkload(results map[string]*benchmark.MixedWorkloadResult, keyTypes [
 	fmt.Println()
 	fmt.Println()
 	fmt.Printf("COMPARISON - Mixed Workload: %s\n", workloadName)
-	fmt.Println(strings.Repeat("=", 70))
+	fmt.Println(strings.Repeat("=", 135))
 
 	// Header
 	fmt.Printf("%-20s", "Metric")
@@ -300,7 +300,7 @@ func MixedWorkload(results map[string]*benchmark.MixedWorkloadResult, keyTypes [
 		fmt.Printf("%-20s", strings.ToUpper(keyType))
 	}
 	fmt.Println()
-	fmt.Println(strings.Repeat("-", 70))
+	fmt.Println(strings.Repeat("-", 135))
 
 	// Duration
 	fmt.Printf("%-20s", "Duration")
