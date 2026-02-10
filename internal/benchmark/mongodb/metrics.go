@@ -32,7 +32,6 @@ func (m *MongoDBBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, error
 		result.Fragmentation = fragStats
 	}
 
-	fmt.Printf("  DEBUG: metricsBefore is nil: %v\n", m.metricsBefore == nil)
 	pageSplits, err := m.countPageSplits()
 	if err != nil {
 		fmt.Printf("Warning: Could not count page splits: %v\n", err)
@@ -101,6 +100,11 @@ func (m *MongoDBBenchmarker) measureFragmentation() (benchmark.IndexFragmentatio
 	return stats, nil
 }
 
+// countPageSplits measures reconciliation multi-block writes (delta before/after).
+// When WiredTiger reconciles (checkpoints) pages to disk, pages exceeding
+// leaf_page_max (32KB) are split into multiple on-disk blocks. This is the
+// structural equivalent of PostgreSQL B-tree page splits.
+// See: https://source.wiredtiger.com/develop/tune_page_size_and_comp.html
 func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 	if m.metricsBefore == nil {
 		return 0, fmt.Errorf("metrics before not captured")
@@ -113,15 +117,13 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 		return 0, fmt.Errorf("serverStatus: %w", err)
 	}
 
-	splitsBefore := getWiredTigerCacheStat(m.metricsBefore, "in-memory page splits") +
-		getWiredTigerCacheStat(m.metricsBefore, "leaf pages split during eviction") +
-		getWiredTigerCacheStat(m.metricsBefore, "internal pages split during eviction")
+	// Reconciliation multi-block writes: pages split into multiple on-disk
+	// blocks during checkpoint. Triggered by fsync in MeasureMetrics.
+	splitsBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "leaf page multi-block writes") +
+		getWiredTigerStat(m.metricsBefore, "reconciliation", "internal page multi-block writes")
 
-	splitsAfter := getWiredTigerCacheStat(statusAfter, "in-memory page splits") +
-		getWiredTigerCacheStat(statusAfter, "leaf pages split during eviction") +
-		getWiredTigerCacheStat(statusAfter, "internal pages split during eviction")
-
-	fmt.Printf("  Page splits before=%d after=%d\n", splitsBefore, splitsAfter)
+	splitsAfter := getWiredTigerStat(statusAfter, "reconciliation", "leaf page multi-block writes") +
+		getWiredTigerStat(statusAfter, "reconciliation", "internal page multi-block writes")
 
 	delta := splitsAfter - splitsBefore
 	if delta < 0 {
@@ -139,8 +141,8 @@ func (m *MongoDBBenchmarker) measureCacheHitRatio() (float64, error) {
 		return 0, fmt.Errorf("serverStatus: %w", err)
 	}
 
-	pagesRequested := getWiredTigerCacheStat(status, "pages requested from the cache")
-	pagesRead := getWiredTigerCacheStat(status, "pages read into cache")
+	pagesRequested := getWiredTigerStat(status, "cache", "pages requested from the cache")
+	pagesRead := getWiredTigerStat(status, "cache", "pages read into cache")
 
 	if pagesRequested <= 0 {
 		return 0, nil
@@ -153,8 +155,8 @@ func (m *MongoDBBenchmarker) measureCacheHitRatio() (float64, error) {
 	return hitRatio, nil
 }
 
-// getWiredTigerCacheStat extracts a numeric stat from serverStatus.wiredTiger.cache
-func getWiredTigerCacheStat(status bson.M, statName string) int64 {
+// getWiredTigerStat extracts a numeric stat from serverStatus.wiredTiger.<section>
+func getWiredTigerStat(status bson.M, section, statName string) int64 {
 	wt, ok := status["wiredTiger"]
 	if !ok {
 		return 0
@@ -163,20 +165,21 @@ func getWiredTigerCacheStat(status bson.M, statName string) int64 {
 	if !ok {
 		return 0
 	}
-	cache, ok := wtMap["cache"]
+	sec, ok := wtMap[section]
 	if !ok {
 		return 0
 	}
-	cacheMap, ok := cache.(bson.M)
+	secMap, ok := sec.(bson.M)
 	if !ok {
 		return 0
 	}
-	val, ok := cacheMap[statName]
+	val, ok := secMap[statName]
 	if !ok {
 		return 0
 	}
 	return toInt64(val)
 }
+
 
 func toInt64(v any) int64 {
 	switch val := v.(type) {
