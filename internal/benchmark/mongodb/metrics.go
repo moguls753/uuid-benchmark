@@ -112,30 +112,13 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 		return 0, fmt.Errorf("serverStatus: %w", err)
 	}
 
-	// Debug: dump WiredTiger section names and all btree stats
-	if wt, ok := statusAfter["wiredTiger"]; ok {
-		if wtMap, ok := wt.(bson.M); ok {
-			fmt.Printf("  WT sections:")
-			for section := range wtMap {
-				fmt.Printf(" %s", section)
-			}
-			fmt.Println()
-			// Dump all btree stats
-			if btree, ok := wtMap["btree"]; ok {
-				if btreeMap, ok := btree.(bson.M); ok {
-					for k, v := range btreeMap {
-						fmt.Printf("  WT [btree] %q = %v\n", k, v)
-					}
-				}
-			}
-		}
-	}
-
 	splitsBefore := getWiredTigerCacheStat(m.metricsBefore, "in-memory page splits") +
-		getWiredTigerCacheStat(m.metricsBefore, "pages split during eviction")
+		getWiredTigerCacheStat(m.metricsBefore, "leaf pages split during eviction") +
+		getWiredTigerCacheStat(m.metricsBefore, "internal pages split during eviction")
 
 	splitsAfter := getWiredTigerCacheStat(statusAfter, "in-memory page splits") +
-		getWiredTigerCacheStat(statusAfter, "pages split during eviction")
+		getWiredTigerCacheStat(statusAfter, "leaf pages split during eviction") +
+		getWiredTigerCacheStat(statusAfter, "internal pages split during eviction")
 
 	delta := splitsAfter - splitsBefore
 	if delta < 0 {
