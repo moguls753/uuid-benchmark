@@ -3,12 +3,19 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 func (m *MongoDBBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, error) {
+	// Force WiredTiger checkpoint so on-disk sizes are accurate
+	ctx := context.Background()
+	if err := m.db.RunCommand(ctx, bson.D{{Key: "fsync", Value: 1}}).Err(); err != nil {
+		fmt.Printf("Warning: fsync failed: %v\n", err)
+	}
+
 	result := &benchmark.BenchmarkResult{}
 
 	tableSize, indexSize, err := m.measureDiskUsage()
@@ -104,6 +111,21 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 	err := m.db.RunCommand(ctx, bson.D{{Key: "serverStatus", Value: 1}}).Decode(&statusAfter)
 	if err != nil {
 		return 0, fmt.Errorf("serverStatus: %w", err)
+	}
+
+	// Debug: dump all WiredTiger cache stats containing "split"
+	if wt, ok := statusAfter["wiredTiger"]; ok {
+		if wtMap, ok := wt.(bson.M); ok {
+			if cache, ok := wtMap["cache"]; ok {
+				if cacheMap, ok := cache.(bson.M); ok {
+					for k, v := range cacheMap {
+						if strings.Contains(strings.ToLower(k), "split") {
+							fmt.Printf("  WiredTiger cache stat: %q = %v\n", k, v)
+						}
+					}
+				}
+			}
+		}
 	}
 
 	splitsBefore := getWiredTigerCacheStat(m.metricsBefore, "in-memory page splits") +
