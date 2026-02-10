@@ -12,7 +12,7 @@ import (
 func (m *MongoDBBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, error) {
 	// Force WiredTiger checkpoint so on-disk sizes are accurate
 	ctx := context.Background()
-	if err := m.db.RunCommand(ctx, bson.D{{Key: "fsync", Value: 1}}).Err(); err != nil {
+	if err := m.client.Database("admin").RunCommand(ctx, bson.D{{Key: "fsync", Value: 1}}).Err(); err != nil {
 		fmt.Printf("Warning: fsync failed: %v\n", err)
 	}
 
@@ -113,14 +113,14 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 		return 0, fmt.Errorf("serverStatus: %w", err)
 	}
 
-	// Debug: dump all WiredTiger cache stats containing "split"
+	// Debug: dump all WiredTiger stats containing "split" across all sections
 	if wt, ok := statusAfter["wiredTiger"]; ok {
 		if wtMap, ok := wt.(bson.M); ok {
-			if cache, ok := wtMap["cache"]; ok {
-				if cacheMap, ok := cache.(bson.M); ok {
-					for k, v := range cacheMap {
+			for section, sectionVal := range wtMap {
+				if sectionMap, ok := sectionVal.(bson.M); ok {
+					for k, v := range sectionMap {
 						if strings.Contains(strings.ToLower(k), "split") {
-							fmt.Printf("  WiredTiger cache stat: %q = %v\n", k, v)
+							fmt.Printf("  WT [%s] %q = %v\n", section, k, v)
 						}
 					}
 				}
