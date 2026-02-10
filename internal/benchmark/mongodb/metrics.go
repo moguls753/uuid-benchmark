@@ -3,7 +3,6 @@ package mongodb
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
 	"go.mongodb.org/mongo-driver/v2/bson"
