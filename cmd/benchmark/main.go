@@ -9,6 +9,7 @@ import (
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/statistics"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/workload"
 	"github.com/moguls753/uuid-benchmark/internal/container"
 	"github.com/moguls753/uuid-benchmark/internal/display"
 	"github.com/moguls753/uuid-benchmark/internal/export"
@@ -51,10 +52,32 @@ var mysqlDB = dbConfig{
 	mixedBalanced: runner.MySQLMixedWorkloadBalanced,
 }
 
+var mongodbDB = dbConfig{
+	name:          "MongoDB",
+	containerCfg:  container.MongoDBConfig,
+	insertFunc:    runner.MongoDBInsertPerformance,
+	readFunc:      runner.MongoDBReadAfterFragmentation,
+	updateFunc:    runner.MongoDBUpdatePerformance,
+	mixedInsert:   runner.MongoDBMixedWorkloadInsertHeavy,
+	mixedRead:     runner.MongoDBMixedWorkloadReadHeavy,
+	mixedBalanced: runner.MongoDBMixedWorkloadBalanced,
+}
+
+var cassandraDB = dbConfig{
+	name:          "Cassandra",
+	containerCfg:  container.CassandraConfig,
+	insertFunc:    runner.CassandraInsertPerformance,
+	readFunc:      runner.CassandraReadAfterFragmentation,
+	updateFunc:    runner.CassandraUpdatePerformance,
+	mixedInsert:   runner.CassandraMixedWorkloadInsertHeavy,
+	mixedRead:     runner.CassandraMixedWorkloadReadHeavy,
+	mixedBalanced: runner.CassandraMixedWorkloadBalanced,
+}
+
 var currentDB dbConfig
 
 func main() {
-	database := flag.String("database", "postgres", "Database to benchmark (postgres, mysql)")
+	database := flag.String("database", "postgres", "Database to benchmark (postgres, mysql, mongodb, cassandra)")
 	scenario := flag.String("scenario", "insert-performance", "Scenario to run (insert-performance, read-after-fragmentation, update-performance, mixed-insert-heavy, mixed-read-heavy, mixed-balanced, all)")
 	numRecords := flag.Int("num-records", 100000, "Number of records for insert operations")
 	numOps := flag.Int("num-ops", 10000, "Number of operations for read/update/mixed scenarios")
@@ -70,8 +93,14 @@ func main() {
 		currentDB = postgresDB
 	case "mysql", "my":
 		currentDB = mysqlDB
+	case "mongodb", "mongo":
+		currentDB = mongodbDB
+		buildWorkloadBinary()
+	case "cassandra", "cass":
+		currentDB = cassandraDB
+		buildWorkloadBinary()
 	default:
-		log.Fatalf("Invalid database: %s (use 'postgres' or 'mysql')", *database)
+		log.Fatalf("Invalid database: %s (use 'postgres', 'mysql', 'mongodb', or 'cassandra')", *database)
 	}
 
 	fmt.Printf("UUID Benchmark - %s\n", currentDB.name)
@@ -487,6 +516,15 @@ func collectMixedWorkloadBalancedResults(totalOps, connections int) map[string]*
 	}
 
 	return results
+}
+
+func buildWorkloadBinary() {
+	fmt.Println("Building workload binary for NoSQL databases...")
+	path, err := workload.BuildBinary()
+	if err != nil {
+		log.Fatalf("Failed to build workload binary: %v", err)
+	}
+	fmt.Printf("Workload binary built: %s\n", path)
 }
 
 func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, output string) {

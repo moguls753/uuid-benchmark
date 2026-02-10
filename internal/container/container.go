@@ -5,8 +5,11 @@ import (
 	"log"
 	"os/exec"
 
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/cassandra"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/mongodb"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/mysql"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres"
+	"github.com/moguls753/uuid-benchmark/internal/benchmark/workload"
 )
 
 type Config struct {
@@ -25,6 +28,18 @@ var MySQLConfig = Config{
 	Name:         "MySQL",
 	ComposeFile:  "docker/docker-compose.mysql.yml",
 	WaitForReady: mysql.WaitForReady,
+}
+
+var MongoDBConfig = Config{
+	Name:         "MongoDB",
+	ComposeFile:  "docker/docker-compose.mongo.yml",
+	WaitForReady: mongodb.WaitForReady,
+}
+
+var CassandraConfig = Config{
+	Name:         "Cassandra",
+	ComposeFile:  "docker/docker-compose.cassandra.yml",
+	WaitForReady: cassandra.WaitForReady,
 }
 
 func Start(cfg Config) {
@@ -50,6 +65,9 @@ func Stop(composeFile string) {
 	cmd := exec.Command("docker", "compose", "-f", composeFile, "down", "-v")
 	// Ignore errors on cleanup - container might already be stopped
 	cmd.Run()
+
+	// Reset workload binary copy cache since container is destroyed
+	workload.ResetCopyCache()
 
 	fmt.Println("Container stopped and removed")
 }

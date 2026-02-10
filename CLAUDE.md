@@ -2,7 +2,7 @@
 
 ## Project Purpose
 
-Bachelor thesis benchmarking UUID performance (UUIDv1, UUIDv4, UUIDv7, ULID, ULID monotonic) vs sequential integer keys (BIGSERIAL/AUTO_INCREMENT). The thesis proposal (submitted to FernUniversität in Hagen) targets 4 database systems — PostgreSQL, MySQL, MongoDB, Cassandra — to address the research gap of missing cross-database and cross-architecture (B-tree vs LSM-tree) UUID performance evaluations. Currently PostgreSQL and MySQL are implemented; MongoDB and Cassandra are planned.
+Bachelor thesis benchmarking UUID performance (UUIDv1, UUIDv4, UUIDv7, ULID, ULID monotonic) vs sequential integer keys (BIGSERIAL/AUTO_INCREMENT). The thesis proposal (submitted to FernUniversität in Hagen) targets 4 database systems — PostgreSQL, MySQL, MongoDB, Cassandra — to address the research gap of missing cross-database and cross-architecture (B-tree vs LSM-tree) UUID performance evaluations. All 4 databases are implemented.
 
 Focus on measuring:
 - Page splits and index fragmentation (B-tree DBs) / compaction overhead (LSM-tree)
@@ -16,39 +16,20 @@ Focus on measuring:
 **Complete:**
 - PostgreSQL 18 with pgbench integration (all 6 scenarios, all metrics)
 - MySQL 8 with sysbench integration (all 6 scenarios, all metrics)
+- MongoDB 8 with custom Go workload binary (all 6 scenarios, all metrics)
+- Cassandra 5 with custom Go workload binary (all 6 scenarios, all metrics)
+- Shared workload binary (`cmd/workload/main.go`) for MongoDB/Cassandra with proper UUID generation via Go libraries
 - Statistical analysis (Mann-Whitney U, median, mean, stddev, CV, multi-run mode)
 - CSV export (summary stats + raw per-run data)
 - Docker orchestration (fresh container per UUID type for isolation)
 - YCSB validation (BIGSERIAL throughput/latency matches within ~8%)
 
-**Not implemented:**
-- MongoDB: Docker Compose config exists (`docker/docker-compose.mongo.yml`), no Go code. Approach: custom Go workload binary inside container (see MongoDB section below)
-- Cassandra: Docker Compose config exists (`docker/docker-compose.cassandra.yml`), no Go code. Approach: custom Go workload binary inside container (see Cassandra section below)
-
 **Known limitation:**
 - MySQL UUIDv7/ULID generation is NOT time-ordered. Sysbench Lua scripts use `sysbench.rand.unique()` (random bytes), not proper UUID libraries. In MySQL benchmarks, UUIDv7 and ULID behave like UUIDv4.
 
-## Remaining Implementation Roadmap
+## Remaining Roadmap
 
-**Phase 1: Shared workload binary infrastructure**
-- Build `cmd/workload/main.go` — a standalone Go binary that accepts CLI flags (db-type, operation, num-records, num-ops, threads, key-type, connection-string) and outputs JSON results (throughput, p50/p95/p99, duration)
-- Compile as static binary (`CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build`)
-- Pattern: `docker cp` binary into container → `docker exec` → parse JSON stdout
-- Proper UUID generation using Go libraries (`github.com/google/uuid` for v4/v7, `github.com/oklog/ulid` for ULID) — fixes the MySQL limitation where sysbench used random bytes
-
-**Phase 2: MongoDB implementation**
-- `internal/benchmark/mongodb/` — MongoDBBenchmarker struct, connection, metrics collection
-- `internal/runner/mongodb.go` — scenario orchestration (same pattern as postgres.go/mysql.go)
-- Metrics via `db.serverStatus()` and `db.collection.stats()` from Go driver
-- Update `cmd/benchmark/main.go` with `mongodbDB` config entry
-
-**Phase 3: Cassandra implementation**
-- `internal/benchmark/cassandra/` — CassandraBenchmarker struct, connection, metrics collection
-- `internal/runner/cassandra.go` — scenario orchestration
-- Metrics via `nodetool tablestats` (parsed from `docker exec` output)
-- Update `cmd/benchmark/main.go` with `cassandraDB` config entry
-
-**Phase 4: Benchmark runs and thesis**
+**Benchmark runs and thesis**
 - Full benchmark runs at scale (1M, 10M, 100M records) across all 4 databases
 - 3+ runs per configuration for statistical significance
 - Data analysis, visualization, thesis writing
@@ -59,22 +40,22 @@ Focus on measuring:
 # Build
 go build -o uuid-benchmark cmd/benchmark/main.go
 
-# Run all scenarios for PostgreSQL (comprehensive thesis benchmark)
+# Run all scenarios for each database
 ./uuid-benchmark -database=postgres -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
-
-# Run all scenarios for MySQL
 ./uuid-benchmark -database=mysql -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
+./uuid-benchmark -database=mongodb -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
+./uuid-benchmark -database=cassandra -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
 
 # Run individual scenario
 ./uuid-benchmark -database=postgres -scenario=insert-performance -num-records=100000 -batch-size=100
-./uuid-benchmark -database=mysql -scenario=read-after-fragmentation -num-records=1000000 -num-ops=10000
+./uuid-benchmark -database=mongodb -scenario=read-after-fragmentation -num-records=1000000 -num-ops=10000
 ```
 
 ### CLI Flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `-database` | `postgres` | Database to test: `postgres`, `mysql` (planned: `mongodb`, `cassandra`) |
+| `-database` | `postgres` | Database to test: `postgres`, `mysql`, `mongodb`, `cassandra` |
 | `-scenario` | `insert-performance` | Scenario: `insert-performance`, `read-after-fragmentation`, `update-performance`, `mixed-insert-heavy`, `mixed-read-heavy`, `mixed-balanced`, `all` |
 | `-num-records` | `100000` | Dataset size for insert operations |
 | `-num-ops` | `10000` | Number of operations for read/update/mixed scenarios |
@@ -101,8 +82,8 @@ internal/
 ├── runner/
 │   ├── postgres.go                  # PostgreSQL scenario orchestration
 │   ├── mysql.go                     # MySQL scenario orchestration
-│   ├── mongodb.go                   # MongoDB scenario orchestration (planned)
-│   └── cassandra.go                 # Cassandra scenario orchestration (planned)
+│   ├── mongodb.go                   # MongoDB scenario orchestration
+│   └── cassandra.go                 # Cassandra scenario orchestration
 ├── benchmark/
 │   ├── benchmark.go                 # Shared interfaces
 │   ├── results.go                   # Result structs (InsertPerformanceResult, etc.)
@@ -132,7 +113,7 @@ internal/
 │   │       ├── executor.go          # sysbench CLI wrapper (runs inside container)
 │   │       ├── parser.go            # Parse sysbench output
 │   │       └── scripts.go           # Generate Lua scripts per UUID type
-│   ├── mongodb/                         # (planned)
+│   ├── mongodb/
 │   │   ├── mongodb.go                   # MongoDBBenchmarker struct
 │   │   ├── connection.go               # DB setup, collection creation, WaitForReady
 │   │   ├── metrics.go                   # WiredTiger stats, cache hit ratio, fragmentation
@@ -140,7 +121,7 @@ internal/
 │   │   ├── read.go                      # Read workload via workload binary
 │   │   ├── update.go                    # Update workload via workload binary
 │   │   └── mixed.go                     # Mixed workloads via workload binary
-│   ├── cassandra/                       # (planned)
+│   ├── cassandra/
 │   │   ├── cassandra.go                 # CassandraBenchmarker struct
 │   │   ├── connection.go               # DB setup, keyspace/table creation, WaitForReady
 │   │   ├── metrics.go                   # nodetool tablestats parsing, compaction metrics
@@ -248,7 +229,7 @@ FROM pg_stat_database WHERE datname = 'uuid_benchmark'
 
 **Connection:** `localhost:3307`, user `benchmark`, password `benchmark123`, database `uuid_benchmark`
 
-### MongoDB (not implemented — planned)
+### MongoDB
 
 **Docker:** `docker/docker-compose.mongo.yml`
 - Base: `mongo:8` (WiredTiger storage engine, B-tree indexes)
@@ -308,7 +289,7 @@ db.bench.stats({indexDetails: true})  // btree["row-store leaf pages"]
 
 **Connection:** `localhost:27017`, user `benchmark`, password `benchmark123`, database `uuid_benchmark`
 
-### Cassandra (not implemented — planned)
+### Cassandra
 
 **Docker:** `docker/docker-compose.cassandra.yml`
 - Base: `cassandra:5` (LSM-tree storage engine)
