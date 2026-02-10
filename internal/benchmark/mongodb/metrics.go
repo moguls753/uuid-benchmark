@@ -120,6 +120,8 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 		getWiredTigerCacheStat(statusAfter, "leaf pages split during eviction") +
 		getWiredTigerCacheStat(statusAfter, "internal pages split during eviction")
 
+	fmt.Printf("  Page splits before=%d after=%d\n", splitsBefore, splitsAfter)
+
 	delta := splitsAfter - splitsBefore
 	if delta < 0 {
 		delta = 0

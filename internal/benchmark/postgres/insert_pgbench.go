@@ -126,7 +126,7 @@ func (p *PostgresBenchmarker) InsertRecordsPgbenchConcurrent(keyType string, num
 	return &benchmark.ConcurrentBenchmarkResult{
 		Duration:     duration,
 		TotalOps:     numRecords,
-		Throughput:   parsed.TPS,
+		Throughput:   parsed.TPS * float64(batchSize),
 		LatencyP50:   parsed.P50,
 		LatencyP95:   parsed.P95,
 		LatencyP99:   parsed.P99,
