@@ -7,7 +7,7 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/statistics"
 )
 
-func InsertPerformanceStatistics(results map[string]map[string]statistics.Stats, keyTypes []string, numRecords, connections, batchSize, numRuns int) {
+func InsertPerformanceStatistics(results map[string]map[string]statistics.Stats, keyTypes []string, numRecords, connections, batchSize, numRuns int, database string) {
 	fmt.Println("\n" + strings.Repeat("=", 100))
 	fmt.Printf("Insert Performance - Statistical Summary (%d runs per UUID type)\n", numRuns)
 	fmt.Println(strings.Repeat("=", 100))
@@ -16,13 +16,34 @@ func InsertPerformanceStatistics(results map[string]map[string]statistics.Stats,
 	displayMetricTable(results, keyTypes, "throughput", "%.0f")
 	displayComparisons(results, keyTypes, "throughput")
 
-	fmt.Println("\nPage Splits")
-	displayMetricTable(results, keyTypes, "page_splits", "%.0f")
-	displayComparisons(results, keyTypes, "page_splits")
+	// Page Splits (B-tree databases only)
+	if database != "cassandra" {
+		fmt.Println("\nPage Splits")
+		displayMetricTable(results, keyTypes, "page_splits", "%.0f")
+		displayComparisons(results, keyTypes, "page_splits")
+	}
 
-	fmt.Println("\nIndex Fragmentation (%)")
-	displayMetricTable(results, keyTypes, "fragmentation", "%.2f")
-	displayComparisons(results, keyTypes, "fragmentation")
+	// SSTable Delta (Cassandra only)
+	if database == "cassandra" {
+		fmt.Println("\nSSTable Delta")
+		displayMetricTable(results, keyTypes, "page_splits", "%.0f")
+		displayComparisons(results, keyTypes, "page_splits")
+
+		fmt.Println("\nSpace Amplification (%)")
+		displayMetricTable(results, keyTypes, "fragmentation", "%.2f")
+		displayComparisons(results, keyTypes, "fragmentation")
+	}
+
+	// Leaf Fragmentation (PostgreSQL only)
+	if database == "postgres" {
+		fmt.Println("\nLeaf Fragmentation (%)")
+		displayMetricTable(results, keyTypes, "fragmentation", "%.2f")
+		displayComparisons(results, keyTypes, "fragmentation")
+
+		fmt.Println("\nAvg Leaf Density (%)")
+		displayMetricTable(results, keyTypes, "avg_leaf_density", "%.2f")
+		displayComparisons(results, keyTypes, "avg_leaf_density")
+	}
 
 	fmt.Println("\nTable Size (MB)")
 	displayMetricTable(results, keyTypes, "table_size_mb", "%.1f")

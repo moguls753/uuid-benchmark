@@ -9,14 +9,14 @@ import (
 )
 
 // InsertPerformance displays a comparison table for insert performance results
-func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, keyTypes []string, connections, batchSize int) {
+func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, keyTypes []string, connections, batchSize int, database string) {
 	fmt.Println()
 	fmt.Println()
 	fmt.Println("COMPARISON - Insert Performance")
 	fmt.Println(strings.Repeat("=", 135))
 
 	// Header
-	fmt.Printf("%-15s", "Metric")
+	fmt.Printf("%-20s", "Metric")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", strings.ToUpper(keyType))
 	}
@@ -24,95 +24,120 @@ func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, ke
 	fmt.Println(strings.Repeat("-", 135))
 
 	// Duration
-	fmt.Printf("%-15s", "Duration")
+	fmt.Printf("%-20s", "Duration")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", results[keyType].Duration.Round(time.Millisecond))
 	}
 	fmt.Println()
 
 	// Throughput
-	fmt.Printf("%-15s", "Throughput")
+	fmt.Printf("%-20s", "Throughput")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.0f rec/s", results[keyType].Throughput))
 	}
 	fmt.Println()
 
-	// Page splits
-	fmt.Printf("%-15s", "Page Splits")
-	for _, keyType := range keyTypes {
-		fmt.Printf("%-20d", results[keyType].PageSplits)
+	// Page splits (B-tree databases only)
+	if database != "cassandra" {
+		fmt.Printf("%-20s", "Page Splits")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20d", results[keyType].PageSplits)
+		}
+		fmt.Println()
 	}
-	fmt.Println()
+
+	// SSTable Delta (Cassandra only)
+	if database == "cassandra" {
+		fmt.Printf("%-20s", "SSTable Delta")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20d", results[keyType].PageSplits)
+		}
+		fmt.Println()
+
+		// SSTable Count (stored in Fragmentation.LeafPages)
+		fmt.Printf("%-20s", "SSTable Count")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20d", results[keyType].Fragmentation.LeafPages)
+		}
+		fmt.Println()
+	}
 
 	// Index size
-	fmt.Printf("%-15s", "Index Size")
+	fmt.Printf("%-20s", "Index Size")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", benchmark.FormatBytes(results[keyType].IndexSize))
 	}
 	fmt.Println()
 
-	// Fragmentation
-	fmt.Printf("%-15s", "Fragmentation")
-	for _, keyType := range keyTypes {
-		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
-	}
-	fmt.Println()
+	// Leaf Fragmentation (PostgreSQL only)
+	if database == "postgres" {
+		fmt.Printf("%-20s", "Leaf Fragmentation")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+		}
+		fmt.Println()
 
-	// Leaf density
-	fmt.Printf("%-15s", "Leaf Density")
-	for _, keyType := range keyTypes {
-		if results[keyType].Fragmentation.AvgLeafDensity < 0 {
-			fmt.Printf("%-20s", "N/A")
-		} else {
+		// Leaf density (PostgreSQL only)
+		fmt.Printf("%-20s", "Leaf Density")
+		for _, keyType := range keyTypes {
 			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.AvgLeafDensity))
 		}
+		fmt.Println()
 	}
-	fmt.Println()
+
+	// Space Amplification (Cassandra only)
+	if database == "cassandra" {
+		fmt.Printf("%-20s", "Space Amplification")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+		}
+		fmt.Println()
+	}
 
 	// Latency p50
-	fmt.Printf("%-15s", "Latency p50")
+	fmt.Printf("%-20s", "Latency p50")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", results[keyType].LatencyP50.Round(time.Microsecond))
 	}
 	fmt.Println()
 
 	// Latency p95
-	fmt.Printf("%-15s", "Latency p95")
+	fmt.Printf("%-20s", "Latency p95")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", results[keyType].LatencyP95.Round(time.Microsecond))
 	}
 	fmt.Println()
 
 	// Latency p99
-	fmt.Printf("%-15s", "Latency p99")
+	fmt.Printf("%-20s", "Latency p99")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", results[keyType].LatencyP99.Round(time.Microsecond))
 	}
 	fmt.Println()
 
 	// Read IOPS
-	fmt.Printf("%-15s", "Read IOPS")
+	fmt.Printf("%-20s", "Read IOPS")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].ReadIOPS))
 	}
 	fmt.Println()
 
 	// Write IOPS
-	fmt.Printf("%-15s", "Write IOPS")
+	fmt.Printf("%-20s", "Write IOPS")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.1f", results[keyType].WriteIOPS))
 	}
 	fmt.Println()
 
 	// Read throughput
-	fmt.Printf("%-15s", "Read MB/s")
+	fmt.Printf("%-20s", "Read MB/s")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].ReadThroughputMB))
 	}
 	fmt.Println()
 
 	// Write throughput
-	fmt.Printf("%-15s", "Write MB/s")
+	fmt.Printf("%-20s", "Write MB/s")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.2f", results[keyType].WriteThroughputMB))
 	}
@@ -120,7 +145,7 @@ func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, ke
 }
 
 // ReadAfterFragmentation displays a comparison table for read-after-fragmentation results
-func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentationResult, keyTypes []string) {
+func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentationResult, keyTypes []string, database string) {
 	fmt.Println()
 	fmt.Println()
 	fmt.Println("COMPARISON - Read After Fragmentation")
@@ -149,7 +174,7 @@ func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentation
 	fmt.Println()
 
 	// Buffer hit ratio
-	fmt.Printf("%-20s", "Buffer Hit Ratio")
+	fmt.Printf("%-20s", "Cache Hit Ratio")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].BufferHitRatio*100))
 	}
@@ -162,12 +187,23 @@ func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentation
 	}
 	fmt.Println()
 
-	// Fragmentation
-	fmt.Printf("%-20s", "Fragmentation")
-	for _, keyType := range keyTypes {
-		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+	// Leaf Fragmentation (PostgreSQL only)
+	if database == "postgres" {
+		fmt.Printf("%-20s", "Leaf Fragmentation")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+		}
+		fmt.Println()
 	}
-	fmt.Println()
+
+	// Space Amplification (Cassandra only)
+	if database == "cassandra" {
+		fmt.Printf("%-20s", "Space Amplification")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+		}
+		fmt.Println()
+	}
 
 	// Read latency p50
 	fmt.Printf("%-20s", "Latency p50")
@@ -213,7 +249,7 @@ func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentation
 }
 
 // UpdatePerformance displays a comparison table for update performance results
-func UpdatePerformance(results map[string]*benchmark.UpdatePerformanceResult, keyTypes []string) {
+func UpdatePerformance(results map[string]*benchmark.UpdatePerformanceResult, keyTypes []string, database string) {
 	fmt.Println()
 	fmt.Println()
 	fmt.Println("COMPARISON - Update Performance")
@@ -255,12 +291,23 @@ func UpdatePerformance(results map[string]*benchmark.UpdatePerformanceResult, ke
 	}
 	fmt.Println()
 
-	// Fragmentation after updates
-	fmt.Printf("%-20s", "Fragmentation")
-	for _, keyType := range keyTypes {
-		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+	// Leaf Fragmentation after updates (PostgreSQL only)
+	if database == "postgres" {
+		fmt.Printf("%-20s", "Leaf Fragmentation")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+		}
+		fmt.Println()
 	}
-	fmt.Println()
+
+	// Space Amplification after updates (Cassandra only)
+	if database == "cassandra" {
+		fmt.Printf("%-20s", "Space Amplification")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+		}
+		fmt.Println()
+	}
 
 	// Read IOPS
 	fmt.Printf("%-20s", "Read IOPS")
@@ -292,7 +339,7 @@ func UpdatePerformance(results map[string]*benchmark.UpdatePerformanceResult, ke
 }
 
 // MixedWorkload displays a comparison table for mixed workload results
-func MixedWorkload(results map[string]*benchmark.MixedWorkloadResult, keyTypes []string, workloadName string) {
+func MixedWorkload(results map[string]*benchmark.MixedWorkloadResult, keyTypes []string, workloadName, database string) {
 	fmt.Println()
 	fmt.Println()
 	fmt.Printf("COMPARISON - Mixed Workload: %s\n", workloadName)
@@ -369,7 +416,7 @@ func MixedWorkload(results map[string]*benchmark.MixedWorkloadResult, keyTypes [
 	fmt.Println()
 
 	// Buffer hit ratio
-	fmt.Printf("%-20s", "Buffer Hit Ratio")
+	fmt.Printf("%-20s", "Cache Hit Ratio")
 	for _, keyType := range keyTypes {
 		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].BufferHitRatio*100))
 	}
@@ -389,12 +436,23 @@ func MixedWorkload(results map[string]*benchmark.MixedWorkloadResult, keyTypes [
 	}
 	fmt.Println()
 
-	// Fragmentation
-	fmt.Printf("%-20s", "Fragmentation")
-	for _, keyType := range keyTypes {
-		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+	// Leaf Fragmentation (PostgreSQL only)
+	if database == "postgres" {
+		fmt.Printf("%-20s", "Leaf Fragmentation")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+		}
+		fmt.Println()
 	}
-	fmt.Println()
+
+	// Space Amplification (Cassandra only)
+	if database == "cassandra" {
+		fmt.Printf("%-20s", "Space Amplification")
+		for _, keyType := range keyTypes {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.FragmentationPercent))
+		}
+		fmt.Println()
+	}
 
 	// Read IOPS
 	fmt.Printf("%-20s", "Read IOPS")
