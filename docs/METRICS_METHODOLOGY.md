@@ -1,6 +1,6 @@
 # Metrics Methodology
 
-This document describes how each benchmark metric is measured in PostgreSQL and MySQL, the differences between implementations, and important caveats for interpreting results.
+This document describes how each benchmark metric is measured across all four databases (PostgreSQL, MySQL, MongoDB, Cassandra), the differences between implementations, and important caveats for interpreting results.
 
 ## Overview
 
@@ -240,48 +240,58 @@ Both measure the same concept. PostgreSQL provides per-table granularity; MySQL 
 
 ## 8. I/O Statistics (IOPS, MB/s)
 
-### Both Databases
-Measured externally using `iostat` on the container's block device:
-```bash
-iostat -dx 1 $duration
+### All Databases
+Measured via Linux cgroup v2 per-container I/O accounting:
+```
+/sys/fs/cgroup/system.slice/docker-<container_id>.scope/io.stat
 ```
 
-This measures:
+The kernel tracks I/O at the cgroup level, providing:
 - **Read IOPS**: Read operations per second
 - **Write IOPS**: Write operations per second
 - **Read MB/s**: Read throughput
 - **Write MB/s**: Write throughput
 
+Delta between before/after snapshots gives I/O during the workload phase.
+
+### Why cgroup v2 instead of iostat
+- **Container-isolated**: Only counts I/O from the benchmark container, not other system activity
+- **Zero overhead**: Kernel-level accounting, no sampling or polling
+- **No instrumentation needed**: Works with any database engine without configuration
+
 ### Comparability
-Identical measurement method for both databases - external observation of block device activity.
+Identical measurement method for all four databases — same kernel accounting, same delta calculation.
 
 ---
 
 ## Summary: Metric Equivalence
 
-| Metric | PostgreSQL | MySQL | Equivalent? |
-|--------|-----------|-------|-------------|
-| Throughput | pgbench TPS | sysbench TPS | Yes |
-| Latency | pgbench percentiles | sysbench percentiles | Yes |
-| Table Size | pg_table_size() | data_length + index_length | Yes |
-| Index Size | pg_indexes_size() | data_length (clustered) | Comparable* |
-| Page Splits | WAL inspection | innodb_metrics counter | Yes |
-| Fragmentation | Physical page order | B-tree overhead ratio | No** |
-| Leaf Density | pgstatindex | Not available (estimated) | No |
-| Buffer Hit | pg_stat_database | performance_schema | Yes |
-| IOPS | iostat | iostat | Yes |
+| Metric | PostgreSQL | MySQL | MongoDB | Cassandra | Comparable? |
+|--------|-----------|-------|---------|-----------|-------------|
+| Throughput | pgbench TPS | sysbench TPS | Go workload binary | Go workload binary | Yes |
+| Latency | pgbench percentiles | sysbench percentiles | Go workload binary | Go workload binary | Yes |
+| Table Size | pg_table_size() | data_length + index_length | collStats storageSize | nodetool tablestats | Yes |
+| Index Size | pg_indexes_size() | data_length (clustered) | collStats totalIndexSize | N/A (LSM-tree) | Comparable* |
+| Page Splits | WAL inspection | innodb_metrics counter | WiredTiger cache splits | N/A (compaction count) | Conceptually** |
+| Fragmentation | Physical page order | B-tree overhead ratio | freeStorageSize/storageSize | SSTable count + space amplification | No*** |
+| Leaf Density | pgstatindex | Not available (estimated) | Leaf pages from indexDetails | N/A (no B-tree leaves) | No |
+| Buffer Hit | pg_stat_database | performance_schema | WiredTiger cache stats | Key cache hit rate | Yes |
+| IOPS | cgroup v2 io.stat | cgroup v2 io.stat | cgroup v2 io.stat | cgroup v2 io.stat | Yes |
 
 \* MySQL's clustered index means "index size" includes row data in the B-tree
-\** Different metrics - both useful but measure different aspects of B-tree health
+\** B-tree page splits vs LSM-tree compaction measure different mechanisms for the same underlying cost (write amplification from non-sequential keys)
+\*** Four different definitions — each useful within its own database but not directly comparable across architectures
 
 ---
 
 ## Recommendations for Thesis
 
-1. **When comparing fragmentation**: Note that PostgreSQL measures physical page ordering while MySQL measures B-tree structural overhead. Both indicate B-tree health but are not directly comparable.
+1. **When comparing fragmentation**: Each database measures a different aspect. PostgreSQL measures physical page ordering, MySQL measures B-tree structural overhead, MongoDB measures free space ratio, Cassandra measures SSTable count and space amplification. Discuss these as architecture-specific effects rather than forcing direct comparisons.
 
-2. **Index size interpretation**: Explain that InnoDB's clustered index architecture means the primary key B-tree IS the table, while PostgreSQL separates heap storage from index storage.
+2. **Index size interpretation**: InnoDB's clustered index architecture means the primary key B-tree IS the table, while PostgreSQL separates heap storage from index storage. MongoDB's WiredTiger uses separate B-tree indexes. Cassandra's LSM-tree has no traditional index structure.
 
-3. **Page splits are comparable**: Both databases count actual B-tree page splits, making this a valid cross-database comparison metric.
+3. **Page splits vs compaction**: B-tree databases (PostgreSQL, MySQL, MongoDB) count page splits. Cassandra's LSM-tree uses compaction instead — a fundamentally different mechanism. Both represent the cost of non-sequential key ordering, but should be discussed separately.
 
-4. **Throughput is comparable**: Despite using different tools (pgbench vs sysbench), both measure operations per second under similar conditions (in-container execution, same workload patterns).
+4. **Throughput is comparable**: Despite using different tools (pgbench, sysbench, custom Go binary), all measure operations per second under similar conditions (in-container execution, localhost connection, same workload patterns).
+
+5. **I/O metrics are directly comparable**: All four databases use the same cgroup v2 kernel accounting for container-isolated I/O measurement.

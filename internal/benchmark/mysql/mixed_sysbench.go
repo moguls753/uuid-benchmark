@@ -28,6 +28,15 @@ func (m *MySQLBenchmarker) RunMixedWorkloadSysbench(keyType string, initialDatas
 	fmt.Printf("Running mixed workload (%d inserts, %d reads, %d updates)...\n",
 		insertOps, readOps, updateOps)
 
+	// Pre-generate UUIDs for the insert portion of the mixed workload
+	if insertWeight > 0 {
+		cleanup, err := sysbench.PrepareUUIDs("uuid-bench-mysql", keyType, totalOps)
+		if err != nil {
+			return nil, fmt.Errorf("prepare UUIDs for mixed workload: %w", err)
+		}
+		defer cleanup()
+	}
+
 	startPageSplits, err := m.capturePageSplitCount()
 	if err != nil {
 		fmt.Printf("Warning: Could not capture start page splits: %v\n", err)
@@ -39,7 +48,7 @@ func (m *MySQLBenchmarker) RunMixedWorkloadSysbench(keyType string, initialDatas
 
 	startTime := time.Now()
 
-	script := sysbench.GenerateMixedScript(keyType, m.tableName, insertWeight, readWeight, updateWeight)
+	script := sysbench.GenerateMixedScript(keyType, m.tableName, insertWeight, readWeight, updateWeight, connections)
 
 	scriptName := fmt.Sprintf("mixed_%s_%d_%d_%d.lua", keyType, insertWeight, readWeight, updateWeight)
 	containerPath, err := sysbench.CopyScriptToContainer("uuid-bench-mysql", script, scriptName)

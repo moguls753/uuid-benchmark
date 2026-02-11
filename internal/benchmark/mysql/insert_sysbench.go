@@ -9,6 +9,12 @@ import (
 )
 
 func (m *MySQLBenchmarker) InsertRecordsSysbench(keyType string, numRecords, batchSize int) (time.Duration, error) {
+	cleanup, err := sysbench.PrepareUUIDs("uuid-bench-mysql", keyType, numRecords)
+	if err != nil {
+		return 0, fmt.Errorf("prepare UUIDs: %w", err)
+	}
+	defer cleanup()
+
 	startPageSplits, err := m.capturePageSplitCount()
 	if err != nil {
 		fmt.Printf("Warning: Could not capture start page splits: %v\n", err)
@@ -19,9 +25,10 @@ func (m *MySQLBenchmarker) InsertRecordsSysbench(keyType string, numRecords, bat
 
 	startTime := time.Now()
 
-	script := sysbench.GenerateInsertScript(keyType, m.tableName)
+	threads := 1
+	script := sysbench.GenerateInsertScript(keyType, m.tableName, threads)
 	if batchSize > 1 {
-		script = sysbench.GenerateBatchInsertScript(keyType, m.tableName, batchSize)
+		script = sysbench.GenerateBatchInsertScript(keyType, m.tableName, batchSize, threads)
 	}
 
 	scriptName := fmt.Sprintf("insert_%s.lua", keyType)
@@ -75,6 +82,12 @@ func (m *MySQLBenchmarker) InsertRecordsSysbench(keyType string, numRecords, bat
 }
 
 func (m *MySQLBenchmarker) InsertRecordsSysbenchConcurrent(keyType string, numRecords, connections, batchSize int) (*benchmark.ConcurrentBenchmarkResult, error) {
+	cleanup, err := sysbench.PrepareUUIDs("uuid-bench-mysql", keyType, numRecords)
+	if err != nil {
+		return nil, fmt.Errorf("prepare UUIDs: %w", err)
+	}
+	defer cleanup()
+
 	startPageSplits, err := m.capturePageSplitCount()
 	if err != nil {
 		fmt.Printf("Warning: Could not capture start page splits: %v\n", err)
@@ -85,9 +98,9 @@ func (m *MySQLBenchmarker) InsertRecordsSysbenchConcurrent(keyType string, numRe
 
 	startTime := time.Now()
 
-	script := sysbench.GenerateInsertScript(keyType, m.tableName)
+	script := sysbench.GenerateInsertScript(keyType, m.tableName, connections)
 	if batchSize > 1 {
-		script = sysbench.GenerateBatchInsertScript(keyType, m.tableName, batchSize)
+		script = sysbench.GenerateBatchInsertScript(keyType, m.tableName, batchSize, connections)
 	}
 
 	scriptName := fmt.Sprintf("insert_%s_concurrent.lua", keyType)
