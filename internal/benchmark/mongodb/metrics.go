@@ -27,7 +27,11 @@ func (m *MongoDBBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, error
 	fragStats, err := m.measureFragmentation()
 	if err != nil {
 		fmt.Printf("Warning: Could not measure fragmentation: %v\n", err)
-		result.Fragmentation = benchmark.IndexFragmentationStats{}
+		result.Fragmentation = benchmark.IndexFragmentationStats{
+			AvgLeafDensity: -1,
+			LeafPages:      -1,
+			EmptyPages:     -1,
+		}
 	} else {
 		result.Fragmentation = fragStats
 	}
@@ -94,57 +98,16 @@ func (m *MongoDBBenchmarker) measureFragmentation() (benchmark.IndexFragmentatio
 		stats.FragmentationPercent = (freeStorage / storageSize) * 100
 	}
 
-	// WiredTiger does not expose leaf page fill factor (density).
-	// Only PostgreSQL's pgstatindex() provides this metric.
-	stats.AvgLeafDensity = -1 // N/A — not exposed by WiredTiger
-
-	// Get real leaf page count from WiredTiger index details
-	leafPages := m.measureLeafPages()
-	if leafPages > 0 {
-		stats.LeafPages = leafPages
-	}
+	// MongoDB 8 / WiredTiger 12 does not expose leaf page counts or fill factor.
+	// The btree stats (row-store leaf pages, number of key/value pairs) require
+	// a tree_walk flag on the WiredTiger statistics cursor, which MongoDB never
+	// triggers through its command API. Only PostgreSQL's pgstatindex() provides
+	// real leaf density metrics.
+	stats.AvgLeafDensity = -1 // N/A — tree_walk stats not triggered by MongoDB
+	stats.LeafPages = -1      // N/A — same reason (tree_walk required)
+	stats.EmptyPages = -1     // N/A — not exposed by MongoDB
 
 	return stats, nil
-}
-
-// measureLeafPages retrieves the actual B-tree leaf page count from WiredTiger
-// index details via collStats. Returns 0 if unavailable.
-func (m *MongoDBBenchmarker) measureLeafPages() int64 {
-	ctx := context.Background()
-	var stats bson.M
-	err := m.db.RunCommand(ctx, bson.D{
-		{Key: "collStats", Value: m.collName},
-		{Key: "scale", Value: 1},
-		{Key: "indexDetails", Value: true},
-	}).Decode(&stats)
-	if err != nil {
-		fmt.Printf("Warning: Could not get index details: %v\n", err)
-		return 0
-	}
-
-	// Navigate: indexDetails -> _id_ -> btree -> "row-store leaf pages"
-	indexDetails := bsonLookup(stats, "indexDetails")
-	if indexDetails == nil {
-		return 0
-	}
-
-	// Try _id_ index first (primary key)
-	idIndex := bsonLookup(indexDetails, "_id_")
-	if idIndex == nil {
-		return 0
-	}
-
-	btree := bsonLookup(idIndex, "btree")
-	if btree == nil {
-		return 0
-	}
-
-	leafPages := bsonLookup(btree, "row-store leaf pages")
-	if leafPages == nil {
-		return 0
-	}
-
-	return toInt64(leafPages)
 }
 
 // countPageSplits measures reconciliation multi-block writes (delta before/after).

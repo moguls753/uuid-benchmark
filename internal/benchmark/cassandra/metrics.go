@@ -53,7 +53,7 @@ func (c *CassandraBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, err
 	}
 	fragStats.LeafPages = int64(stats.SSTableCount) // Repurpose LeafPages for SSTable count
 	fragStats.AvgLeafDensity = -1 // N/A — LSM-tree has no B-tree leaf pages
-	fragStats.EmptyPages = 0
+	fragStats.EmptyPages = -1 // N/A — LSM-tree concept doesn't apply
 	result.Fragmentation = fragStats
 
 	// Page splits equivalent: compaction delta (if before snapshot available)

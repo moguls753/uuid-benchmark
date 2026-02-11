@@ -22,7 +22,10 @@ func (m *MySQLBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, error) 
 	fragStats, err := m.measureIndexFragmentation()
 	if err != nil {
 		fmt.Printf("Warning: Could not measure fragmentation: %v\n", err)
-		result.Fragmentation = benchmark.IndexFragmentationStats{}
+		result.Fragmentation = benchmark.IndexFragmentationStats{
+			AvgLeafDensity: -1,
+			EmptyPages:     -1,
+		}
 	} else {
 		result.Fragmentation = fragStats
 	}
@@ -111,7 +114,7 @@ func (m *MySQLBenchmarker) measureIndexFragmentation() (benchmark.IndexFragmenta
 		stats.FragmentationPercent = float64(internalPages) / float64(totalPages) * 100
 	}
 
-	stats.EmptyPages = 0 // InnoDB doesn't expose this
+	stats.EmptyPages = -1 // N/A — InnoDB doesn't expose this
 
 	return stats, nil
 }
