@@ -18,23 +18,16 @@ func (c *CassandraBenchmarker) RunMixedWorkload(keyType string, initialDataset, 
 		fmt.Printf("Warning: Could not capture metrics before mixed workload: %v\n", err)
 	}
 
-	var op string
-	switch {
-	case insertWeight == 90:
-		op = "mixed-insert-heavy"
-	case readWeight == 90:
-		op = "mixed-read-heavy"
-	default:
-		op = "mixed-balanced"
-	}
-
 	return workload.Execute(workload.ExecutorConfig{
 		ContainerName:    ContainerName,
 		DBType:           "cassandra",
-		Op:               op,
+		Op:               "mixed",
 		KeyType:          keyType,
 		NumOps:           totalOps,
 		Threads:          connections,
 		ConnectionString: WorkloadConnString,
+		InsertPct:        insertWeight,
+		ReadPct:          readWeight,
+		UpdatePct:        updateWeight,
 	})
 }

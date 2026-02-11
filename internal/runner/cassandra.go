@@ -75,7 +75,7 @@ func CassandraInsertPerformance(keyType string, numRecords, batchSize, connectio
 	return result, nil
 }
 
-func CassandraReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmark.ReadAfterFragmentationResult, error) {
+func CassandraReadPerformance(keyType string, numRecords, numReads int) (*benchmark.ReadPerformanceResult, error) {
 	bench := cassandra.New()
 
 	if err := bench.Connect(); err != nil {
@@ -87,7 +87,7 @@ func CassandraReadAfterFragmentation(keyType string, numRecords, numReads int) (
 		return nil, fmt.Errorf("create table: %w", err)
 	}
 
-	result := &benchmark.ReadAfterFragmentationResult{
+	result := &benchmark.ReadPerformanceResult{
 		KeyType:    keyType,
 		NumRecords: numRecords,
 		NumReads:   numReads,
@@ -246,9 +246,9 @@ func CassandraMixedWorkloadInsertHeavy(keyType string, totalOps, connections, ba
 
 	initialDataset := 100000
 
-	fmt.Printf("\n=== Mixed Workload: Insert-Heavy (90%% insert, 10%% read) - %s ===\n", keyType)
+	fmt.Printf("\n=== Mixed Workload: Insert-Heavy (70%% insert, 30%% read) - %s ===\n", keyType)
 
-	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 90, 10, 0)
+	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 70, 30, 0)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
@@ -258,7 +258,7 @@ func CassandraMixedWorkloadInsertHeavy(keyType string, totalOps, connections, ba
 		return nil, fmt.Errorf("measure metrics: %w", err)
 	}
 
-	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 90, 10, 0)
+	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 70, 30, 0)
 
 	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
 	fmt.Printf("Cache hit ratio: %.2f%%\n", result.BufferHitRatio*100)
@@ -266,41 +266,7 @@ func CassandraMixedWorkloadInsertHeavy(keyType string, totalOps, connections, ba
 	return result, nil
 }
 
-func CassandraMixedWorkloadReadHeavy(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
-	bench := cassandra.New()
-
-	if err := bench.Connect(); err != nil {
-		return nil, fmt.Errorf("connect: %w", err)
-	}
-	defer bench.Close()
-
-	if err := bench.CreateTable(keyType); err != nil {
-		return nil, fmt.Errorf("create table: %w", err)
-	}
-
-	initialDataset := 1000000
-
-	fmt.Printf("\n=== Mixed Workload: Read-Heavy (10%% insert, 90%% read) - %s ===\n", keyType)
-
-	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 10, 90, 0)
-	if err != nil {
-		return nil, fmt.Errorf("run mixed workload: %w", err)
-	}
-
-	metrics, err := bench.MeasureMetrics()
-	if err != nil {
-		return nil, fmt.Errorf("measure metrics: %w", err)
-	}
-
-	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 10, 90, 0)
-
-	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
-	fmt.Printf("Cache hit ratio: %.2f%%\n", result.BufferHitRatio*100)
-
-	return result, nil
-}
-
-func CassandraMixedWorkloadBalanced(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
+func CassandraMixedWorkloadReadUpdate(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
 	bench := cassandra.New()
 
 	if err := bench.Connect(); err != nil {
@@ -314,9 +280,9 @@ func CassandraMixedWorkloadBalanced(keyType string, totalOps, connections int) (
 
 	initialDataset := 500000
 
-	fmt.Printf("\n=== Mixed Workload: Balanced (50%% insert, 30%% read, 20%% update) - %s ===\n", keyType)
+	fmt.Printf("\n=== Mixed Workload: YCSB-A (50%% read, 50%% update) - %s ===\n", keyType)
 
-	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 50, 30, 20)
+	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 0, 50, 50)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
@@ -326,7 +292,7 @@ func CassandraMixedWorkloadBalanced(keyType string, totalOps, connections int) (
 		return nil, fmt.Errorf("measure metrics: %w", err)
 	}
 
-	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 50, 30, 20)
+	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 0, 50, 50)
 
 	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
 	fmt.Printf("Cache hit ratio: %.2f%%\n", result.BufferHitRatio*100)

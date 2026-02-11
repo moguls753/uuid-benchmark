@@ -14,10 +14,10 @@ Focus on measuring:
 ## Implementation Status
 
 **Complete:**
-- PostgreSQL 18 with pgbench integration (all 6 scenarios, all metrics)
-- MySQL 8 with sysbench integration (all 6 scenarios, all metrics)
-- MongoDB 8 with custom Go workload binary (all 6 scenarios, all metrics)
-- Cassandra 5 with custom Go workload binary (all 6 scenarios, all metrics)
+- PostgreSQL 18 with pgbench integration (all 5 scenarios, all metrics)
+- MySQL 8 with sysbench integration (all 5 scenarios, all metrics)
+- MongoDB 8 with custom Go workload binary (all 5 scenarios, all metrics)
+- Cassandra 5 with custom Go workload binary (all 5 scenarios, all metrics)
 - Shared workload binary (`cmd/workload/main.go`) for MongoDB/Cassandra with proper UUID generation via Go libraries
 - Statistical analysis (Mann-Whitney U, median, mean, stddev, CV, multi-run mode)
 - CSV export (summary stats + raw per-run data)
@@ -48,7 +48,7 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 
 # Run individual scenario
 ./uuid-benchmark -database=postgres -scenario=insert-performance -num-records=100000 -batch-size=100
-./uuid-benchmark -database=mongodb -scenario=read-after-fragmentation -num-records=1000000 -num-ops=10000
+./uuid-benchmark -database=mongodb -scenario=read-performance -num-records=1000000 -num-ops=10000
 ```
 
 ### CLI Flags
@@ -56,7 +56,7 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 | Flag | Default | Description |
 |------|---------|-------------|
 | `-database` | `postgres` | Database to test: `postgres`, `mysql`, `mongodb`, `cassandra` |
-| `-scenario` | `insert-performance` | Scenario: `insert-performance`, `read-after-fragmentation`, `update-performance`, `mixed-insert-heavy`, `mixed-read-heavy`, `mixed-balanced`, `all` |
+| `-scenario` | `insert-performance` | Scenario: `insert-performance`, `read-performance`, `update-performance`, `mixed-insert-heavy`, `mixed-read-update`, `all` |
 | `-num-records` | `100000` | Dataset size for insert operations |
 | `-num-ops` | `10000` | Number of operations for read/update/mixed scenarios |
 | `-connections` | `1` | Concurrent workers |
@@ -169,11 +169,10 @@ display.ComparisonTable(results)
 | Scenario | Description | Key Metrics |
 |----------|-------------|-------------|
 | `insert-performance` | Sequential bulk inserts | Throughput, page splits, fragmentation, disk size |
-| `read-after-fragmentation` | Insert → reset stats → read workload | Buffer pool hit ratios, read throughput |
+| `read-performance` | Insert → reset stats → read workload | Buffer pool hit ratios, read throughput |
 | `update-performance` | Insert → random updates | Update throughput, fragmentation change |
-| `mixed-insert-heavy` | 90% insert, 10% read | Mixed throughput, latency |
-| `mixed-read-heavy` | 10% insert, 90% read | Mixed throughput, latency |
-| `mixed-balanced` | 50% insert, 30% read, 20% update | OLTP simulation |
+| `mixed-insert-heavy` | 70% insert, 30% read | Mixed throughput, latency under write pressure |
+| `mixed-read-update` | 50% read, 50% update (YCSB Workload A) | OLTP simulation throughput, latency |
 
 ## Database-Specific Details
 

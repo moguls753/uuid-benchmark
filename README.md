@@ -29,7 +29,7 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 ## Options
 
 - `-database` - Database to benchmark: `postgres`, `mysql`, `mongodb`, `cassandra` (default: postgres)
-- `-scenario` - Scenario to run: `insert-performance`, `read-after-fragmentation`, `update-performance`, `mixed-insert-heavy`, `mixed-read-heavy`, `mixed-balanced`, `all`
+- `-scenario` - Scenario to run: `insert-performance`, `read-performance`, `update-performance`, `mixed-insert-heavy`, `mixed-read-update`, `all`
 - `-num-records` - Dataset size for insert scenarios (default: 100000)
 - `-num-ops` - Number of operations for read/update/mixed (default: 10000)
 - `-connections` - Concurrent workers (default: 1)
@@ -40,11 +40,10 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 ## Scenarios
 
 - `insert-performance` - Page splits, fragmentation, disk usage, throughput
-- `read-after-fragmentation` - Buffer pool hit ratios, memory efficiency
+- `read-performance` - Buffer pool hit ratios, memory efficiency
 - `update-performance` - Update throughput, fragmentation impact
-- `mixed-insert-heavy` - 90% insert, 10% read workload
-- `mixed-read-heavy` - 10% insert, 90% read workload
-- `mixed-balanced` - 50% insert, 30% read, 20% update (OLTP simulation)
+- `mixed-insert-heavy` - 70% insert, 30% read workload
+- `mixed-read-update` - 50% read, 50% update (YCSB Workload A)
 - `all` - Runs all scenarios sequentially (comprehensive benchmark)
 
 ## How It Works
@@ -88,5 +87,5 @@ PostgreSQL results validated against **go-ycsb** (industry-standard benchmark) f
 
 ```bash
 cd validation
-./run-comparison.sh balanced  # Runs both tools, compares sequential int results
+./run-comparison.sh insert  # Runs both tools, compares sequential int results
 ```

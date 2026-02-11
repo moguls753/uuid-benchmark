@@ -144,11 +144,11 @@ func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, ke
 	fmt.Println()
 }
 
-// ReadAfterFragmentation displays a comparison table for read-after-fragmentation results
-func ReadAfterFragmentation(results map[string]*benchmark.ReadAfterFragmentationResult, keyTypes []string, database string) {
+// ReadPerformance displays a comparison table for read-performance results
+func ReadPerformance(results map[string]*benchmark.ReadPerformanceResult, keyTypes []string, database string) {
 	fmt.Println()
 	fmt.Println()
-	fmt.Println("COMPARISON - Read After Fragmentation")
+	fmt.Println("COMPARISON - Read Performance")
 	fmt.Println(strings.Repeat("=", 135))
 
 	// Header

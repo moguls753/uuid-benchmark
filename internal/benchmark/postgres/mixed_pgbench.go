@@ -96,7 +96,7 @@ func (p *PostgresBenchmarker) RunMixedWorkloadPgbench(keyType string, initialDat
 		// Per-operation throughput metrics (InsertThroughput, ReadThroughput, UpdateThroughput)
 		// are set to 0 because pgbench doesn't separate throughput by operation type in mixed mode.
 		// To measure per-operation throughput, run separate scenarios (insert-performance,
-		// read-after-fragmentation, update-performance) instead of mixed workloads.
+		// read-performance, update-performance) instead of mixed workloads.
 		InsertThroughput:    0,
 		ReadThroughput:      0,
 		UpdateThroughput:    0,

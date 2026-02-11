@@ -83,7 +83,7 @@ func InsertPerformance(keyType string, numRecords, batchSize, connections int) (
 	return result, nil
 }
 
-func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmark.ReadAfterFragmentationResult, error) {
+func ReadPerformance(keyType string, numRecords, numReads int) (*benchmark.ReadPerformanceResult, error) {
 	bench := postgres.New()
 
 	if err := bench.Connect(); err != nil {
@@ -95,7 +95,7 @@ func ReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmar
 		return nil, fmt.Errorf("create table: %w", err)
 	}
 
-	result := &benchmark.ReadAfterFragmentationResult{
+	result := &benchmark.ReadPerformanceResult{
 		KeyType:    keyType,
 		NumRecords: numRecords,
 		NumReads:   numReads,
@@ -244,51 +244,20 @@ func MixedWorkloadInsertHeavy(keyType string, totalOps, connections, batchSize i
 
 	initialDataset := 100000
 
-	fmt.Printf("\n=== Mixed Workload: Insert-Heavy (90%% insert, 10%% read) - %s ===\n", keyType)
+	fmt.Printf("\n=== Mixed Workload: Insert-Heavy (70%% insert, 30%% read) - %s ===\n", keyType)
 
-	result, err := bench.RunMixedWorkloadPgbench(keyType, initialDataset, totalOps, connections, 90, 10, 0)
+	result, err := bench.RunMixedWorkloadPgbench(keyType, initialDataset, totalOps, connections, 70, 30, 0)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
 
 	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
-	fmt.Printf("Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
-	fmt.Printf("Read throughput: %.2f rec/sec\n", result.ReadThroughput)
 	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
 
 	return result, nil
 }
 
-func MixedWorkloadReadHeavy(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
-	bench := postgres.New()
-
-	if err := bench.Connect(); err != nil {
-		return nil, fmt.Errorf("connect: %w", err)
-	}
-	defer bench.Close()
-
-	if err := bench.CreateTable(keyType); err != nil {
-		return nil, fmt.Errorf("create table: %w", err)
-	}
-
-	initialDataset := 1000000
-
-	fmt.Printf("\n=== Mixed Workload: Read-Heavy (10%% insert, 90%% read) - %s ===\n", keyType)
-
-	result, err := bench.RunMixedWorkloadPgbench(keyType, initialDataset, totalOps, connections, 10, 90, 0)
-	if err != nil {
-		return nil, fmt.Errorf("run mixed workload: %w", err)
-	}
-
-	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
-	fmt.Printf("Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
-	fmt.Printf("Read throughput: %.2f rec/sec\n", result.ReadThroughput)
-	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
-
-	return result, nil
-}
-
-func MixedWorkloadBalanced(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
+func MixedWorkloadReadUpdate(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
 	bench := postgres.New()
 
 	if err := bench.Connect(); err != nil {
@@ -302,17 +271,14 @@ func MixedWorkloadBalanced(keyType string, totalOps, connections int) (*benchmar
 
 	initialDataset := 500000
 
-	fmt.Printf("\n=== Mixed Workload: Balanced (50%% insert, 30%% read, 20%% update) - %s ===\n", keyType)
+	fmt.Printf("\n=== Mixed Workload: YCSB-A (50%% read, 50%% update) - %s ===\n", keyType)
 
-	result, err := bench.RunMixedWorkloadPgbench(keyType, initialDataset, totalOps, connections, 50, 30, 20)
+	result, err := bench.RunMixedWorkloadPgbench(keyType, initialDataset, totalOps, connections, 0, 50, 50)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
 
 	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
-	fmt.Printf("Insert throughput: %.2f rec/sec\n", result.InsertThroughput)
-	fmt.Printf("Read throughput: %.2f rec/sec\n", result.ReadThroughput)
-	fmt.Printf("Update throughput: %.2f rec/sec\n", result.UpdateThroughput)
 	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
 
 	return result, nil

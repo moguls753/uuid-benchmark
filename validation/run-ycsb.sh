@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Script to run go-ycsb inside PostgreSQL container for architectural parity with uuid-benchmark
 # Usage: ./run-ycsb.sh <workload_name>
-#   workload_name: read_heavy, balanced, insert_heavy, mixed_read_heavy
+#   workload_name: insert, read
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"

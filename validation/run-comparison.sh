@@ -32,7 +32,7 @@ case $SCENARIO in
         DESC="100% insert ($NUM_RECORDS records, 10 connections, batch-size=1)"
         ;;
     read)
-        UUID_SCENARIO="read-after-fragmentation"
+        UUID_SCENARIO="read-performance"
         UUID_FLAGS="-num-records=$NUM_RECORDS -num-ops=$NUM_RECORDS -connections=10"
         YCSB_WORKLOAD="read"
         DESC="100% read ($NUM_RECORDS records, $NUM_RECORDS ops, 10 connections)"

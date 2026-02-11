@@ -44,13 +44,16 @@ func init() {
 
 func main() {
 	dbType := flag.String("db-type", "", "Database type: mongodb or cassandra")
-	op := flag.String("op", "", "Operation: insert, read, update, mixed-insert-heavy, mixed-read-heavy, mixed-balanced")
+	op := flag.String("op", "", "Operation: insert, read, update, mixed")
 	keyType := flag.String("key-type", "", "Key type: sequential, uuidv1, uuidv4, uuidv7, ulid, ulid_monotonic")
 	numRecords := flag.Int("num-records", 0, "Number of records")
 	numOps := flag.Int("num-ops", 0, "Number of operations (for read/update/mixed)")
 	batchSize := flag.Int("batch-size", 1, "Batch size for inserts")
 	threads := flag.Int("threads", 1, "Number of concurrent threads")
 	connString := flag.String("connection-string", "", "Database connection string")
+	insertPct := flag.Int("insert-pct", 0, "Insert percentage for mixed workload")
+	readPct := flag.Int("read-pct", 0, "Read percentage for mixed workload")
+	updatePct := flag.Int("update-pct", 0, "Update percentage for mixed workload")
 	flag.Parse()
 
 	if *dbType == "" || *op == "" || *keyType == "" {
@@ -62,9 +65,9 @@ func main() {
 
 	switch *dbType {
 	case "mongodb":
-		result, err = runMongoDB(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString)
+		result, err = runMongoDB(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct)
 	case "cassandra":
-		result, err = runCassandra(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString)
+		result, err = runCassandra(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct)
 	default:
 		log.Fatalf("Unknown db-type: %s", *dbType)
 	}
@@ -164,7 +167,7 @@ func calculatePercentiles(latencies []int64) (p50, p95, p99 int64) {
 	return
 }
 
-func runMongoDB(op, keyType string, numRecords, numOps, batchSize, threads int, connString string) (*Result, error) {
+func runMongoDB(op, keyType string, numRecords, numOps, batchSize, threads int, connString string, insertPct, readPct, updatePct int) (*Result, error) {
 	ctx := context.Background()
 
 	client, err := mongo.Connect(options.Client().ApplyURI(connString))
@@ -183,12 +186,8 @@ func runMongoDB(op, keyType string, numRecords, numOps, batchSize, threads int, 
 		return mongoRead(ctx, coll, keyType, numOps, threads)
 	case "update":
 		return mongoUpdate(ctx, coll, keyType, numOps, threads)
-	case "mixed-insert-heavy":
-		return mongoMixed(ctx, coll, keyType, numOps, threads, 90, 10, 0)
-	case "mixed-read-heavy":
-		return mongoMixed(ctx, coll, keyType, numOps, threads, 10, 90, 0)
-	case "mixed-balanced":
-		return mongoMixed(ctx, coll, keyType, numOps, threads, 50, 30, 20)
+	case "mixed":
+		return mongoMixed(ctx, coll, keyType, numOps, threads, insertPct, readPct, updatePct)
 	default:
 		return nil, fmt.Errorf("unknown operation: %s", op)
 	}
@@ -542,7 +541,7 @@ func fetchMongoIDs(ctx context.Context, coll *mongo.Collection, limit int) ([]an
 	return ids, nil
 }
 
-func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int, connString string) (*Result, error) {
+func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int, connString string, insertPct, readPct, updatePct int) (*Result, error) {
 	cluster := gocql.NewCluster(connString)
 	cluster.Keyspace = "uuid_benchmark"
 	cluster.Consistency = gocql.LocalOne
@@ -563,12 +562,8 @@ func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int
 		return cassandraRead(session, keyType, numOps, threads)
 	case "update":
 		return cassandraUpdate(session, keyType, numOps, threads)
-	case "mixed-insert-heavy":
-		return cassandraMixed(session, keyType, numOps, threads, 90, 10, 0)
-	case "mixed-read-heavy":
-		return cassandraMixed(session, keyType, numOps, threads, 10, 90, 0)
-	case "mixed-balanced":
-		return cassandraMixed(session, keyType, numOps, threads, 50, 30, 20)
+	case "mixed":
+		return cassandraMixed(session, keyType, numOps, threads, insertPct, readPct, updatePct)
 	default:
 		return nil, fmt.Errorf("unknown operation: %s", op)
 	}

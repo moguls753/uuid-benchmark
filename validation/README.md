@@ -43,9 +43,9 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 cd validation
 
 # Run full comparison (both tools, automatic comparison)
-./run-comparison.sh balanced
+./run-comparison.sh insert
 
-# Available scenarios: balanced, read_heavy, insert_heavy, mixed_read_heavy
+# Available scenarios: insert, read
 ```
 
 Results automatically saved to `results/`. View comparison:
@@ -78,10 +78,8 @@ YCSB generates numeric keys (1, 2, 3...) suitable for BIGSERIAL, but cannot gene
 
 | uuid-benchmark Scenario | YCSB Workload | Operations |
 |-------------------------|---------------|------------|
-| `read-after-fragmentation` | `read_heavy` | 100% read |
-| `mixed-balanced` | `balanced` | 50% read, 50% update |
-| `mixed-insert-heavy` | `insert_heavy` | 90% insert, 10% read |
-| `mixed-read-heavy` | `mixed_read_heavy` | 10% insert, 90% read |
+| `insert-performance` | `insert` | 100% insert |
+| `read-performance` | `read` | 100% read |
 
 ## Expected Results
 

@@ -20,70 +20,65 @@ var allKeyTypes = []string{"sequential", "uuidv4", "uuidv7", "ulid", "ulid_monot
 
 // Database configuration
 type dbConfig struct {
-	name          string
-	id            string // canonical lowercase name for display logic ("postgres", "mysql", "mongodb", "cassandra")
-	containerCfg  container.Config
-	insertFunc    func(string, int, int, int) (*benchmark.InsertPerformanceResult, error)
-	readFunc      func(string, int, int) (*benchmark.ReadAfterFragmentationResult, error)
-	updateFunc    func(string, int, int, int) (*benchmark.UpdatePerformanceResult, error)
-	mixedInsert   func(string, int, int, int) (*benchmark.MixedWorkloadResult, error)
-	mixedRead     func(string, int, int) (*benchmark.MixedWorkloadResult, error)
-	mixedBalanced func(string, int, int) (*benchmark.MixedWorkloadResult, error)
+	name             string
+	id               string // canonical lowercase name for display logic ("postgres", "mysql", "mongodb", "cassandra")
+	containerCfg     container.Config
+	insertFunc       func(string, int, int, int) (*benchmark.InsertPerformanceResult, error)
+	readFunc         func(string, int, int) (*benchmark.ReadPerformanceResult, error)
+	updateFunc       func(string, int, int, int) (*benchmark.UpdatePerformanceResult, error)
+	mixedInsertHeavy func(string, int, int, int) (*benchmark.MixedWorkloadResult, error)
+	mixedReadUpdate  func(string, int, int) (*benchmark.MixedWorkloadResult, error)
 }
 
 var postgresDB = dbConfig{
-	name:          "PostgreSQL",
-	id:            "postgres",
-	containerCfg:  container.PostgresConfig,
-	insertFunc:    runner.InsertPerformance,
-	readFunc:      runner.ReadAfterFragmentation,
-	updateFunc:    runner.UpdatePerformance,
-	mixedInsert:   runner.MixedWorkloadInsertHeavy,
-	mixedRead:     runner.MixedWorkloadReadHeavy,
-	mixedBalanced: runner.MixedWorkloadBalanced,
+	name:             "PostgreSQL",
+	id:               "postgres",
+	containerCfg:     container.PostgresConfig,
+	insertFunc:       runner.InsertPerformance,
+	readFunc:         runner.ReadPerformance,
+	updateFunc:       runner.UpdatePerformance,
+	mixedInsertHeavy: runner.MixedWorkloadInsertHeavy,
+	mixedReadUpdate:  runner.MixedWorkloadReadUpdate,
 }
 
 var mysqlDB = dbConfig{
-	name:          "MySQL",
-	id:            "mysql",
-	containerCfg:  container.MySQLConfig,
-	insertFunc:    runner.MySQLInsertPerformance,
-	readFunc:      runner.MySQLReadAfterFragmentation,
-	updateFunc:    runner.MySQLUpdatePerformance,
-	mixedInsert:   runner.MySQLMixedWorkloadInsertHeavy,
-	mixedRead:     runner.MySQLMixedWorkloadReadHeavy,
-	mixedBalanced: runner.MySQLMixedWorkloadBalanced,
+	name:             "MySQL",
+	id:               "mysql",
+	containerCfg:     container.MySQLConfig,
+	insertFunc:       runner.MySQLInsertPerformance,
+	readFunc:         runner.MySQLReadPerformance,
+	updateFunc:       runner.MySQLUpdatePerformance,
+	mixedInsertHeavy: runner.MySQLMixedWorkloadInsertHeavy,
+	mixedReadUpdate:  runner.MySQLMixedWorkloadReadUpdate,
 }
 
 var mongodbDB = dbConfig{
-	name:          "MongoDB",
-	id:            "mongodb",
-	containerCfg:  container.MongoDBConfig,
-	insertFunc:    runner.MongoDBInsertPerformance,
-	readFunc:      runner.MongoDBReadAfterFragmentation,
-	updateFunc:    runner.MongoDBUpdatePerformance,
-	mixedInsert:   runner.MongoDBMixedWorkloadInsertHeavy,
-	mixedRead:     runner.MongoDBMixedWorkloadReadHeavy,
-	mixedBalanced: runner.MongoDBMixedWorkloadBalanced,
+	name:             "MongoDB",
+	id:               "mongodb",
+	containerCfg:     container.MongoDBConfig,
+	insertFunc:       runner.MongoDBInsertPerformance,
+	readFunc:         runner.MongoDBReadPerformance,
+	updateFunc:       runner.MongoDBUpdatePerformance,
+	mixedInsertHeavy: runner.MongoDBMixedWorkloadInsertHeavy,
+	mixedReadUpdate:  runner.MongoDBMixedWorkloadReadUpdate,
 }
 
 var cassandraDB = dbConfig{
-	name:          "Cassandra",
-	id:            "cassandra",
-	containerCfg:  container.CassandraConfig,
-	insertFunc:    runner.CassandraInsertPerformance,
-	readFunc:      runner.CassandraReadAfterFragmentation,
-	updateFunc:    runner.CassandraUpdatePerformance,
-	mixedInsert:   runner.CassandraMixedWorkloadInsertHeavy,
-	mixedRead:     runner.CassandraMixedWorkloadReadHeavy,
-	mixedBalanced: runner.CassandraMixedWorkloadBalanced,
+	name:             "Cassandra",
+	id:               "cassandra",
+	containerCfg:     container.CassandraConfig,
+	insertFunc:       runner.CassandraInsertPerformance,
+	readFunc:         runner.CassandraReadPerformance,
+	updateFunc:       runner.CassandraUpdatePerformance,
+	mixedInsertHeavy: runner.CassandraMixedWorkloadInsertHeavy,
+	mixedReadUpdate:  runner.CassandraMixedWorkloadReadUpdate,
 }
 
 var currentDB dbConfig
 
 func main() {
 	database := flag.String("database", "postgres", "Database to benchmark (postgres, mysql, mongodb, cassandra)")
-	scenario := flag.String("scenario", "insert-performance", "Scenario to run (insert-performance, read-after-fragmentation, update-performance, mixed-insert-heavy, mixed-read-heavy, mixed-balanced, all)")
+	scenario := flag.String("scenario", "insert-performance", "Scenario to run (insert-performance, read-performance, update-performance, mixed-insert-heavy, mixed-read-update, all)")
 	numRecords := flag.Int("num-records", 100000, "Number of records for insert operations")
 	numOps := flag.Int("num-ops", 10000, "Number of operations for read/update/mixed scenarios")
 	connections := flag.Int("connections", 1, "Number of concurrent connections")
@@ -130,8 +125,8 @@ func main() {
 	case "insert-performance":
 		runInsertPerformance(*numRecords, *batchSize, *connections, *numRuns, *output, currentDB.id)
 
-	case "read-after-fragmentation":
-		runReadAfterFragmentation(*numRecords, *numOps, *numRuns, currentDB.id)
+	case "read-performance":
+		runReadPerformance(*numRecords, *numOps, *numRuns, currentDB.id)
 
 	case "update-performance":
 		runUpdatePerformance(*numRecords, *numOps, *batchSize, *numRuns, currentDB.id)
@@ -139,11 +134,8 @@ func main() {
 	case "mixed-insert-heavy":
 		runMixedWorkloadInsertHeavy(*numOps, *connections, *batchSize, *numRuns, currentDB.id)
 
-	case "mixed-read-heavy":
-		runMixedWorkloadReadHeavy(*numOps, *connections, *numRuns, currentDB.id)
-
-	case "mixed-balanced":
-		runMixedWorkloadBalanced(*numOps, *connections, *numRuns, currentDB.id)
+	case "mixed-read-update":
+		runMixedWorkloadReadUpdate(*numOps, *connections, *numRuns, currentDB.id)
 
 	case "all":
 		runAllScenarios(*numRecords, *numOps, *connections, *batchSize, *numRuns, *output, currentDB.id)
@@ -280,8 +272,8 @@ func aggregateInsertPerformanceResults(runs []*benchmark.InsertPerformanceResult
 	}
 }
 
-func runReadAfterFragmentation(numRecords, numOps, numRuns int, database string) {
-	results := make(map[string]*benchmark.ReadAfterFragmentationResult)
+func runReadPerformance(numRecords, numOps, numRuns int, database string) {
+	results := make(map[string]*benchmark.ReadPerformanceResult)
 
 	for _, keyType := range allKeyTypes {
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
@@ -299,7 +291,7 @@ func runReadAfterFragmentation(numRecords, numOps, numRuns int, database string)
 		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
-	display.ReadAfterFragmentation(results, allKeyTypes, database)
+	display.ReadPerformance(results, allKeyTypes, database)
 }
 
 func runUpdatePerformance(numRecords, numOps, batchSize, numRuns int, database string) {
@@ -333,7 +325,7 @@ func runMixedWorkloadInsertHeavy(totalOps, connections, batchSize, numRuns int, 
 
 		container.Start(currentDB.containerCfg)
 
-		result, err := currentDB.mixedInsert(keyType, totalOps, connections, batchSize)
+		result, err := currentDB.mixedInsertHeavy(keyType, totalOps, connections, batchSize)
 		if err != nil {
 			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
@@ -343,10 +335,10 @@ func runMixedWorkloadInsertHeavy(totalOps, connections, batchSize, numRuns int, 
 		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
-	display.MixedWorkload(results, allKeyTypes, "Insert-Heavy (90% insert, 10% read)", database)
+	display.MixedWorkload(results, allKeyTypes, "Insert-Heavy (70% insert, 30% read)", database)
 }
 
-func runMixedWorkloadReadHeavy(totalOps, connections, numRuns int, database string) {
+func runMixedWorkloadReadUpdate(totalOps, connections, numRuns int, database string) {
 	results := make(map[string]*benchmark.MixedWorkloadResult)
 
 	for _, keyType := range allKeyTypes {
@@ -355,7 +347,7 @@ func runMixedWorkloadReadHeavy(totalOps, connections, numRuns int, database stri
 
 		container.Start(currentDB.containerCfg)
 
-		result, err := currentDB.mixedRead(keyType, totalOps, connections)
+		result, err := currentDB.mixedReadUpdate(keyType, totalOps, connections)
 		if err != nil {
 			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
@@ -365,29 +357,7 @@ func runMixedWorkloadReadHeavy(totalOps, connections, numRuns int, database stri
 		container.Stop(currentDB.containerCfg.ComposeFile)
 	}
 
-	display.MixedWorkload(results, allKeyTypes, "Read-Heavy (10% insert, 90% read)", database)
-}
-
-func runMixedWorkloadBalanced(totalOps, connections, numRuns int, database string) {
-	results := make(map[string]*benchmark.MixedWorkloadResult)
-
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
-
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.mixedBalanced(keyType, totalOps, connections)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
-	}
-
-	display.MixedWorkload(results, allKeyTypes, "Balanced (50% insert, 30% read, 20% update)", database)
+	display.MixedWorkload(results, allKeyTypes, "YCSB-A (50% read, 50% update)", database)
 }
 
 // Helper functions for runAllScenarios - collect results without displaying
@@ -413,8 +383,8 @@ func collectInsertPerformanceResults(numRecords, batchSize, connections int) map
 	return results
 }
 
-func collectReadAfterFragmentationResults(numRecords, numOps int) map[string]*benchmark.ReadAfterFragmentationResult {
-	results := make(map[string]*benchmark.ReadAfterFragmentationResult)
+func collectReadPerformanceResults(numRecords, numOps int) map[string]*benchmark.ReadPerformanceResult {
+	results := make(map[string]*benchmark.ReadPerformanceResult)
 
 	for _, keyType := range allKeyTypes {
 		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
@@ -466,7 +436,7 @@ func collectMixedWorkloadInsertHeavyResults(totalOps, connections, batchSize int
 
 		container.Start(currentDB.containerCfg)
 
-		result, err := currentDB.mixedInsert(keyType, totalOps, connections, batchSize)
+		result, err := currentDB.mixedInsertHeavy(keyType, totalOps, connections, batchSize)
 		if err != nil {
 			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
@@ -479,7 +449,7 @@ func collectMixedWorkloadInsertHeavyResults(totalOps, connections, batchSize int
 	return results
 }
 
-func collectMixedWorkloadReadHeavyResults(totalOps, connections int) map[string]*benchmark.MixedWorkloadResult {
+func collectMixedWorkloadReadUpdateResults(totalOps, connections int) map[string]*benchmark.MixedWorkloadResult {
 	results := make(map[string]*benchmark.MixedWorkloadResult)
 
 	for _, keyType := range allKeyTypes {
@@ -488,29 +458,7 @@ func collectMixedWorkloadReadHeavyResults(totalOps, connections int) map[string]
 
 		container.Start(currentDB.containerCfg)
 
-		result, err := currentDB.mixedRead(keyType, totalOps, connections)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
-	}
-
-	return results
-}
-
-func collectMixedWorkloadBalancedResults(totalOps, connections int) map[string]*benchmark.MixedWorkloadResult {
-	results := make(map[string]*benchmark.MixedWorkloadResult)
-
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
-
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.mixedBalanced(keyType, totalOps, connections)
+		result, err := currentDB.mixedReadUpdate(keyType, totalOps, connections)
 		if err != nil {
 			container.Stop(currentDB.containerCfg.ComposeFile)
 			log.Fatalf("Scenario failed for %s: %v", keyType, err)
@@ -541,29 +489,25 @@ func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, ou
 	startTime := time.Now()
 
 	// Collect all results first
-	fmt.Println("\n[1/6] INSERT PERFORMANCE")
+	fmt.Println("\n[1/5] INSERT PERFORMANCE")
 	fmt.Println(strings.Repeat("=", 100))
 	insertResults := collectInsertPerformanceResults(numRecords, batchSize, connections)
 
-	fmt.Println("\n[2/6] READ AFTER FRAGMENTATION")
+	fmt.Println("\n[2/5] READ PERFORMANCE")
 	fmt.Println(strings.Repeat("=", 100))
-	readResults := collectReadAfterFragmentationResults(numRecords, numOps)
+	readResults := collectReadPerformanceResults(numRecords, numOps)
 
-	fmt.Println("\n[3/6] UPDATE PERFORMANCE")
+	fmt.Println("\n[3/5] UPDATE PERFORMANCE")
 	fmt.Println(strings.Repeat("=", 100))
 	updateResults := collectUpdatePerformanceResults(numRecords, numOps, batchSize)
 
-	fmt.Println("\n[4/6] MIXED INSERT-HEAVY")
+	fmt.Println("\n[4/5] MIXED INSERT-HEAVY")
 	fmt.Println(strings.Repeat("=", 100))
 	mixedInsertHeavyResults := collectMixedWorkloadInsertHeavyResults(numOps, connections, batchSize)
 
-	fmt.Println("\n[5/6] MIXED READ-HEAVY")
+	fmt.Println("\n[5/5] MIXED READ-UPDATE (YCSB-A)")
 	fmt.Println(strings.Repeat("=", 100))
-	mixedReadHeavyResults := collectMixedWorkloadReadHeavyResults(numOps, connections)
-
-	fmt.Println("\n[6/6] MIXED BALANCED")
-	fmt.Println(strings.Repeat("=", 100))
-	mixedBalancedResults := collectMixedWorkloadBalancedResults(numOps, connections)
+	mixedReadUpdateResults := collectMixedWorkloadReadUpdateResults(numOps, connections)
 
 	totalDuration := time.Since(startTime)
 	fmt.Println("\n" + strings.Repeat("=", 100))
@@ -576,9 +520,8 @@ func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, ou
 	fmt.Println(strings.Repeat("=", 100))
 
 	display.InsertPerformance(insertResults, allKeyTypes, connections, batchSize, database)
-	display.ReadAfterFragmentation(readResults, allKeyTypes, database)
+	display.ReadPerformance(readResults, allKeyTypes, database)
 	display.UpdatePerformance(updateResults, allKeyTypes, database)
-	display.MixedWorkload(mixedInsertHeavyResults, allKeyTypes, "Insert-Heavy (90% insert, 10% read)", database)
-	display.MixedWorkload(mixedReadHeavyResults, allKeyTypes, "Read-Heavy (10% insert, 90% read)", database)
-	display.MixedWorkload(mixedBalancedResults, allKeyTypes, "Balanced (50% insert, 30% read, 20% update)", database)
+	display.MixedWorkload(mixedInsertHeavyResults, allKeyTypes, "Insert-Heavy (70% insert, 30% read)", database)
+	display.MixedWorkload(mixedReadUpdateResults, allKeyTypes, "YCSB-A (50% read, 50% update)", database)
 }

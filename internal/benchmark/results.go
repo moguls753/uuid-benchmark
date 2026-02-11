@@ -22,7 +22,7 @@ type InsertPerformanceResult struct {
 	WriteThroughputMB float64
 }
 
-type ReadAfterFragmentationResult struct {
+type ReadPerformanceResult struct {
 	KeyType             string
 	NumRecords          int
 	NumReads            int

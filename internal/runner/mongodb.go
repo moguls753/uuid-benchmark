@@ -76,7 +76,7 @@ func MongoDBInsertPerformance(keyType string, numRecords, batchSize, connections
 	return result, nil
 }
 
-func MongoDBReadAfterFragmentation(keyType string, numRecords, numReads int) (*benchmark.ReadAfterFragmentationResult, error) {
+func MongoDBReadPerformance(keyType string, numRecords, numReads int) (*benchmark.ReadPerformanceResult, error) {
 	bench := mongodb.New()
 
 	if err := bench.Connect(); err != nil {
@@ -88,7 +88,7 @@ func MongoDBReadAfterFragmentation(keyType string, numRecords, numReads int) (*b
 		return nil, fmt.Errorf("create collection: %w", err)
 	}
 
-	result := &benchmark.ReadAfterFragmentationResult{
+	result := &benchmark.ReadPerformanceResult{
 		KeyType:    keyType,
 		NumRecords: numRecords,
 		NumReads:   numReads,
@@ -247,9 +247,9 @@ func MongoDBMixedWorkloadInsertHeavy(keyType string, totalOps, connections, batc
 
 	initialDataset := 100000
 
-	fmt.Printf("\n=== Mixed Workload: Insert-Heavy (90%% insert, 10%% read) - %s ===\n", keyType)
+	fmt.Printf("\n=== Mixed Workload: Insert-Heavy (70%% insert, 30%% read) - %s ===\n", keyType)
 
-	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 90, 10, 0)
+	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 70, 30, 0)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
@@ -259,7 +259,7 @@ func MongoDBMixedWorkloadInsertHeavy(keyType string, totalOps, connections, batc
 		return nil, fmt.Errorf("measure metrics: %w", err)
 	}
 
-	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 90, 10, 0)
+	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 70, 30, 0)
 
 	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
 	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
@@ -267,41 +267,7 @@ func MongoDBMixedWorkloadInsertHeavy(keyType string, totalOps, connections, batc
 	return result, nil
 }
 
-func MongoDBMixedWorkloadReadHeavy(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
-	bench := mongodb.New()
-
-	if err := bench.Connect(); err != nil {
-		return nil, fmt.Errorf("connect: %w", err)
-	}
-	defer bench.Close()
-
-	if err := bench.CreateCollection(keyType); err != nil {
-		return nil, fmt.Errorf("create collection: %w", err)
-	}
-
-	initialDataset := 1000000
-
-	fmt.Printf("\n=== Mixed Workload: Read-Heavy (10%% insert, 90%% read) - %s ===\n", keyType)
-
-	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 10, 90, 0)
-	if err != nil {
-		return nil, fmt.Errorf("run mixed workload: %w", err)
-	}
-
-	metrics, err := bench.MeasureMetrics()
-	if err != nil {
-		return nil, fmt.Errorf("measure metrics: %w", err)
-	}
-
-	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 10, 90, 0)
-
-	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
-	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
-
-	return result, nil
-}
-
-func MongoDBMixedWorkloadBalanced(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
+func MongoDBMixedWorkloadReadUpdate(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
 	bench := mongodb.New()
 
 	if err := bench.Connect(); err != nil {
@@ -315,9 +281,9 @@ func MongoDBMixedWorkloadBalanced(keyType string, totalOps, connections int) (*b
 
 	initialDataset := 500000
 
-	fmt.Printf("\n=== Mixed Workload: Balanced (50%% insert, 30%% read, 20%% update) - %s ===\n", keyType)
+	fmt.Printf("\n=== Mixed Workload: YCSB-A (50%% read, 50%% update) - %s ===\n", keyType)
 
-	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 50, 30, 20)
+	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 0, 50, 50)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
 	}
@@ -327,7 +293,7 @@ func MongoDBMixedWorkloadBalanced(keyType string, totalOps, connections int) (*b
 		return nil, fmt.Errorf("measure metrics: %w", err)
 	}
 
-	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 50, 30, 20)
+	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 0, 50, 50)
 
 	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
 	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)

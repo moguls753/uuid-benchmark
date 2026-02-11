@@ -95,13 +95,16 @@ func ResetCopyCache() {
 type ExecutorConfig struct {
 	ContainerName    string
 	DBType           string // mongodb or cassandra
-	Op               string // insert, read, update, mixed-*
+	Op               string // insert, read, update, mixed
 	KeyType          string
 	NumRecords       int
 	NumOps           int
 	BatchSize        int
 	Threads          int
 	ConnectionString string
+	InsertPct        int // Insert percentage for mixed workload
+	ReadPct          int // Read percentage for mixed workload
+	UpdatePct        int // Update percentage for mixed workload
 }
 
 // Execute runs the workload binary inside a container and returns parsed results.
@@ -130,6 +133,14 @@ func Execute(cfg ExecutorConfig) (*WorkloadResult, error) {
 	}
 	if cfg.Threads > 0 {
 		args = append(args, "--threads", fmt.Sprintf("%d", cfg.Threads))
+	}
+
+	if cfg.Op == "mixed" {
+		args = append(args,
+			"--insert-pct", fmt.Sprintf("%d", cfg.InsertPct),
+			"--read-pct", fmt.Sprintf("%d", cfg.ReadPct),
+			"--update-pct", fmt.Sprintf("%d", cfg.UpdatePct),
+		)
 	}
 
 	cmd := exec.Command("docker", args...)

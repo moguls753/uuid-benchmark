@@ -1,5 +1,5 @@
 # YCSB Workload: Read (100% read operations)
-# Matches uuid-benchmark: read-after-fragmentation
+# Matches uuid-benchmark: read-performance
 
 recordcount=10000
 operationcount=10000
