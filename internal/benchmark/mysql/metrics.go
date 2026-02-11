@@ -98,6 +98,10 @@ func (m *MySQLBenchmarker) measureIndexFragmentation() (benchmark.IndexFragmenta
 
 	stats.LeafPages = leafPages
 
+	// InnoDB does not expose actual leaf page fill factor.
+	// Only PostgreSQL's pgstatindex() provides this metric.
+	stats.AvgLeafDensity = -1 // N/A — not exposed by InnoDB
+
 	// Calculate internal (non-leaf) pages as a measure of B-tree depth/overhead
 	// More internal pages relative to leaf pages indicates deeper tree / more overhead
 	if totalPages > 0 && leafPages > 0 {
@@ -105,10 +109,6 @@ func (m *MySQLBenchmarker) measureIndexFragmentation() (benchmark.IndexFragmenta
 		// "Fragmentation" here means B-tree overhead: internal pages as % of total
 		// A perfectly flat tree would have ~0%, deeper trees have more overhead
 		stats.FragmentationPercent = float64(internalPages) / float64(totalPages) * 100
-
-		// Estimate leaf density: assume 16KB pages, ~50% fill factor after splits
-		// This is a rough approximation - InnoDB targets ~15/16 fill on leaf pages
-		stats.AvgLeafDensity = 90.0 // InnoDB default fill factor approximation
 	}
 
 	stats.EmptyPages = 0 // InnoDB doesn't expose this

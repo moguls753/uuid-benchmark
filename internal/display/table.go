@@ -61,7 +61,11 @@ func InsertPerformance(results map[string]*benchmark.InsertPerformanceResult, ke
 	// Leaf density
 	fmt.Printf("%-15s", "Leaf Density")
 	for _, keyType := range keyTypes {
-		fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.AvgLeafDensity))
+		if results[keyType].Fragmentation.AvgLeafDensity < 0 {
+			fmt.Printf("%-20s", "N/A")
+		} else {
+			fmt.Printf("%-20s", fmt.Sprintf("%.2f%%", results[keyType].Fragmentation.AvgLeafDensity))
+		}
 	}
 	fmt.Println()
 

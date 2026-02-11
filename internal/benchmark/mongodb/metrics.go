@@ -94,10 +94,57 @@ func (m *MongoDBBenchmarker) measureFragmentation() (benchmark.IndexFragmentatio
 		stats.FragmentationPercent = (freeStorage / storageSize) * 100
 	}
 
-	// Leaf density estimated from WiredTiger stats if available
-	stats.AvgLeafDensity = 90.0 // WiredTiger default approximation
+	// WiredTiger does not expose leaf page fill factor (density).
+	// Only PostgreSQL's pgstatindex() provides this metric.
+	stats.AvgLeafDensity = -1 // N/A — not exposed by WiredTiger
+
+	// Get real leaf page count from WiredTiger index details
+	leafPages := m.measureLeafPages()
+	if leafPages > 0 {
+		stats.LeafPages = leafPages
+	}
 
 	return stats, nil
+}
+
+// measureLeafPages retrieves the actual B-tree leaf page count from WiredTiger
+// index details via collStats. Returns 0 if unavailable.
+func (m *MongoDBBenchmarker) measureLeafPages() int64 {
+	ctx := context.Background()
+	var stats bson.M
+	err := m.db.RunCommand(ctx, bson.D{
+		{Key: "collStats", Value: m.collName},
+		{Key: "scale", Value: 1},
+		{Key: "indexDetails", Value: true},
+	}).Decode(&stats)
+	if err != nil {
+		fmt.Printf("Warning: Could not get index details: %v\n", err)
+		return 0
+	}
+
+	// Navigate: indexDetails -> _id_ -> btree -> "row-store leaf pages"
+	indexDetails := bsonLookup(stats, "indexDetails")
+	if indexDetails == nil {
+		return 0
+	}
+
+	// Try _id_ index first (primary key)
+	idIndex := bsonLookup(indexDetails, "_id_")
+	if idIndex == nil {
+		return 0
+	}
+
+	btree := bsonLookup(idIndex, "btree")
+	if btree == nil {
+		return 0
+	}
+
+	leafPages := bsonLookup(btree, "row-store leaf pages")
+	if leafPages == nil {
+		return 0
+	}
+
+	return toInt64(leafPages)
 }
 
 // countPageSplits measures reconciliation multi-block writes (delta before/after).
@@ -119,15 +166,11 @@ func (m *MongoDBBenchmarker) countPageSplits() (int, error) {
 
 	// Reconciliation multi-block writes: pages split into multiple on-disk
 	// blocks during checkpoint. Triggered by fsync in MeasureMetrics.
-	leafBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "leaf page multi-block writes")
-	leafAfter := getWiredTigerStat(statusAfter, "reconciliation", "leaf page multi-block writes")
-	intBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "internal page multi-block writes")
-	intAfter := getWiredTigerStat(statusAfter, "reconciliation", "internal page multi-block writes")
-	fmt.Printf("  Reconciliation: leaf before=%d after=%d, internal before=%d after=%d\n",
-		leafBefore, leafAfter, intBefore, intAfter)
+	splitsBefore := getWiredTigerStat(m.metricsBefore, "reconciliation", "leaf page multi-block writes") +
+		getWiredTigerStat(m.metricsBefore, "reconciliation", "internal page multi-block writes")
 
-	splitsBefore := leafBefore + intBefore
-	splitsAfter := leafAfter + intAfter
+	splitsAfter := getWiredTigerStat(statusAfter, "reconciliation", "leaf page multi-block writes") +
+		getWiredTigerStat(statusAfter, "reconciliation", "internal page multi-block writes")
 
 	delta := splitsAfter - splitsBefore
 	if delta < 0 {
@@ -192,7 +235,6 @@ func bsonLookup(doc any, key string) any {
 	}
 	return nil
 }
-
 
 func toInt64(v any) int64 {
 	switch val := v.(type) {
