@@ -67,29 +67,37 @@ func (c *CassandraBenchmarker) CreateTable(keyType string) error {
 	case "sequential":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s.%s (
-				id bigint PRIMARY KEY,
-				payload blob
+				bucket int,
+				id bigint,
+				payload blob,
+				PRIMARY KEY ((bucket), id)
 			) WITH compaction = {'class': 'SizeTieredCompactionStrategy'}
 		`, keyspace, c.tableName)
 	case "uuidv1":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s.%s (
-				id timeuuid PRIMARY KEY,
-				payload blob
+				bucket int,
+				id timeuuid,
+				payload blob,
+				PRIMARY KEY ((bucket), id)
 			) WITH compaction = {'class': 'SizeTieredCompactionStrategy'}
 		`, keyspace, c.tableName)
 	case "uuidv4", "uuidv7":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s.%s (
-				id uuid PRIMARY KEY,
-				payload blob
+				bucket int,
+				id uuid,
+				payload blob,
+				PRIMARY KEY ((bucket), id)
 			) WITH compaction = {'class': 'SizeTieredCompactionStrategy'}
 		`, keyspace, c.tableName)
 	case "ulid", "ulid_monotonic":
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s.%s (
-				id blob PRIMARY KEY,
-				payload blob
+				bucket int,
+				id blob,
+				payload blob,
+				PRIMARY KEY ((bucket), id)
 			) WITH compaction = {'class': 'SizeTieredCompactionStrategy'}
 		`, keyspace, c.tableName)
 	default:

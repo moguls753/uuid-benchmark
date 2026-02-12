@@ -312,20 +312,28 @@ db.bench.stats({indexDetails: true})  // btree["row-store leaf pages"]
 
 **UUID generation:** Client-side via Go libraries inside the workload binary.
 
-**Schema per key type:**
+**Clustering sort order note:** Cassandra sorts `timeuuid` clustering columns by extracted timestamp, not raw byte order. This means UUIDv1 gets native time-sorted clustering in Cassandra — unlike B-tree databases (PostgreSQL, MySQL, MongoDB) where UUIDv1's swapped timestamp bytes cause poor ordering. UUIDv7/ULID/`uuid`/`blob` types are sorted by raw byte order, which preserves their inherent time-ordering (timestamp in MSB).
+
+**Schema per key type** — uses compound primary key `PRIMARY KEY ((bucket), id)` so the UUID becomes a clustering key with preserved sort ordering. The partition key `bucket` is always `1` (single partition). Cassandra's Murmur3Partitioner hashes partition keys, which would destroy UUID ordering if the UUID were the partition key. By making it a clustering key, MemTable sorting, SSTable layout, and read patterns reflect actual UUID ordering:
 ```sql
 -- Example for UUIDv7
 CREATE TABLE uuid_benchmark.bench (
-    id uuid PRIMARY KEY,
-    payload blob
+    bucket int,
+    id uuid,
+    payload blob,
+    PRIMARY KEY ((bucket), id)
 ) WITH compaction = {'class': 'SizeTieredCompactionStrategy'};
 
 -- Example for ULID (stored as blob, byte-order preserves time-order)
 CREATE TABLE uuid_benchmark.bench (
-    id blob PRIMARY KEY,
-    payload blob
+    bucket int,
+    id blob,
+    payload blob,
+    PRIMARY KEY ((bucket), id)
 ) WITH compaction = {'class': 'SizeTieredCompactionStrategy'};
 ```
+
+All CQL queries include `bucket`: inserts pass `bucket = 1`, reads/updates/fetches use `WHERE bucket = 1 AND id = ?`.
 
 **Compaction strategy:** SizeTieredCompactionStrategy (STCS) is the Cassandra default and most commonly used. STCS groups similarly-sized SSTables for compaction, which makes the impact of random vs sorted keys more visible — random keys produce SSTables with highly overlapping key ranges, forcing more compaction work. LCS (Leveled) would sort data into non-overlapping levels, potentially masking the UUID ordering effect.
 
@@ -365,7 +373,7 @@ docker exec uuid-bench-cassandra nodetool info
 | Index size | Bloom filter space + index summary size | Different index structure |
 | Table size | Space used (live) from tablestats | Direct comparison |
 
-**Key hypothesis:** LSM-tree architecture may be less sensitive to random UUIDs for writes (MemTable absorbs randomness), but read performance may still suffer due to higher SSTable count and read amplification with random keys.
+**Key hypothesis:** With UUID as clustering key (compound primary key), LSM-tree MemTable sorting and SSTable layout reflect actual UUID byte ordering. Time-ordered keys (UUIDv7, ULID) produce sequential clustering within the partition, while random keys (UUIDv4) produce scattered ordering. LSM-tree architecture may be less sensitive to random UUIDs for writes (MemTable absorbs randomness), but read performance may still suffer due to higher SSTable count and read amplification with random keys.
 
 **Connection:** `localhost:9042`, keyspace `uuid_benchmark`, no authentication (Cassandra default)
 

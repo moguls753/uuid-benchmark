@@ -401,7 +401,7 @@ func mongoUpdate(ctx context.Context, coll *mongo.Collection, keyType string, nu
 }
 
 func mongoMixed(ctx context.Context, coll *mongo.Collection, keyType string, numOps, threads, insertPct, readPct, updatePct int) (*Result, error) {
-	ids, _ := fetchMongoIDs(ctx, coll, 0)
+	ids, _ := fetchMongoIDs(ctx, coll, numOps)
 	var idsMu sync.RWMutex
 
 	opsPerThread := numOps / threads
@@ -569,7 +569,8 @@ func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int
 	}
 }
 
-const cassandraInsertQuery = "INSERT INTO bench (id, payload) VALUES (?, ?)"
+const cassandraBucket = 1
+const cassandraInsertQuery = "INSERT INTO bench (bucket, id, payload) VALUES (?, ?, ?)"
 
 func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSize, threads int) (*Result, error) {
 	var counter atomic.Int64
@@ -591,12 +592,22 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 		go func(threadID, records int) {
 			defer wg.Done()
 			kg := newKeyGenerator(keyType, &counter)
-			latencies := make([]int64, 0, records)
+			latencies := make([]int64, 0, (records/batchSize)+1)
 
-			for i := 0; i < records; i++ {
-				key := kg.generateCassandraKey()
+			for i := 0; i < records; i += batchSize {
+				batchEnd := i + batchSize
+				if batchEnd > records {
+					batchEnd = records
+				}
+
+				batch := session.NewBatch(gocql.UnloggedBatch)
+				for j := i; j < batchEnd; j++ {
+					key := kg.generateCassandraKey()
+					batch.Query(cassandraInsertQuery, cassandraBucket, key, payload)
+				}
+
 				opStart := time.Now()
-				err := session.Query(cassandraInsertQuery, key, payload).Exec()
+				err := session.ExecuteBatch(batch)
 				latUS := time.Since(opStart).Microseconds()
 				latencies = append(latencies, latUS)
 				if err != nil {
@@ -663,7 +674,7 @@ func cassandraRead(session *gocql.Session, keyType string, numOps, threads int) 
 				idx := (offset + i) % len(ids)
 				opStart := time.Now()
 				var readPayload []byte
-				err := session.Query("SELECT payload FROM bench WHERE id = ?", ids[idx]).Scan(&readPayload)
+				err := session.Query("SELECT payload FROM bench WHERE bucket = 1 AND id = ?", ids[idx]).Scan(&readPayload)
 				latUS := time.Since(opStart).Microseconds()
 				latencies = append(latencies, latUS)
 				if err != nil {
@@ -731,7 +742,7 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads int
 			for i := 0; i < ops; i++ {
 				idx := (offset + i) % len(ids)
 				opStart := time.Now()
-				err := session.Query("UPDATE bench SET payload = ? WHERE id = ?", newPayload, ids[idx]).Exec()
+				err := session.Query("UPDATE bench SET payload = ? WHERE bucket = 1 AND id = ?", newPayload, ids[idx]).Exec()
 				latUS := time.Since(opStart).Microseconds()
 				latencies = append(latencies, latUS)
 				if err != nil {
@@ -764,7 +775,7 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads int
 }
 
 func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, insertPct, readPct, updatePct int) (*Result, error) {
-	ids, _ := fetchCassandraIDs(session, keyType, 0)
+	ids, _ := fetchCassandraIDs(session, keyType, numOps)
 	var idsMu sync.RWMutex
 
 	opsPerThread := numOps / threads
@@ -798,7 +809,7 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 				if roll < insertPct {
 					key := kg.generateCassandraKey()
 					opStart := time.Now()
-					err := session.Query(cassandraInsertQuery, key, payload).Exec()
+					err := session.Query(cassandraInsertQuery, cassandraBucket, key, payload).Exec()
 					latencies = append(latencies, time.Since(opStart).Microseconds())
 					if err != nil {
 						totalErrors.Add(1)
@@ -820,7 +831,7 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 					if id != nil {
 						opStart := time.Now()
 						var readPayload []byte
-						err := session.Query("SELECT payload FROM bench WHERE id = ?", id).Scan(&readPayload)
+						err := session.Query("SELECT payload FROM bench WHERE bucket = 1 AND id = ?", id).Scan(&readPayload)
 						latencies = append(latencies, time.Since(opStart).Microseconds())
 						if err != nil {
 							totalErrors.Add(1)
@@ -838,7 +849,7 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 
 					if id != nil {
 						opStart := time.Now()
-						err := session.Query("UPDATE bench SET payload = ? WHERE id = ?", newPayload, id).Exec()
+						err := session.Query("UPDATE bench SET payload = ? WHERE bucket = 1 AND id = ?", newPayload, id).Exec()
 						latencies = append(latencies, time.Since(opStart).Microseconds())
 						if err != nil {
 							totalErrors.Add(1)
@@ -876,7 +887,7 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 }
 
 func fetchCassandraIDs(session *gocql.Session, keyType string, limit int) ([]any, error) {
-	query := "SELECT id FROM bench"
+	query := "SELECT id FROM bench WHERE bucket = 1"
 	if limit > 0 {
 		query += fmt.Sprintf(" LIMIT %d", limit)
 	}
