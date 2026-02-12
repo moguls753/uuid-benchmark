@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate thesis-quality PDF bar charts from UUID benchmark CSV data.
+"""Generate PDF bar charts from UUID benchmark CSV data.
 
 Usage:
     python scripts/plot.py <csv_file> [--output-dir DIR] [--scenario NAME] [--metric NAME]
@@ -182,7 +182,7 @@ def plot_grouped_bars(df_group: pd.DataFrame, scenario: str, metric: str,
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate thesis-quality PDF bar charts from benchmark CSV.")
+        description="Generate PDF bar charts from benchmark CSV.")
     parser.add_argument("csv_file", help="Path to stats CSV (results.csv)")
     parser.add_argument("--output-dir", default="plots",
                         help="Output directory for PDFs (default: plots/)")

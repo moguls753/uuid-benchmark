@@ -81,6 +81,23 @@ Each database uses a workload tool that runs **inside the Docker container** (lo
 - **Custom Go workload binary for NoSQL:** Enables proper UUID generation with Go libraries (`github.com/google/uuid`, `github.com/oklog/ulid`) — no existing MongoDB/Cassandra benchmark tool supports custom UUID `_id` generation
 - **Statistical analysis mode:** Multiple runs with Mann-Whitney U tests provide p-values and significance testing
 
+## Plotting
+
+Generate PDF bar charts from benchmark CSV results:
+
+```bash
+pip install -r scripts/requirements.txt
+
+# Generate all plots
+python3 scripts/plot.py results.csv --output-dir plots/
+
+# Filter by scenario or metric
+python3 scripts/plot.py results.csv --scenario insert_performance
+python3 scripts/plot.py results.csv --metric p99_latency_us
+```
+
+Output: one PDF per (scenario, metric) pair, named `{scenario}_{metric}.pdf`.
+
 ## Validation
 
 PostgreSQL results validated against **go-ycsb** (industry-standard benchmark) for overlapping metrics (throughput, latency). Both tools run inside containers with identical architecture (client inside container → localhost). See `validation/` directory.
