@@ -34,24 +34,15 @@ func MySQLInsertPerformance(keyType string, numRecords, batchSize, connections i
 		fmt.Printf("Warning: Failed to capture I/O stats before insert: %v\n", err)
 	}
 
-	if connections == 1 {
-		duration, err := bench.InsertRecordsSysbench(keyType, numRecords, batchSize)
-		if err != nil {
-			return nil, fmt.Errorf("insert records: %w", err)
-		}
-		result.Duration = duration
-		result.Throughput = float64(numRecords) / duration.Seconds()
-	} else {
-		concResult, err := bench.InsertRecordsSysbenchConcurrent(keyType, numRecords, connections, batchSize)
-		if err != nil {
-			return nil, fmt.Errorf("insert records concurrent: %w", err)
-		}
-		result.Duration = concResult.Duration
-		result.Throughput = concResult.Throughput
-		result.LatencyP50 = concResult.LatencyP50
-		result.LatencyP95 = concResult.LatencyP95
-		result.LatencyP99 = concResult.LatencyP99
+	concResult, err := bench.InsertRecordsSysbenchConcurrent(keyType, numRecords, connections, batchSize)
+	if err != nil {
+		return nil, fmt.Errorf("insert records: %w", err)
 	}
+	result.Duration = concResult.Duration
+	result.Throughput = concResult.Throughput
+	result.LatencyP50 = concResult.LatencyP50
+	result.LatencyP95 = concResult.LatencyP95
+	result.LatencyP99 = concResult.LatencyP99
 
 	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-mysql")
 	if err != nil {
@@ -109,6 +100,11 @@ func MySQLReadPerformance(keyType string, numRecords, numReads int) (*benchmark.
 	result.InsertDuration = insertDuration
 	fmt.Printf("Inserted %d records in %s\n", numRecords, insertDuration)
 
+	fmt.Println("Creating lookup table for random key selection...")
+	if err := bench.CreateLookupTable(); err != nil {
+		return nil, fmt.Errorf("create lookup table: %w", err)
+	}
+
 	fmt.Println("Measuring fragmentation...")
 	metrics, err := bench.MeasureMetrics()
 	if err != nil {
@@ -129,12 +125,15 @@ func MySQLReadPerformance(keyType string, numRecords, numReads int) (*benchmark.
 		fmt.Printf("Warning: Failed to capture I/O stats before reads: %v\n", err)
 	}
 
-	readDuration, err := bench.ReadRecordsSysbench(keyType, numRecords, numReads)
+	readResult, err := bench.ReadRecordsSysbenchConcurrent(keyType, numRecords, numReads, 1)
 	if err != nil {
 		return nil, fmt.Errorf("read records: %w", err)
 	}
-	result.ReadDuration = readDuration
-	result.ReadThroughput = float64(numReads) / readDuration.Seconds()
+	result.ReadDuration = readResult.Duration
+	result.ReadThroughput = readResult.Throughput
+	result.LatencyP50 = readResult.LatencyP50
+	result.LatencyP95 = readResult.LatencyP95
+	result.LatencyP99 = readResult.LatencyP99
 
 	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-mysql")
 	if err != nil {
@@ -149,7 +148,7 @@ func MySQLReadPerformance(keyType string, numRecords, numReads int) (*benchmark.
 		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
 	}
 
-	fmt.Printf("Completed %d reads in %s\n", numReads, readDuration)
+	fmt.Printf("Completed %d reads in %s\n", numReads, readResult.Duration)
 	fmt.Printf("Read throughput: %.2f ops/sec\n", result.ReadThroughput)
 
 	fmt.Println("Measuring buffer pool hit ratios...")
@@ -189,6 +188,11 @@ func MySQLUpdatePerformance(keyType string, numRecords, numUpdates, batchSize in
 	}
 	fmt.Printf("Inserted %d records\n", numRecords)
 
+	fmt.Println("Creating lookup table for random key selection...")
+	if err := bench.CreateLookupTable(); err != nil {
+		return nil, fmt.Errorf("create lookup table: %w", err)
+	}
+
 	fmt.Printf("Running %d updates (batch size=%d)...\n", numUpdates, batchSize)
 
 	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-mysql")
@@ -196,7 +200,7 @@ func MySQLUpdatePerformance(keyType string, numRecords, numUpdates, batchSize in
 		fmt.Printf("Warning: Failed to capture I/O stats before updates: %v\n", err)
 	}
 
-	updateDuration, err := bench.UpdateRecordsSysbench(keyType, numRecords, numUpdates, batchSize)
+	updateResult, err := bench.UpdateRecordsSysbenchConcurrent(keyType, numRecords, numUpdates, 1, batchSize)
 	if err != nil {
 		return nil, fmt.Errorf("update records: %w", err)
 	}
@@ -214,10 +218,13 @@ func MySQLUpdatePerformance(keyType string, numRecords, numUpdates, batchSize in
 		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
 	}
 
-	result.UpdateDuration = updateDuration
-	result.UpdateThroughput = float64(numUpdates) / updateDuration.Seconds()
+	result.UpdateDuration = updateResult.Duration
+	result.UpdateThroughput = updateResult.Throughput
+	result.LatencyP50 = updateResult.LatencyP50
+	result.LatencyP95 = updateResult.LatencyP95
+	result.LatencyP99 = updateResult.LatencyP99
 
-	fmt.Printf("Completed %d updates in %s\n", numUpdates, updateDuration)
+	fmt.Printf("Completed %d updates in %s\n", numUpdates, updateResult.Duration)
 	fmt.Printf("Update throughput: %.2f ops/sec\n", result.UpdateThroughput)
 
 	fmt.Println("Measuring fragmentation...")

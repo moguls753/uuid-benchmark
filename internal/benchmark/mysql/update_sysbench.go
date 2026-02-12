@@ -8,41 +8,6 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/mysql/sysbench"
 )
 
-func (m *MySQLBenchmarker) UpdateRecordsSysbench(keyType string, numTotalRecords, numUpdates, batchSize int) (time.Duration, error) {
-	script := sysbench.GenerateUpdateScript(keyType, m.tableName)
-
-	scriptName := fmt.Sprintf("update_%s.lua", keyType)
-	containerPath, err := sysbench.CopyScriptToContainer("uuid-bench-mysql", script, scriptName)
-	if err != nil {
-		return 0, fmt.Errorf("copy script to container: %w", err)
-	}
-
-	startTime := time.Now()
-
-	execCfg := sysbench.ExecutorConfig{
-		ContainerName: "uuid-bench-mysql",
-		Threads:       1,
-		Events:        numUpdates,
-		ScriptPath:    containerPath,
-		TableName:     m.tableName,
-		DBName:        dbName,
-		NumRecords:    numTotalRecords,
-	}
-
-	execResult, err := sysbench.Execute(execCfg)
-	if err != nil {
-		return 0, fmt.Errorf("execute sysbench: %w", err)
-	}
-
-	if execResult.ExitCode != 0 {
-		return 0, fmt.Errorf("sysbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
-	}
-
-	duration := time.Since(startTime)
-
-	return duration, nil
-}
-
 func (m *MySQLBenchmarker) UpdateRecordsSysbenchConcurrent(keyType string, numTotalRecords, numUpdates, connections, batchSize int) (*benchmark.ConcurrentBenchmarkResult, error) {
 	script := sysbench.GenerateUpdateScript(keyType, m.tableName)
 

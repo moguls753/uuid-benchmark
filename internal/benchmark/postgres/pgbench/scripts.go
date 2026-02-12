@@ -38,49 +38,15 @@ func GenerateInsertScript(keyType, tableName string) string {
 }
 
 func GenerateSelectScript(keyType, tableName string) string {
-	switch keyType {
-	case "sequential":
-		return fmt.Sprintf(`\set id random(1, :num_records)
-SELECT * FROM %s WHERE id = :id;`, tableName)
-
-	case "uuidv4", "uuidv7", "uuidv1":
-		return fmt.Sprintf(`\set offset random(0, :num_records - 1)
-SELECT * FROM (
-  SELECT id FROM %s OFFSET :offset LIMIT 1
-) AS random_id, %s
-WHERE %s.id = random_id.id;`, tableName, tableName, tableName)
-
-	case "ulid", "ulid_monotonic":
-		return fmt.Sprintf(`\set offset random(0, :num_records - 1)
-SELECT * FROM (
-  SELECT id FROM %s OFFSET :offset LIMIT 1
-) AS random_id, %s
-WHERE %s.id = random_id.id;`, tableName, tableName, tableName)
-
-	default:
-		return fmt.Sprintf(`-- Unknown key type: %s`, keyType)
-	}
+	lookupTable := tableName + "_ids"
+	return fmt.Sprintf(`\set rn random(1, :num_records)
+SELECT * FROM %s WHERE id = (SELECT id FROM %s WHERE rn = :rn);`, tableName, lookupTable)
 }
 
 func GenerateUpdateScript(keyType, tableName string) string {
-	switch keyType {
-	case "sequential":
-		return fmt.Sprintf(`\set id random(1, :num_records)
-UPDATE %s SET data = 'updated_' || :client_id WHERE id = :id;`, tableName)
-
-	case "uuidv4", "uuidv7", "uuidv1":
-		return fmt.Sprintf(`\set offset random(0, :num_records - 1)
-UPDATE %s SET data = 'updated_' || :client_id
-WHERE id = (SELECT id FROM %s OFFSET :offset LIMIT 1);`, tableName, tableName)
-
-	case "ulid", "ulid_monotonic":
-		return fmt.Sprintf(`\set offset random(0, :num_records - 1)
-UPDATE %s SET data = 'updated_' || :client_id
-WHERE id = (SELECT id FROM %s OFFSET :offset LIMIT 1);`, tableName, tableName)
-
-	default:
-		return fmt.Sprintf(`-- Unknown key type: %s`, keyType)
-	}
+	lookupTable := tableName + "_ids"
+	return fmt.Sprintf(`\set rn random(1, :num_records)
+UPDATE %s SET data = 'updated_' || :client_id WHERE id = (SELECT id FROM %s WHERE rn = :rn);`, tableName, lookupTable)
 }
 
 // pgbench doesn't support weighted random selection, so we use conditional logic

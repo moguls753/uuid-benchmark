@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
+	iometrics "github.com/moguls753/uuid-benchmark/internal/benchmark/io"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/mysql/sysbench"
 )
 
@@ -13,6 +14,11 @@ func (m *MySQLBenchmarker) RunMixedWorkloadSysbench(keyType string, initialDatas
 	_, err := m.InsertRecordsSysbench(keyType, initialDataset, 100)
 	if err != nil {
 		return nil, fmt.Errorf("create initial dataset: %w", err)
+	}
+
+	fmt.Println("Creating lookup table for random key selection...")
+	if err := m.CreateLookupTable(); err != nil {
+		return nil, fmt.Errorf("create lookup table: %w", err)
 	}
 
 	fmt.Println("Resetting statistics...")
@@ -46,6 +52,11 @@ func (m *MySQLBenchmarker) RunMixedWorkloadSysbench(keyType string, initialDatas
 		m.pageSplitCountsCaptured = true
 	}
 
+	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-mysql")
+	if err != nil {
+		fmt.Printf("Warning: Failed to capture I/O stats before mixed workload: %v\n", err)
+	}
+
 	startTime := time.Now()
 
 	script := sysbench.GenerateMixedScript(keyType, m.tableName, insertWeight, readWeight, updateWeight, connections)
@@ -77,6 +88,11 @@ func (m *MySQLBenchmarker) RunMixedWorkloadSysbench(keyType string, initialDatas
 
 	duration := time.Since(startTime)
 
+	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-mysql")
+	if err != nil {
+		fmt.Printf("Warning: Failed to capture I/O stats after mixed workload: %v\n", err)
+	}
+
 	parsed, err := sysbench.ParseSysbenchOutput(execResult.Stdout, "uuid-bench-mysql")
 	if err != nil {
 		return nil, fmt.Errorf("parse sysbench output: %w", err)
@@ -94,7 +110,7 @@ func (m *MySQLBenchmarker) RunMixedWorkloadSysbench(keyType string, initialDatas
 		return nil, fmt.Errorf("measure metrics: %w", err)
 	}
 
-	return &benchmark.MixedWorkloadResult{
+	result := &benchmark.MixedWorkloadResult{
 		KeyType:           keyType,
 		NumRecords:        initialDataset,
 		TotalOps:          totalOps,
@@ -117,5 +133,15 @@ func (m *MySQLBenchmarker) RunMixedWorkloadSysbench(keyType string, initialDatas
 		Fragmentation:       metrics.Fragmentation,
 		TableSize:           metrics.TableSize,
 		IndexSize:           metrics.IndexSize,
-	}, nil
+	}
+
+	if ioStatsBefore != nil && ioStatsAfter != nil {
+		ioMetrics := iometrics.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		result.ReadIOPS = ioMetrics.ReadIOPS
+		result.WriteIOPS = ioMetrics.WriteIOPS
+		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
+		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
+	}
+
+	return result, nil
 }

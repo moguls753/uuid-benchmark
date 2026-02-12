@@ -8,41 +8,6 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/mysql/sysbench"
 )
 
-func (m *MySQLBenchmarker) ReadRecordsSysbench(keyType string, numTotalRecords, numReads int) (time.Duration, error) {
-	script := sysbench.GenerateSelectScript(keyType, m.tableName)
-
-	scriptName := fmt.Sprintf("select_%s.lua", keyType)
-	containerPath, err := sysbench.CopyScriptToContainer("uuid-bench-mysql", script, scriptName)
-	if err != nil {
-		return 0, fmt.Errorf("copy script to container: %w", err)
-	}
-
-	startTime := time.Now()
-
-	execCfg := sysbench.ExecutorConfig{
-		ContainerName: "uuid-bench-mysql",
-		Threads:       1,
-		Events:        numReads,
-		ScriptPath:    containerPath,
-		TableName:     m.tableName,
-		DBName:        dbName,
-		NumRecords:    numTotalRecords,
-	}
-
-	execResult, err := sysbench.Execute(execCfg)
-	if err != nil {
-		return 0, fmt.Errorf("execute sysbench: %w", err)
-	}
-
-	if execResult.ExitCode != 0 {
-		return 0, fmt.Errorf("sysbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
-	}
-
-	duration := time.Since(startTime)
-
-	return duration, nil
-}
-
 func (m *MySQLBenchmarker) ReadRecordsSysbenchConcurrent(keyType string, numTotalRecords, numReads, connections int) (*benchmark.ConcurrentBenchmarkResult, error) {
 	script := sysbench.GenerateSelectScript(keyType, m.tableName)
 

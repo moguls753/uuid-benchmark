@@ -124,6 +124,38 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 	return nil
 }
 
+func (p *PostgresBenchmarker) CreateLookupTable() error {
+	lookupTable := p.tableName + "_ids"
+
+	_, err := p.db.Exec(fmt.Sprintf("DROP TABLE IF EXISTS %s", lookupTable))
+	if err != nil {
+		return fmt.Errorf("drop lookup table: %w", err)
+	}
+
+	_, err = p.db.Exec(fmt.Sprintf(
+		"CREATE TABLE %s AS SELECT ROW_NUMBER() OVER ()::bigint AS rn, id FROM %s",
+		lookupTable, p.tableName,
+	))
+	if err != nil {
+		return fmt.Errorf("create lookup table: %w", err)
+	}
+
+	_, err = p.db.Exec(fmt.Sprintf(
+		"CREATE INDEX idx_%s_rn ON %s (rn)",
+		lookupTable, lookupTable,
+	))
+	if err != nil {
+		return fmt.Errorf("create lookup index: %w", err)
+	}
+
+	_, err = p.db.Exec(fmt.Sprintf("ANALYZE %s", lookupTable))
+	if err != nil {
+		return fmt.Errorf("analyze lookup table: %w", err)
+	}
+
+	return nil
+}
+
 func (p *PostgresBenchmarker) Close() error {
 	if p.db != nil {
 		return p.db.Close()

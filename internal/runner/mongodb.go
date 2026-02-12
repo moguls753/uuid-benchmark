@@ -249,9 +249,19 @@ func MongoDBMixedWorkloadInsertHeavy(keyType string, totalOps, connections, batc
 
 	fmt.Printf("\n=== Mixed Workload: Insert-Heavy (70%% insert, 30%% read) - %s ===\n", keyType)
 
+	ioStatsBefore, err := iometrics.GetContainerIOStats(mongodb.ContainerName)
+	if err != nil {
+		fmt.Printf("Warning: Failed to capture I/O stats before mixed workload: %v\n", err)
+	}
+
 	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 70, 30, 0)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
+	}
+
+	ioStatsAfter, err := iometrics.GetContainerIOStats(mongodb.ContainerName)
+	if err != nil {
+		fmt.Printf("Warning: Failed to capture I/O stats after mixed workload: %v\n", err)
 	}
 
 	metrics, err := bench.MeasureMetrics()
@@ -260,6 +270,14 @@ func MongoDBMixedWorkloadInsertHeavy(keyType string, totalOps, connections, batc
 	}
 
 	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 70, 30, 0)
+
+	if ioStatsBefore != nil && ioStatsAfter != nil {
+		ioMetrics := iometrics.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		result.ReadIOPS = ioMetrics.ReadIOPS
+		result.WriteIOPS = ioMetrics.WriteIOPS
+		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
+		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
+	}
 
 	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
 	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)
@@ -283,9 +301,19 @@ func MongoDBMixedWorkloadReadUpdate(keyType string, totalOps, connections int) (
 
 	fmt.Printf("\n=== Mixed Workload: YCSB-A (50%% read, 50%% update) - %s ===\n", keyType)
 
+	ioStatsBefore, err := iometrics.GetContainerIOStats(mongodb.ContainerName)
+	if err != nil {
+		fmt.Printf("Warning: Failed to capture I/O stats before mixed workload: %v\n", err)
+	}
+
 	wlResult, err := bench.RunMixedWorkload(keyType, initialDataset, totalOps, connections, 0, 50, 50)
 	if err != nil {
 		return nil, fmt.Errorf("run mixed workload: %w", err)
+	}
+
+	ioStatsAfter, err := iometrics.GetContainerIOStats(mongodb.ContainerName)
+	if err != nil {
+		fmt.Printf("Warning: Failed to capture I/O stats after mixed workload: %v\n", err)
 	}
 
 	metrics, err := bench.MeasureMetrics()
@@ -294,6 +322,14 @@ func MongoDBMixedWorkloadReadUpdate(keyType string, totalOps, connections int) (
 	}
 
 	result := mixedResultFromWorkload(keyType, initialDataset, totalOps, wlResult, metrics, 0, 50, 50)
+
+	if ioStatsBefore != nil && ioStatsAfter != nil {
+		ioMetrics := iometrics.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		result.ReadIOPS = ioMetrics.ReadIOPS
+		result.WriteIOPS = ioMetrics.WriteIOPS
+		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
+		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
+	}
 
 	fmt.Printf("Overall throughput: %.2f ops/sec\n", result.OverallThroughput)
 	fmt.Printf("Buffer hit ratio: %.2f%%\n", result.BufferHitRatio*100)

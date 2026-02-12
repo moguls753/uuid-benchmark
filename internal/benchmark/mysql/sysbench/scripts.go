@@ -85,12 +85,12 @@ end
 	}
 }
 
-// GenerateSelectScript generates a sysbench Lua script for SELECT operations
+// GenerateSelectScript generates a sysbench Lua script for SELECT operations.
+// Uses a lookup table (tableName_ids) for random key selection via indexed subquery.
 func GenerateSelectScript(keyType, tableName string) string {
-	switch keyType {
-	case "sequential":
-		return fmt.Sprintf(`
--- Sysbench SELECT script for BIGINT PRIMARY KEY
+	lookupTable := tableName + "_ids"
+	return fmt.Sprintf(`
+-- Sysbench SELECT script using lookup table for random key selection
 sysbench.cmdline.options = {
 	table_name = {"Table name", "%s"},
 	num_records = {"Number of records", 0},
@@ -106,46 +106,18 @@ function thread_done()
 end
 
 function event()
-	local id = sysbench.rand.uniform(1, sysbench.opt.num_records)
-	con:query("SELECT * FROM " .. sysbench.opt.table_name .. " WHERE id = " .. id)
+	local rn = sysbench.rand.uniform(1, sysbench.opt.num_records)
+	con:query("SELECT * FROM %s WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 end
-`, tableName)
-
-	case "uuidv4", "uuidv7", "uuidv1", "ulid", "ulid_monotonic":
-		// For UUID types, we need to select by offset since we don't know the IDs
-		return fmt.Sprintf(`
--- Sysbench SELECT script for UUID/ULID types
-sysbench.cmdline.options = {
-	table_name = {"Table name", "%s"},
-	num_records = {"Number of records", 0},
+`, tableName, tableName, lookupTable)
 }
 
-function thread_init()
-	drv = sysbench.sql.driver()
-	con = drv:connect()
-end
-
-function thread_done()
-	con:disconnect()
-end
-
-function event()
-	local offset = sysbench.rand.uniform(0, sysbench.opt.num_records - 1)
-	con:query("SELECT * FROM " .. sysbench.opt.table_name .. " LIMIT 1 OFFSET " .. offset)
-end
-`, tableName)
-
-	default:
-		return fmt.Sprintf(`-- Unknown key type: %s`, keyType)
-	}
-}
-
-// GenerateUpdateScript generates a sysbench Lua script for UPDATE operations
+// GenerateUpdateScript generates a sysbench Lua script for UPDATE operations.
+// Uses a lookup table (tableName_ids) for random key selection via indexed subquery.
 func GenerateUpdateScript(keyType, tableName string) string {
-	switch keyType {
-	case "sequential":
-		return fmt.Sprintf(`
--- Sysbench UPDATE script for BIGINT PRIMARY KEY
+	lookupTable := tableName + "_ids"
+	return fmt.Sprintf(`
+-- Sysbench UPDATE script using lookup table for random key selection
 sysbench.cmdline.options = {
 	table_name = {"Table name", "%s"},
 	num_records = {"Number of records", 0},
@@ -161,41 +133,15 @@ function thread_done()
 end
 
 function event()
-	local id = sysbench.rand.uniform(1, sysbench.opt.num_records)
-	con:query("UPDATE " .. sysbench.opt.table_name .. " SET data = 'updated_" .. sysbench.tid .. "' WHERE id = " .. id)
+	local rn = sysbench.rand.uniform(1, sysbench.opt.num_records)
+	con:query("UPDATE %s SET data = 'updated_" .. sysbench.tid .. "' WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 end
-`, tableName)
-
-	case "uuidv4", "uuidv7", "uuidv1", "ulid", "ulid_monotonic":
-		return fmt.Sprintf(`
--- Sysbench UPDATE script for UUID/ULID types
-sysbench.cmdline.options = {
-	table_name = {"Table name", "%s"},
-	num_records = {"Number of records", 0},
-}
-
-function thread_init()
-	drv = sysbench.sql.driver()
-	con = drv:connect()
-end
-
-function thread_done()
-	con:disconnect()
-end
-
-function event()
-	local offset = sysbench.rand.uniform(0, sysbench.opt.num_records - 1)
-	con:query("UPDATE " .. sysbench.opt.table_name .. " SET data = 'updated_" .. sysbench.tid .. "' WHERE id = (SELECT id FROM (SELECT id FROM " .. sysbench.opt.table_name .. " LIMIT 1 OFFSET " .. offset .. ") AS tmp)")
-end
-`, tableName)
-
-	default:
-		return fmt.Sprintf(`-- Unknown key type: %s`, keyType)
-	}
+`, tableName, tableName, lookupTable)
 }
 
 // GenerateMixedScript generates a sysbench Lua script for mixed workloads.
 // threads is used to partition pre-generated UUIDs across sysbench threads.
+// Uses a lookup table (tableName_ids) for random key selection in read/update operations.
 func GenerateMixedScript(keyType, tableName string, insertWeight, readWeight, updateWeight, threads int) string {
 	if insertWeight+readWeight+updateWeight != 100 {
 		return fmt.Sprintf(`-- Error: Weights must sum to 100 (got %d)`, insertWeight+readWeight+updateWeight)
@@ -203,6 +149,9 @@ func GenerateMixedScript(keyType, tableName string, insertWeight, readWeight, up
 
 	insertThreshold := insertWeight
 	readThreshold := insertWeight + readWeight
+	lookupTable := tableName + "_ids"
+
+	insertScript := generateMixedInsertSQL(keyType, tableName)
 
 	switch keyType {
 	case "sequential":
@@ -230,19 +179,17 @@ function event()
 	local op = sysbench.rand.uniform(1, 100)
 
 	if op <= insert_threshold then
-		-- INSERT
-		con:query("INSERT INTO " .. sysbench.opt.table_name .. " (data) VALUES ('test_data_" .. sysbench.tid .. "')")
+		%s
 	elseif op <= read_threshold then
-		-- SELECT
-		local id = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
-		con:query("SELECT * FROM " .. sysbench.opt.table_name .. " WHERE id = " .. id)
+		local rn = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
+		con:query("SELECT * FROM %s WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 	else
-		-- UPDATE
-		local id = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
-		con:query("UPDATE " .. sysbench.opt.table_name .. " SET data = 'updated_" .. sysbench.tid .. "' WHERE id = " .. id)
+		local rn = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
+		con:query("UPDATE %s SET data = 'updated_" .. sysbench.tid .. "' WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 	end
 end
-`, insertWeight, readWeight, updateWeight, tableName, insertThreshold, readThreshold)
+`, insertWeight, readWeight, updateWeight, tableName, insertThreshold, readThreshold,
+			insertScript, tableName, lookupTable, tableName, lookupTable)
 
 	case "uuidv4", "uuidv7", "uuidv1", "ulid", "ulid_monotonic":
 		return fmt.Sprintf(`
@@ -290,22 +237,29 @@ function event()
 		-- INSERT with pre-generated UUID
 		uuid_idx = uuid_idx + 1
 		local uuid_hex = uuids[uuid_idx]
-		con:query("INSERT INTO " .. sysbench.opt.table_name .. " (id, data) VALUES (UNHEX('" .. uuid_hex .. "'), 'test_data_" .. sysbench.tid .. "')")
+		con:query("INSERT INTO %s (id, data) VALUES (UNHEX('" .. uuid_hex .. "'), 'test_data_" .. sysbench.tid .. "')")
 	elseif op <= read_threshold then
-		-- SELECT by offset
-		local offset = sysbench.rand.uniform(0, math.max(0, sysbench.opt.num_records - 1))
-		con:query("SELECT * FROM " .. sysbench.opt.table_name .. " LIMIT 1 OFFSET " .. offset)
+		local rn = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
+		con:query("SELECT * FROM %s WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 	else
-		-- UPDATE by offset
-		local offset = sysbench.rand.uniform(0, math.max(0, sysbench.opt.num_records - 1))
-		con:query("UPDATE " .. sysbench.opt.table_name .. " SET data = 'updated_" .. sysbench.tid .. "' WHERE id = (SELECT id FROM (SELECT id FROM " .. sysbench.opt.table_name .. " LIMIT 1 OFFSET " .. offset .. ") AS tmp)")
+		local rn = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
+		con:query("UPDATE %s SET data = 'updated_" .. sysbench.tid .. "' WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 	end
 end
-`, insertWeight, readWeight, updateWeight, tableName, insertThreshold, readThreshold, threads)
+`, insertWeight, readWeight, updateWeight, tableName, insertThreshold, readThreshold, threads,
+			tableName, tableName, lookupTable, tableName, lookupTable)
 
 	default:
 		return fmt.Sprintf(`-- Unknown key type: %s`, keyType)
 	}
+}
+
+// generateMixedInsertSQL returns the Lua insert statement for sequential types in mixed workloads.
+func generateMixedInsertSQL(keyType, tableName string) string {
+	if keyType == "sequential" {
+		return fmt.Sprintf(`con:query("INSERT INTO %s (data) VALUES ('test_data_" .. sysbench.tid .. "')")`, tableName)
+	}
+	return "" // UUID inserts handled in the UUID branch with pre-generated UUIDs
 }
 
 // GenerateBatchInsertScript generates a script for batch inserts.

@@ -123,6 +123,35 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 	return nil
 }
 
+func (m *MySQLBenchmarker) CreateLookupTable() error {
+	lookupTable := m.tableName + "_ids"
+
+	_, err := m.db.Exec(fmt.Sprintf("DROP TABLE IF EXISTS %s", lookupTable))
+	if err != nil {
+		return fmt.Errorf("drop lookup table: %w", err)
+	}
+
+	_, err = m.db.Exec(fmt.Sprintf(
+		"CREATE TABLE %s AS SELECT ROW_NUMBER() OVER () AS rn, id FROM %s",
+		lookupTable, m.tableName,
+	))
+	if err != nil {
+		return fmt.Errorf("create lookup table: %w", err)
+	}
+
+	_, err = m.db.Exec(fmt.Sprintf("ALTER TABLE %s ADD PRIMARY KEY (rn)", lookupTable))
+	if err != nil {
+		return fmt.Errorf("add primary key to lookup table: %w", err)
+	}
+
+	_, err = m.db.Exec(fmt.Sprintf("ANALYZE TABLE %s", lookupTable))
+	if err != nil {
+		return fmt.Errorf("analyze lookup table: %w", err)
+	}
+
+	return nil
+}
+
 func (m *MySQLBenchmarker) Close() error {
 	if m.db != nil {
 		return m.db.Close()

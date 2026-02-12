@@ -8,44 +8,6 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres/pgbench"
 )
 
-func (p *PostgresBenchmarker) ReadRecordsPgbench(keyType string, numTotalRecords, numReads int) (time.Duration, error) {
-	script := pgbench.GenerateSelectScript(keyType, p.tableName)
-
-	scriptName := fmt.Sprintf("select_%s.sql", keyType)
-	containerPath, err := pgbench.CopyScriptToContainer("uuid-bench-postgres", script, scriptName)
-	if err != nil {
-		return 0, fmt.Errorf("copy script to container: %w", err)
-	}
-
-	execCfg := pgbench.ExecutorConfig{
-		ContainerName: "uuid-bench-postgres",
-		Connections:   1,
-		Transactions:  numReads,
-		ScriptPath:    containerPath,
-	}
-
-	scriptWithVars := fmt.Sprintf("\\set num_records %d\n%s", numTotalRecords, script)
-	containerPath, err = pgbench.CopyScriptToContainer("uuid-bench-postgres", scriptWithVars, scriptName)
-	if err != nil {
-		return 0, fmt.Errorf("copy script with vars to container: %w", err)
-	}
-
-	startTime := time.Now()
-
-	execResult, err := pgbench.Execute(execCfg)
-	if err != nil {
-		return 0, fmt.Errorf("execute pgbench: %w", err)
-	}
-
-	if execResult.ExitCode != 0 {
-		return 0, fmt.Errorf("pgbench failed with exit code %d: %s", execResult.ExitCode, execResult.Stderr)
-	}
-
-	duration := time.Since(startTime)
-
-	return duration, nil
-}
-
 func (p *PostgresBenchmarker) ReadRecordsPgbenchConcurrent(keyType string, numTotalRecords, numReads, connections int) (*benchmark.ConcurrentBenchmarkResult, error) {
 	script := pgbench.GenerateSelectScript(keyType, p.tableName)
 

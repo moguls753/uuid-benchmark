@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
+	iometrics "github.com/moguls753/uuid-benchmark/internal/benchmark/io"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres/pgbench"
 )
 
@@ -13,6 +14,11 @@ func (p *PostgresBenchmarker) RunMixedWorkloadPgbench(keyType string, initialDat
 	_, err := p.InsertRecordsPgbench(keyType, initialDataset, 100)
 	if err != nil {
 		return nil, fmt.Errorf("create initial dataset: %w", err)
+	}
+
+	fmt.Println("Creating lookup table for random key selection...")
+	if err := p.CreateLookupTable(); err != nil {
+		return nil, fmt.Errorf("create lookup table: %w", err)
 	}
 
 	fmt.Println("Resetting statistics...")
@@ -33,6 +39,11 @@ func (p *PostgresBenchmarker) RunMixedWorkloadPgbench(keyType string, initialDat
 		return nil, fmt.Errorf("capture start LSN: %w", err)
 	}
 	p.startLSN = startLSN
+
+	ioStatsBefore, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
+	if err != nil {
+		fmt.Printf("Warning: Failed to capture I/O stats before mixed workload: %v\n", err)
+	}
 
 	startTime := time.Now()
 
@@ -66,6 +77,11 @@ func (p *PostgresBenchmarker) RunMixedWorkloadPgbench(keyType string, initialDat
 
 	duration := time.Since(startTime)
 
+	ioStatsAfter, err := iometrics.GetContainerIOStats("uuid-bench-postgres")
+	if err != nil {
+		fmt.Printf("Warning: Failed to capture I/O stats after mixed workload: %v\n", err)
+	}
+
 	parsed, err := pgbench.ParsePgbenchOutput(execResult.Stdout, "uuid-bench-postgres")
 	if err != nil {
 		return nil, fmt.Errorf("parse pgbench output: %w", err)
@@ -83,7 +99,7 @@ func (p *PostgresBenchmarker) RunMixedWorkloadPgbench(keyType string, initialDat
 		return nil, fmt.Errorf("measure metrics: %w", err)
 	}
 
-	return &benchmark.MixedWorkloadResult{
+	result := &benchmark.MixedWorkloadResult{
 		KeyType:           keyType,
 		NumRecords:        initialDataset,
 		TotalOps:          totalOps,
@@ -108,5 +124,15 @@ func (p *PostgresBenchmarker) RunMixedWorkloadPgbench(keyType string, initialDat
 		Fragmentation:       metrics.Fragmentation,
 		TableSize:           metrics.TableSize,
 		IndexSize:           metrics.IndexSize,
-	}, nil
+	}
+
+	if ioStatsBefore != nil && ioStatsAfter != nil {
+		ioMetrics := iometrics.CalculateIOMetrics(ioStatsBefore, ioStatsAfter)
+		result.ReadIOPS = ioMetrics.ReadIOPS
+		result.WriteIOPS = ioMetrics.WriteIOPS
+		result.ReadThroughputMB = ioMetrics.ReadThroughputMB
+		result.WriteThroughputMB = ioMetrics.WriteThroughputMB
+	}
+
+	return result, nil
 }
