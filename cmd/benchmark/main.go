@@ -84,7 +84,7 @@ func main() {
 	connections := flag.Int("connections", 1, "Number of concurrent connections")
 	batchSize := flag.Int("batch-size", 100, "Batch size for inserts/updates")
 	numRuns := flag.Int("num-runs", 1, "Number of runs per UUID type (for statistical analysis)")
-	output := flag.String("output", "", "Output CSV file for statistical results (only in multi-run mode)")
+	output := flag.String("output", "", "Output CSV file for statistical results")
 	flag.Parse()
 
 	// Select database configuration
@@ -126,16 +126,16 @@ func main() {
 		runInsertPerformance(*numRecords, *batchSize, *connections, *numRuns, *output, currentDB.id)
 
 	case "read-performance":
-		runReadPerformance(*numRecords, *numOps, *numRuns, currentDB.id)
+		runReadPerformance(*numRecords, *numOps, *numRuns, *output, currentDB.id)
 
 	case "update-performance":
-		runUpdatePerformance(*numRecords, *numOps, *batchSize, *numRuns, currentDB.id)
+		runUpdatePerformance(*numRecords, *numOps, *batchSize, *numRuns, *output, currentDB.id)
 
 	case "mixed-insert-heavy":
-		runMixedWorkloadInsertHeavy(*numOps, *connections, *batchSize, *numRuns, currentDB.id)
+		runMixedWorkloadInsertHeavy(*numOps, *connections, *batchSize, *numRuns, *output, currentDB.id)
 
 	case "mixed-read-update":
-		runMixedWorkloadReadUpdate(*numOps, *connections, *numRuns, currentDB.id)
+		runMixedWorkloadReadUpdate(*numOps, *connections, *numRuns, *output, currentDB.id)
 
 	case "all":
 		runAllScenarios(*numRecords, *numOps, *connections, *batchSize, *numRuns, *output, currentDB.id)
@@ -148,79 +148,215 @@ func main() {
 	fmt.Println("All scenarios completed successfully!")
 }
 
-func runInsertPerformance(numRecords, batchSize, connections, numRuns int, outputFile, database string) {
-	if numRuns == 1 {
-		results := make(map[string]*benchmark.InsertPerformanceResult)
+// runScenario is the generic core loop for all benchmark scenarios.
+// It iterates key types, runs the workload numRuns times with fresh containers,
+// aggregates results, displays them, and optionally exports CSV.
+func runScenario[R any](
+	scenarioName string,
+	numRuns int,
+	outputFile string,
+	runOne func(keyType string) (*R, error),
+	aggregate func(runs []*R) map[string]statistics.Stats,
+	displaySingle func(results map[string]*R),
+	displayStats func(stats map[string]map[string]statistics.Stats),
+) map[string]map[string]statistics.Stats {
+	allRuns := make(map[string][]*R)
 
-		for _, keyType := range allKeyTypes {
+	for _, keyType := range allKeyTypes {
+		if numRuns > 1 {
+			fmt.Printf("\nTesting %s (%d runs)\n", strings.ToUpper(keyType), numRuns)
+		} else {
 			fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-			fmt.Println(strings.Repeat("-", 70))
+		}
+		fmt.Println(strings.Repeat("-", 70))
+
+		for i := 0; i < numRuns; i++ {
+			if numRuns > 1 {
+				fmt.Printf("  Run %d/%d... ", i+1, numRuns)
+			}
 
 			container.Start(currentDB.containerCfg)
 
-			result, err := currentDB.insertFunc(keyType, numRecords, batchSize, connections)
+			result, err := runOne(keyType)
 			if err != nil {
 				container.Stop(currentDB.containerCfg.ComposeFile)
-				log.Fatalf("Scenario failed for %s: %v", keyType, err)
+				log.Fatalf("Run %d failed for %s: %v", i+1, keyType, err)
 			}
 
-			results[keyType] = result
+			allRuns[keyType] = append(allRuns[keyType], result)
 			container.Stop(currentDB.containerCfg.ComposeFile)
-		}
 
-		display.InsertPerformance(results, allKeyTypes, connections, batchSize, database)
-	} else {
-		statsResults := make(map[string]map[string]statistics.Stats)
-
-		for _, keyType := range allKeyTypes {
-			fmt.Printf("\nTesting %s (%d runs)\n", strings.ToUpper(keyType), numRuns)
-			fmt.Println(strings.Repeat("-", 70))
-
-			runs := make([]*benchmark.InsertPerformanceResult, numRuns)
-
-			for i := 0; i < numRuns; i++ {
-				fmt.Printf("  Run %d/%d... ", i+1, numRuns)
-
-				container.Start(currentDB.containerCfg)
-
-				result, err := currentDB.insertFunc(keyType, numRecords, batchSize, connections)
-				if err != nil {
-					container.Stop(currentDB.containerCfg.ComposeFile)
-					log.Fatalf("Run %d failed for %s: %v", i+1, keyType, err)
-				}
-
-				runs[i] = result
-				container.Stop(currentDB.containerCfg.ComposeFile)
-
+			if numRuns > 1 {
 				fmt.Println("done")
-			}
-
-			statsResults[keyType] = aggregateInsertPerformanceResults(runs)
-		}
-
-		display.InsertPerformanceStatistics(statsResults, allKeyTypes, numRecords, connections, batchSize, numRuns, database)
-
-		if outputFile != "" {
-			fmt.Printf("\nExporting results to CSV...\n")
-
-			if err := export.InsertPerformanceStatsToCSV(statsResults, allKeyTypes, outputFile); err != nil {
-				log.Printf("Warning: Failed to export stats CSV: %v", err)
-			} else {
-				fmt.Printf("✓ Statistical summary: %s\n", outputFile)
-			}
-
-			rawFile := strings.Replace(outputFile, ".csv", "_raw.csv", 1)
-			if rawFile == outputFile {
-				rawFile = outputFile + ".raw"
-			}
-			if err := export.InsertPerformanceRawRunsToCSV(statsResults, allKeyTypes, rawFile); err != nil {
-				log.Printf("Warning: Failed to export raw runs CSV: %v", err)
-			} else {
-				fmt.Printf("✓ Raw runs data: %s\n", rawFile)
 			}
 		}
 	}
+
+	allStats := make(map[string]map[string]statistics.Stats)
+	for _, keyType := range allKeyTypes {
+		allStats[keyType] = aggregate(allRuns[keyType])
+	}
+
+	if numRuns == 1 {
+		singleResults := make(map[string]*R)
+		for k, runs := range allRuns {
+			singleResults[k] = runs[0]
+		}
+		displaySingle(singleResults)
+	} else {
+		displayStats(allStats)
+	}
+
+	if outputFile != "" {
+		exportCSV(scenarioName, allStats, outputFile)
+	}
+
+	return allStats
 }
+
+func runInsertPerformance(numRecords, batchSize, connections, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+	return runScenario(
+		"insert_performance", numRuns, outputFile,
+		func(keyType string) (*benchmark.InsertPerformanceResult, error) {
+			return currentDB.insertFunc(keyType, numRecords, batchSize, connections)
+		},
+		aggregateInsertPerformanceResults,
+		func(results map[string]*benchmark.InsertPerformanceResult) {
+			display.InsertPerformance(results, allKeyTypes, connections, batchSize, database)
+		},
+		func(stats map[string]map[string]statistics.Stats) {
+			display.InsertPerformanceStatistics(stats, allKeyTypes, numRecords, connections, batchSize, numRuns, database)
+		},
+	)
+}
+
+func runReadPerformance(numRecords, numOps, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+	return runScenario(
+		"read_performance", numRuns, outputFile,
+		func(keyType string) (*benchmark.ReadPerformanceResult, error) {
+			return currentDB.readFunc(keyType, numRecords, numOps)
+		},
+		aggregateReadPerformanceResults,
+		func(results map[string]*benchmark.ReadPerformanceResult) {
+			display.ReadPerformance(results, allKeyTypes, database)
+		},
+		func(stats map[string]map[string]statistics.Stats) {
+			display.ScenarioStatistics("Read Performance", stats, allKeyTypes, numRuns, database)
+		},
+	)
+}
+
+func runUpdatePerformance(numRecords, numOps, batchSize, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+	return runScenario(
+		"update_performance", numRuns, outputFile,
+		func(keyType string) (*benchmark.UpdatePerformanceResult, error) {
+			return currentDB.updateFunc(keyType, numRecords, numOps, batchSize)
+		},
+		aggregateUpdatePerformanceResults,
+		func(results map[string]*benchmark.UpdatePerformanceResult) {
+			display.UpdatePerformance(results, allKeyTypes, database)
+		},
+		func(stats map[string]map[string]statistics.Stats) {
+			display.ScenarioStatistics("Update Performance", stats, allKeyTypes, numRuns, database)
+		},
+	)
+}
+
+func runMixedWorkloadInsertHeavy(totalOps, connections, batchSize, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+	return runScenario(
+		"mixed_insert_heavy", numRuns, outputFile,
+		func(keyType string) (*benchmark.MixedWorkloadResult, error) {
+			return currentDB.mixedInsertHeavy(keyType, totalOps, connections, batchSize)
+		},
+		aggregateMixedWorkloadResults,
+		func(results map[string]*benchmark.MixedWorkloadResult) {
+			display.MixedWorkload(results, allKeyTypes, "Insert-Heavy (70% insert, 30% read)", database)
+		},
+		func(stats map[string]map[string]statistics.Stats) {
+			display.ScenarioStatistics("Mixed Insert-Heavy (70% insert, 30% read)", stats, allKeyTypes, numRuns, database)
+		},
+	)
+}
+
+func runMixedWorkloadReadUpdate(totalOps, connections, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+	return runScenario(
+		"mixed_read_update", numRuns, outputFile,
+		func(keyType string) (*benchmark.MixedWorkloadResult, error) {
+			return currentDB.mixedReadUpdate(keyType, totalOps, connections)
+		},
+		aggregateMixedWorkloadResults,
+		func(results map[string]*benchmark.MixedWorkloadResult) {
+			display.MixedWorkload(results, allKeyTypes, "YCSB-A (50% read, 50% update)", database)
+		},
+		func(stats map[string]map[string]statistics.Stats) {
+			display.ScenarioStatistics("Mixed YCSB-A (50% read, 50% update)", stats, allKeyTypes, numRuns, database)
+		},
+	)
+}
+
+func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, output, database string) {
+	fmt.Println("\n" + strings.Repeat("=", 100))
+	fmt.Println("RUNNING ALL SCENARIOS - COMPREHENSIVE BENCHMARK SUITE")
+	fmt.Println(strings.Repeat("=", 100))
+	fmt.Println()
+
+	startTime := time.Now()
+
+	fmt.Println("\n[1/5] INSERT PERFORMANCE")
+	fmt.Println(strings.Repeat("=", 100))
+	insertStats := runInsertPerformance(numRecords, batchSize, connections, numRuns, "", database)
+
+	fmt.Println("\n[2/5] READ PERFORMANCE")
+	fmt.Println(strings.Repeat("=", 100))
+	readStats := runReadPerformance(numRecords, numOps, numRuns, "", database)
+
+	fmt.Println("\n[3/5] UPDATE PERFORMANCE")
+	fmt.Println(strings.Repeat("=", 100))
+	updateStats := runUpdatePerformance(numRecords, numOps, batchSize, numRuns, "", database)
+
+	fmt.Println("\n[4/5] MIXED INSERT-HEAVY")
+	fmt.Println(strings.Repeat("=", 100))
+	mixedIHStats := runMixedWorkloadInsertHeavy(numOps, connections, batchSize, numRuns, "", database)
+
+	fmt.Println("\n[5/5] MIXED READ-UPDATE (YCSB-A)")
+	fmt.Println(strings.Repeat("=", 100))
+	mixedRUStats := runMixedWorkloadReadUpdate(numOps, connections, numRuns, "", database)
+
+	totalDuration := time.Since(startTime)
+	fmt.Println("\n" + strings.Repeat("=", 100))
+	fmt.Printf("ALL SCENARIOS COMPLETED IN %s\n", totalDuration.Round(time.Second))
+	fmt.Println(strings.Repeat("=", 100))
+
+	if output != "" {
+		scenarios := []export.ScenarioStats{
+			{Name: "insert_performance", Results: insertStats},
+			{Name: "read_performance", Results: readStats},
+			{Name: "update_performance", Results: updateStats},
+			{Name: "mixed_insert_heavy", Results: mixedIHStats},
+			{Name: "mixed_read_update", Results: mixedRUStats},
+		}
+
+		fmt.Printf("\nExporting results to CSV...\n")
+
+		if err := export.StatsToCSV(scenarios, allKeyTypes, output); err != nil {
+			log.Printf("Warning: Failed to export stats CSV: %v", err)
+		} else {
+			fmt.Printf("  Statistical summary: %s\n", output)
+		}
+
+		rawFile := strings.Replace(output, ".csv", "_raw.csv", 1)
+		if rawFile == output {
+			rawFile = output + ".raw"
+		}
+		if err := export.RawRunsToCSV(scenarios, allKeyTypes, rawFile); err != nil {
+			log.Printf("Warning: Failed to export raw runs CSV: %v", err)
+		} else {
+			fmt.Printf("  Raw runs data: %s\n", rawFile)
+		}
+	}
+}
+
+// Aggregation functions
 
 func aggregateInsertPerformanceResults(runs []*benchmark.InsertPerformanceResult) map[string]statistics.Stats {
 	numRuns := len(runs)
@@ -272,203 +408,159 @@ func aggregateInsertPerformanceResults(runs []*benchmark.InsertPerformanceResult
 	}
 }
 
-func runReadPerformance(numRecords, numOps, numRuns int, database string) {
-	results := make(map[string]*benchmark.ReadPerformanceResult)
+func aggregateReadPerformanceResults(runs []*benchmark.ReadPerformanceResult) map[string]statistics.Stats {
+	numRuns := len(runs)
 
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
+	readThroughput := make([]float64, numRuns)
+	cacheHitRatio := make([]float64, numRuns)
+	indexHitRatio := make([]float64, numRuns)
+	fragmentation := make([]float64, numRuns)
+	p50Latency := make([]float64, numRuns)
+	p95Latency := make([]float64, numRuns)
+	p99Latency := make([]float64, numRuns)
+	readIOPS := make([]float64, numRuns)
+	writeIOPS := make([]float64, numRuns)
+	readThroughputMB := make([]float64, numRuns)
+	writeThroughputMB := make([]float64, numRuns)
 
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.readFunc(keyType, numRecords, numOps)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
+	for i, run := range runs {
+		readThroughput[i] = run.ReadThroughput
+		cacheHitRatio[i] = run.BufferHitRatio
+		indexHitRatio[i] = run.IndexBufferHitRatio
+		fragmentation[i] = run.Fragmentation.FragmentationPercent
+		p50Latency[i] = float64(run.LatencyP50.Microseconds())
+		p95Latency[i] = float64(run.LatencyP95.Microseconds())
+		p99Latency[i] = float64(run.LatencyP99.Microseconds())
+		readIOPS[i] = run.ReadIOPS
+		writeIOPS[i] = run.WriteIOPS
+		readThroughputMB[i] = run.ReadThroughputMB
+		writeThroughputMB[i] = run.WriteThroughputMB
 	}
 
-	display.ReadPerformance(results, allKeyTypes, database)
+	return map[string]statistics.Stats{
+		"read_throughput":      statistics.Calculate(readThroughput),
+		"cache_hit_ratio":     statistics.Calculate(cacheHitRatio),
+		"index_hit_ratio":     statistics.Calculate(indexHitRatio),
+		"fragmentation":       statistics.Calculate(fragmentation),
+		"p50_latency_us":      statistics.Calculate(p50Latency),
+		"p95_latency_us":      statistics.Calculate(p95Latency),
+		"p99_latency_us":      statistics.Calculate(p99Latency),
+		"read_iops":           statistics.Calculate(readIOPS),
+		"write_iops":          statistics.Calculate(writeIOPS),
+		"read_throughput_mb":  statistics.Calculate(readThroughputMB),
+		"write_throughput_mb": statistics.Calculate(writeThroughputMB),
+	}
 }
 
-func runUpdatePerformance(numRecords, numOps, batchSize, numRuns int, database string) {
-	results := make(map[string]*benchmark.UpdatePerformanceResult)
+func aggregateUpdatePerformanceResults(runs []*benchmark.UpdatePerformanceResult) map[string]statistics.Stats {
+	numRuns := len(runs)
 
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
+	updateThroughput := make([]float64, numRuns)
+	fragmentation := make([]float64, numRuns)
+	p50Latency := make([]float64, numRuns)
+	p95Latency := make([]float64, numRuns)
+	p99Latency := make([]float64, numRuns)
+	readIOPS := make([]float64, numRuns)
+	writeIOPS := make([]float64, numRuns)
+	readThroughputMB := make([]float64, numRuns)
+	writeThroughputMB := make([]float64, numRuns)
 
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.updateFunc(keyType, numRecords, numOps, batchSize)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
+	for i, run := range runs {
+		updateThroughput[i] = run.UpdateThroughput
+		fragmentation[i] = run.Fragmentation.FragmentationPercent
+		p50Latency[i] = float64(run.LatencyP50.Microseconds())
+		p95Latency[i] = float64(run.LatencyP95.Microseconds())
+		p99Latency[i] = float64(run.LatencyP99.Microseconds())
+		readIOPS[i] = run.ReadIOPS
+		writeIOPS[i] = run.WriteIOPS
+		readThroughputMB[i] = run.ReadThroughputMB
+		writeThroughputMB[i] = run.WriteThroughputMB
 	}
 
-	display.UpdatePerformance(results, allKeyTypes, database)
+	return map[string]statistics.Stats{
+		"update_throughput":    statistics.Calculate(updateThroughput),
+		"fragmentation":       statistics.Calculate(fragmentation),
+		"p50_latency_us":      statistics.Calculate(p50Latency),
+		"p95_latency_us":      statistics.Calculate(p95Latency),
+		"p99_latency_us":      statistics.Calculate(p99Latency),
+		"read_iops":           statistics.Calculate(readIOPS),
+		"write_iops":          statistics.Calculate(writeIOPS),
+		"read_throughput_mb":  statistics.Calculate(readThroughputMB),
+		"write_throughput_mb": statistics.Calculate(writeThroughputMB),
+	}
 }
 
-func runMixedWorkloadInsertHeavy(totalOps, connections, batchSize, numRuns int, database string) {
-	results := make(map[string]*benchmark.MixedWorkloadResult)
+func aggregateMixedWorkloadResults(runs []*benchmark.MixedWorkloadResult) map[string]statistics.Stats {
+	numRuns := len(runs)
 
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
+	overallThroughput := make([]float64, numRuns)
+	cacheHitRatio := make([]float64, numRuns)
+	indexHitRatio := make([]float64, numRuns)
+	fragmentation := make([]float64, numRuns)
+	tableSizeMB := make([]float64, numRuns)
+	indexSizeMB := make([]float64, numRuns)
+	p50Latency := make([]float64, numRuns)
+	p95Latency := make([]float64, numRuns)
+	p99Latency := make([]float64, numRuns)
+	readIOPS := make([]float64, numRuns)
+	writeIOPS := make([]float64, numRuns)
+	readThroughputMB := make([]float64, numRuns)
+	writeThroughputMB := make([]float64, numRuns)
 
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.mixedInsertHeavy(keyType, totalOps, connections, batchSize)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
+	for i, run := range runs {
+		overallThroughput[i] = run.OverallThroughput
+		cacheHitRatio[i] = run.BufferHitRatio
+		indexHitRatio[i] = run.IndexBufferHitRatio
+		fragmentation[i] = run.Fragmentation.FragmentationPercent
+		tableSizeMB[i] = float64(run.TableSize) / (1024 * 1024)
+		indexSizeMB[i] = float64(run.IndexSize) / (1024 * 1024)
+		p50Latency[i] = float64(run.LatencyP50.Microseconds())
+		p95Latency[i] = float64(run.LatencyP95.Microseconds())
+		p99Latency[i] = float64(run.LatencyP99.Microseconds())
+		readIOPS[i] = run.ReadIOPS
+		writeIOPS[i] = run.WriteIOPS
+		readThroughputMB[i] = run.ReadThroughputMB
+		writeThroughputMB[i] = run.WriteThroughputMB
 	}
 
-	display.MixedWorkload(results, allKeyTypes, "Insert-Heavy (70% insert, 30% read)", database)
+	return map[string]statistics.Stats{
+		"overall_throughput":  statistics.Calculate(overallThroughput),
+		"cache_hit_ratio":    statistics.Calculate(cacheHitRatio),
+		"index_hit_ratio":    statistics.Calculate(indexHitRatio),
+		"fragmentation":      statistics.Calculate(fragmentation),
+		"table_size_mb":       statistics.Calculate(tableSizeMB),
+		"index_size_mb":       statistics.Calculate(indexSizeMB),
+		"p50_latency_us":     statistics.Calculate(p50Latency),
+		"p95_latency_us":     statistics.Calculate(p95Latency),
+		"p99_latency_us":     statistics.Calculate(p99Latency),
+		"read_iops":          statistics.Calculate(readIOPS),
+		"write_iops":         statistics.Calculate(writeIOPS),
+		"read_throughput_mb":  statistics.Calculate(readThroughputMB),
+		"write_throughput_mb": statistics.Calculate(writeThroughputMB),
+	}
 }
 
-func runMixedWorkloadReadUpdate(totalOps, connections, numRuns int, database string) {
-	results := make(map[string]*benchmark.MixedWorkloadResult)
+// exportCSV exports stats for a single scenario to CSV files
+func exportCSV(scenarioName string, allStats map[string]map[string]statistics.Stats, outputFile string) {
+	scenarios := []export.ScenarioStats{{Name: scenarioName, Results: allStats}}
 
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
+	fmt.Printf("\nExporting results to CSV...\n")
 
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.mixedReadUpdate(keyType, totalOps, connections)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
+	if err := export.StatsToCSV(scenarios, allKeyTypes, outputFile); err != nil {
+		log.Printf("Warning: Failed to export stats CSV: %v", err)
+	} else {
+		fmt.Printf("  Statistical summary: %s\n", outputFile)
 	}
 
-	display.MixedWorkload(results, allKeyTypes, "YCSB-A (50% read, 50% update)", database)
-}
-
-// Helper functions for runAllScenarios - collect results without displaying
-func collectInsertPerformanceResults(numRecords, batchSize, connections int) map[string]*benchmark.InsertPerformanceResult {
-	results := make(map[string]*benchmark.InsertPerformanceResult)
-
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
-
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.insertFunc(keyType, numRecords, batchSize, connections)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
+	rawFile := strings.Replace(outputFile, ".csv", "_raw.csv", 1)
+	if rawFile == outputFile {
+		rawFile = outputFile + ".raw"
 	}
-
-	return results
-}
-
-func collectReadPerformanceResults(numRecords, numOps int) map[string]*benchmark.ReadPerformanceResult {
-	results := make(map[string]*benchmark.ReadPerformanceResult)
-
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
-
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.readFunc(keyType, numRecords, numOps)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
+	if err := export.RawRunsToCSV(scenarios, allKeyTypes, rawFile); err != nil {
+		log.Printf("Warning: Failed to export raw runs CSV: %v", err)
+	} else {
+		fmt.Printf("  Raw runs data: %s\n", rawFile)
 	}
-
-	return results
-}
-
-func collectUpdatePerformanceResults(numRecords, numOps, batchSize int) map[string]*benchmark.UpdatePerformanceResult {
-	results := make(map[string]*benchmark.UpdatePerformanceResult)
-
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
-
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.updateFunc(keyType, numRecords, numOps, batchSize)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
-	}
-
-	return results
-}
-
-func collectMixedWorkloadInsertHeavyResults(totalOps, connections, batchSize int) map[string]*benchmark.MixedWorkloadResult {
-	results := make(map[string]*benchmark.MixedWorkloadResult)
-
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
-
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.mixedInsertHeavy(keyType, totalOps, connections, batchSize)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
-	}
-
-	return results
-}
-
-func collectMixedWorkloadReadUpdateResults(totalOps, connections int) map[string]*benchmark.MixedWorkloadResult {
-	results := make(map[string]*benchmark.MixedWorkloadResult)
-
-	for _, keyType := range allKeyTypes {
-		fmt.Printf("\nTesting %s\n", strings.ToUpper(keyType))
-		fmt.Println(strings.Repeat("-", 70))
-
-		container.Start(currentDB.containerCfg)
-
-		result, err := currentDB.mixedReadUpdate(keyType, totalOps, connections)
-		if err != nil {
-			container.Stop(currentDB.containerCfg.ComposeFile)
-			log.Fatalf("Scenario failed for %s: %v", keyType, err)
-		}
-
-		results[keyType] = result
-		container.Stop(currentDB.containerCfg.ComposeFile)
-	}
-
-	return results
 }
 
 func buildWorkloadBinary() {
@@ -478,50 +570,4 @@ func buildWorkloadBinary() {
 		log.Fatalf("Failed to build workload binary: %v", err)
 	}
 	fmt.Printf("Workload binary built: %s\n", path)
-}
-
-func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, output, database string) {
-	fmt.Println("\n" + strings.Repeat("=", 100))
-	fmt.Println("RUNNING ALL SCENARIOS - COMPREHENSIVE BENCHMARK SUITE")
-	fmt.Println(strings.Repeat("=", 100))
-	fmt.Println()
-
-	startTime := time.Now()
-
-	// Collect all results first
-	fmt.Println("\n[1/5] INSERT PERFORMANCE")
-	fmt.Println(strings.Repeat("=", 100))
-	insertResults := collectInsertPerformanceResults(numRecords, batchSize, connections)
-
-	fmt.Println("\n[2/5] READ PERFORMANCE")
-	fmt.Println(strings.Repeat("=", 100))
-	readResults := collectReadPerformanceResults(numRecords, numOps)
-
-	fmt.Println("\n[3/5] UPDATE PERFORMANCE")
-	fmt.Println(strings.Repeat("=", 100))
-	updateResults := collectUpdatePerformanceResults(numRecords, numOps, batchSize)
-
-	fmt.Println("\n[4/5] MIXED INSERT-HEAVY")
-	fmt.Println(strings.Repeat("=", 100))
-	mixedInsertHeavyResults := collectMixedWorkloadInsertHeavyResults(numOps, connections, batchSize)
-
-	fmt.Println("\n[5/5] MIXED READ-UPDATE (YCSB-A)")
-	fmt.Println(strings.Repeat("=", 100))
-	mixedReadUpdateResults := collectMixedWorkloadReadUpdateResults(numOps, connections)
-
-	totalDuration := time.Since(startTime)
-	fmt.Println("\n" + strings.Repeat("=", 100))
-	fmt.Printf("ALL SCENARIOS COMPLETED IN %s\n", totalDuration.Round(time.Second))
-	fmt.Println(strings.Repeat("=", 100))
-
-	// Display all tables
-	fmt.Println("\n" + strings.Repeat("=", 100))
-	fmt.Println("BENCHMARK RESULTS SUMMARY")
-	fmt.Println(strings.Repeat("=", 100))
-
-	display.InsertPerformance(insertResults, allKeyTypes, connections, batchSize, database)
-	display.ReadPerformance(readResults, allKeyTypes, database)
-	display.UpdatePerformance(updateResults, allKeyTypes, database)
-	display.MixedWorkload(mixedInsertHeavyResults, allKeyTypes, "Insert-Heavy (70% insert, 30% read)", database)
-	display.MixedWorkload(mixedReadUpdateResults, allKeyTypes, "YCSB-A (50% read, 50% update)", database)
 }

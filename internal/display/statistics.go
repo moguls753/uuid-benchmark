@@ -84,6 +84,73 @@ func displayMetricTable(results map[string]map[string]statistics.Stats, keyTypes
 	fmt.Println("└─────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴───────┘")
 }
 
+// ScenarioStatistics displays multi-run statistical results for any scenario
+func ScenarioStatistics(title string, results map[string]map[string]statistics.Stats, keyTypes []string, numRuns int, database string) {
+	fmt.Println("\n" + strings.Repeat("=", 100))
+	fmt.Printf("%s - Statistical Summary (%d runs per UUID type)\n", title, numRuns)
+	fmt.Println(strings.Repeat("=", 100))
+
+	type metricDisplay struct {
+		key   string
+		label string
+		fmt   string
+	}
+
+	// Database-aware label for page_splits
+	pageSplitsLabel := "Page Splits"
+	if database == "cassandra" {
+		pageSplitsLabel = "SSTable Delta"
+	}
+
+	// Database-aware label for fragmentation
+	fragLabel := "Fragmentation (%)"
+	switch database {
+	case "cassandra":
+		fragLabel = "Space Amplification (%)"
+	case "postgres":
+		fragLabel = "Leaf Fragmentation (%)"
+	}
+
+	metrics := []metricDisplay{
+		{"throughput", "Throughput (records/sec)", "%.0f"},
+		{"read_throughput", "Read Throughput (ops/sec)", "%.0f"},
+		{"update_throughput", "Update Throughput (ops/sec)", "%.0f"},
+		{"overall_throughput", "Overall Throughput (ops/sec)", "%.0f"},
+		{"page_splits", pageSplitsLabel, "%.0f"},
+		{"fragmentation", fragLabel, "%.2f"},
+		{"avg_leaf_density", "Avg Leaf Density (%)", "%.2f"},
+		{"cache_hit_ratio", "Cache Hit Ratio", "%.4f"},
+		{"index_hit_ratio", "Index Hit Ratio", "%.4f"},
+		{"table_size_mb", "Table Size (MB)", "%.1f"},
+		{"index_size_mb", "Index Size (MB)", "%.1f"},
+		{"p50_latency_us", "Latency P50 (µs)", "%.0f"},
+		{"p95_latency_us", "Latency P95 (µs)", "%.0f"},
+		{"p99_latency_us", "Latency P99 (µs)", "%.0f"},
+		{"read_iops", "Read IOPS", "%.0f"},
+		{"write_iops", "Write IOPS", "%.0f"},
+		{"read_throughput_mb", "Read Throughput (MB/s)", "%.1f"},
+		{"write_throughput_mb", "Write Throughput (MB/s)", "%.1f"},
+	}
+
+	for _, m := range metrics {
+		// Only display metrics that exist in the results
+		found := false
+		for _, keyType := range keyTypes {
+			if _, ok := results[keyType][m.key]; ok {
+				found = true
+				break
+			}
+		}
+		if !found {
+			continue
+		}
+
+		fmt.Printf("\n%s\n", m.label)
+		displayMetricTable(results, keyTypes, m.key, m.fmt)
+		displayComparisons(results, keyTypes, m.key)
+	}
+}
+
 func displayComparisons(results map[string]map[string]statistics.Stats, keyTypes []string, metric string) {
 	fmt.Println("\nStatistical Comparisons (vs SEQUENTIAL):")
 	fmt.Println("┌─────────────────────────┬─────────────┬──────────┬───────────┬──────────────┐")
