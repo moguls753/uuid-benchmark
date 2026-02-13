@@ -126,16 +126,16 @@ func main() {
 		runInsertPerformance(*numRecords, *batchSize, *connections, *numRuns, *output, currentDB.id)
 
 	case "read-performance":
-		runReadPerformance(*numRecords, *numOps, *numRuns, *output, currentDB.id)
+		runReadPerformance(*numRecords, *numOps, *connections, *numRuns, *output, currentDB.id)
 
 	case "update-performance":
-		runUpdatePerformance(*numRecords, *numOps, *batchSize, *numRuns, *output, currentDB.id)
+		runUpdatePerformance(*numRecords, *numOps, *batchSize, *connections, *numRuns, *output, currentDB.id)
 
 	case "mixed-insert-heavy":
-		runMixedWorkloadInsertHeavy(*numOps, *connections, *batchSize, *numRuns, *output, currentDB.id)
+		runMixedWorkloadInsertHeavy(*numOps, *numRecords, *connections, *batchSize, *numRuns, *output, currentDB.id)
 
 	case "mixed-read-update":
-		runMixedWorkloadReadUpdate(*numOps, *connections, *numRuns, *output, currentDB.id)
+		runMixedWorkloadReadUpdate(*numOps, *numRecords, *connections, *numRuns, *output, currentDB.id)
 
 	case "all":
 		runAllScenarios(*numRecords, *numOps, *connections, *batchSize, *numRuns, *output, currentDB.id)
@@ -155,6 +155,8 @@ func runScenario[R any](
 	scenarioName string,
 	numRuns int,
 	outputFile string,
+	recordCount int,
+	connections int,
 	runOne func(keyType string) (*R, error),
 	aggregate func(runs []*R) map[string]statistics.Stats,
 	displaySingle func(results map[string]*R),
@@ -208,7 +210,7 @@ func runScenario[R any](
 	}
 
 	if outputFile != "" {
-		exportCSV(scenarioName, allStats, outputFile)
+		exportCSV(scenarioName, allStats, outputFile, recordCount, connections)
 	}
 
 	return allStats
@@ -216,7 +218,7 @@ func runScenario[R any](
 
 func runInsertPerformance(numRecords, batchSize, connections, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
 	return runScenario(
-		"insert_performance", numRuns, outputFile,
+		"insert_performance", numRuns, outputFile, numRecords, connections,
 		func(keyType string) (*benchmark.InsertPerformanceResult, error) {
 			return currentDB.insertFunc(keyType, numRecords, batchSize, connections)
 		},
@@ -230,9 +232,9 @@ func runInsertPerformance(numRecords, batchSize, connections, numRuns int, outpu
 	)
 }
 
-func runReadPerformance(numRecords, numOps, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+func runReadPerformance(numRecords, numOps, connections, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
 	return runScenario(
-		"read_performance", numRuns, outputFile,
+		"read_performance", numRuns, outputFile, numRecords, connections,
 		func(keyType string) (*benchmark.ReadPerformanceResult, error) {
 			return currentDB.readFunc(keyType, numRecords, numOps)
 		},
@@ -246,9 +248,9 @@ func runReadPerformance(numRecords, numOps, numRuns int, outputFile, database st
 	)
 }
 
-func runUpdatePerformance(numRecords, numOps, batchSize, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+func runUpdatePerformance(numRecords, numOps, batchSize, connections, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
 	return runScenario(
-		"update_performance", numRuns, outputFile,
+		"update_performance", numRuns, outputFile, numRecords, connections,
 		func(keyType string) (*benchmark.UpdatePerformanceResult, error) {
 			return currentDB.updateFunc(keyType, numRecords, numOps, batchSize)
 		},
@@ -262,9 +264,9 @@ func runUpdatePerformance(numRecords, numOps, batchSize, numRuns int, outputFile
 	)
 }
 
-func runMixedWorkloadInsertHeavy(totalOps, connections, batchSize, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+func runMixedWorkloadInsertHeavy(totalOps, numRecords, connections, batchSize, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
 	return runScenario(
-		"mixed_insert_heavy", numRuns, outputFile,
+		"mixed_insert_heavy", numRuns, outputFile, numRecords, connections,
 		func(keyType string) (*benchmark.MixedWorkloadResult, error) {
 			return currentDB.mixedInsertHeavy(keyType, totalOps, connections, batchSize)
 		},
@@ -278,9 +280,9 @@ func runMixedWorkloadInsertHeavy(totalOps, connections, batchSize, numRuns int, 
 	)
 }
 
-func runMixedWorkloadReadUpdate(totalOps, connections, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
+func runMixedWorkloadReadUpdate(totalOps, numRecords, connections, numRuns int, outputFile, database string) map[string]map[string]statistics.Stats {
 	return runScenario(
-		"mixed_read_update", numRuns, outputFile,
+		"mixed_read_update", numRuns, outputFile, numRecords, connections,
 		func(keyType string) (*benchmark.MixedWorkloadResult, error) {
 			return currentDB.mixedReadUpdate(keyType, totalOps, connections)
 		},
@@ -308,19 +310,19 @@ func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, ou
 
 	fmt.Println("\n[2/5] READ PERFORMANCE")
 	fmt.Println(strings.Repeat("=", 100))
-	readStats := runReadPerformance(numRecords, numOps, numRuns, "", database)
+	readStats := runReadPerformance(numRecords, numOps, connections, numRuns, "", database)
 
 	fmt.Println("\n[3/5] UPDATE PERFORMANCE")
 	fmt.Println(strings.Repeat("=", 100))
-	updateStats := runUpdatePerformance(numRecords, numOps, batchSize, numRuns, "", database)
+	updateStats := runUpdatePerformance(numRecords, numOps, batchSize, connections, numRuns, "", database)
 
 	fmt.Println("\n[4/5] MIXED INSERT-HEAVY")
 	fmt.Println(strings.Repeat("=", 100))
-	mixedIHStats := runMixedWorkloadInsertHeavy(numOps, connections, batchSize, numRuns, "", database)
+	mixedIHStats := runMixedWorkloadInsertHeavy(numOps, numRecords, connections, batchSize, numRuns, "", database)
 
 	fmt.Println("\n[5/5] MIXED READ-UPDATE (YCSB-A)")
 	fmt.Println(strings.Repeat("=", 100))
-	mixedRUStats := runMixedWorkloadReadUpdate(numOps, connections, numRuns, "", database)
+	mixedRUStats := runMixedWorkloadReadUpdate(numOps, numRecords, connections, numRuns, "", database)
 
 	totalDuration := time.Since(startTime)
 	fmt.Println("\n" + strings.Repeat("=", 100))
@@ -329,11 +331,11 @@ func runAllScenarios(numRecords, numOps, connections, batchSize, numRuns int, ou
 
 	if output != "" {
 		scenarios := []export.ScenarioStats{
-			{Name: "insert_performance", Results: insertStats},
-			{Name: "read_performance", Results: readStats},
-			{Name: "update_performance", Results: updateStats},
-			{Name: "mixed_insert_heavy", Results: mixedIHStats},
-			{Name: "mixed_read_update", Results: mixedRUStats},
+			{Name: "insert_performance", RecordCount: numRecords, Connections: connections, Results: insertStats},
+			{Name: "read_performance", RecordCount: numRecords, Connections: connections, Results: readStats},
+			{Name: "update_performance", RecordCount: numRecords, Connections: connections, Results: updateStats},
+			{Name: "mixed_insert_heavy", RecordCount: numRecords, Connections: connections, Results: mixedIHStats},
+			{Name: "mixed_read_update", RecordCount: numRecords, Connections: connections, Results: mixedRUStats},
 		}
 
 		fmt.Printf("\nExporting results to CSV...\n")
@@ -541,8 +543,8 @@ func aggregateMixedWorkloadResults(runs []*benchmark.MixedWorkloadResult) map[st
 }
 
 // exportCSV exports stats for a single scenario to CSV files
-func exportCSV(scenarioName string, allStats map[string]map[string]statistics.Stats, outputFile string) {
-	scenarios := []export.ScenarioStats{{Name: scenarioName, Results: allStats}}
+func exportCSV(scenarioName string, allStats map[string]map[string]statistics.Stats, outputFile string, recordCount, connections int) {
+	scenarios := []export.ScenarioStats{{Name: scenarioName, RecordCount: recordCount, Connections: connections, Results: allStats}}
 
 	fmt.Printf("\nExporting results to CSV...\n")
 

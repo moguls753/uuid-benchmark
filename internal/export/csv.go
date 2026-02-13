@@ -12,8 +12,10 @@ import (
 
 // ScenarioStats holds aggregated statistics for a single scenario
 type ScenarioStats struct {
-	Name    string
-	Results map[string]map[string]statistics.Stats
+	Name        string
+	RecordCount int
+	Connections int
+	Results     map[string]map[string]statistics.Stats
 }
 
 // logicalMetricOrder defines the preferred order for CSV export:
@@ -86,7 +88,7 @@ func StatsToCSV(scenarios []ScenarioStats, keyTypes []string, outputPath string)
 
 	writer := csv.NewWriter(file)
 
-	header := []string{"Scenario", "KeyType", "Metric", "Median", "Mean", "StdDev", "Min", "Max", "CV_Percent"}
+	header := []string{"Scenario", "KeyType", "Metric", "Median", "Mean", "StdDev", "Min", "Max", "CV_Percent", "RecordCount", "Connections"}
 	if err := writer.Write(header); err != nil {
 		return fmt.Errorf("failed to write CSV header: %w", err)
 	}
@@ -106,6 +108,8 @@ func StatsToCSV(scenarios []ScenarioStats, keyTypes []string, outputPath string)
 					fmt.Sprintf("%.2f", stats.Min),
 					fmt.Sprintf("%.2f", stats.Max),
 					fmt.Sprintf("%.2f", stats.CV),
+					fmt.Sprintf("%d", scenario.RecordCount),
+					fmt.Sprintf("%d", scenario.Connections),
 				}
 				if err := writer.Write(row); err != nil {
 					return fmt.Errorf("failed to write CSV row: %w", err)
@@ -152,6 +156,7 @@ func RawRunsToCSV(scenarios []ScenarioStats, keyTypes []string, outputPath strin
 	for i := 1; i <= maxRuns; i++ {
 		header = append(header, fmt.Sprintf("Run%d", i))
 	}
+	header = append(header, "RecordCount", "Connections")
 	if err := writer.Write(header); err != nil {
 		return fmt.Errorf("failed to write CSV header: %w", err)
 	}
@@ -168,9 +173,11 @@ func RawRunsToCSV(scenarios []ScenarioStats, keyTypes []string, outputPath strin
 				}
 
 				// Pad with empty strings if this metric has fewer runs
-				for len(row) < len(header) {
+				// (header has RunN columns + 2 trailing columns for RecordCount/Connections)
+				for len(row) < len(header)-2 {
 					row = append(row, "")
 				}
+				row = append(row, fmt.Sprintf("%d", scenario.RecordCount), fmt.Sprintf("%d", scenario.Connections))
 
 				if err := writer.Write(row); err != nil {
 					return fmt.Errorf("failed to write CSV row: %w", err)

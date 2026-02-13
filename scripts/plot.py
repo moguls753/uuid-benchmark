@@ -148,7 +148,8 @@ def _apply_style(ax):
 def _save(fig, filepath):
     """Save as PDF and PGF side by side."""
     fig.savefig(filepath)
-    fig.savefig(filepath.replace(".pdf", ".pgf"))
+    base, _ = os.path.splitext(filepath)
+    fig.savefig(base + ".pgf")
     plt.close(fig)
 
 
@@ -176,15 +177,13 @@ def plot_bars(df_group: pd.DataFrame, scenario: str, metric: str,
         return ""
 
     med_vals = [medians[k] for k in present_keys]
-    std_vals = [stddevs[k] for k in present_keys]
     labels = [KEY_TYPE_LABELS.get(k, k) for k in present_keys]
     colors = [KEY_TYPE_COLORS.get(k, "#999999") for k in present_keys]
 
     fig, ax = plt.subplots(figsize=FIGURE_SIZE)
     x = range(len(present_keys))
-    ax.bar(x, med_vals, width=0.6, yerr=std_vals,
-           color=colors, edgecolor="white", linewidth=0.5,
-           capsize=3, error_kw={"linewidth": 0.8, "capthick": 0.8})
+    ax.bar(x, med_vals, width=0.6,
+           color=colors, edgecolor="white", linewidth=0.5)
 
     ax.set_xticks(list(x))
     ax.set_xticklabels(labels)
@@ -194,7 +193,7 @@ def plot_bars(df_group: pd.DataFrame, scenario: str, metric: str,
 
     if min(med_vals) > 0 and max(med_vals) > 0:
         if min(med_vals) / max(med_vals) > 0.8:
-            margin = max(std_vals) * 2 if std_vals else min(med_vals) * 0.05
+            margin = min(med_vals) * 0.05
             ax.set_ylim(bottom=max(0, min(med_vals) - margin))
         else:
             ax.set_ylim(bottom=0)
@@ -226,15 +225,13 @@ def plot_normalized_bars(df_group: pd.DataFrame, scenario: str, metric: str,
         return ""
 
     norm_vals = [medians[k] / baseline * 100 for k in plot_keys]
-    norm_stds = [stddevs[k] / baseline * 100 for k in plot_keys]
     labels = [KEY_TYPE_LABELS.get(k, k) for k in plot_keys]
     colors = [KEY_TYPE_COLORS.get(k, "#999999") for k in plot_keys]
 
     fig, ax = plt.subplots(figsize=FIGURE_SIZE)
     x = range(len(plot_keys))
-    ax.bar(x, norm_vals, width=0.6, yerr=norm_stds,
-           color=colors, edgecolor="white", linewidth=0.5,
-           capsize=3, error_kw={"linewidth": 0.8, "capthick": 0.8})
+    ax.bar(x, norm_vals, width=0.6,
+           color=colors, edgecolor="white", linewidth=0.5)
 
     # 100% baseline reference line
     ax.axhline(y=100, color="#4e79a7", linestyle="--", linewidth=1.0,
@@ -248,10 +245,8 @@ def plot_normalized_bars(df_group: pd.DataFrame, scenario: str, metric: str,
     _apply_style(ax)
 
     # Y-axis: include 100% line with some padding
-    all_vals = norm_vals + [100]
-    all_err = norm_stds + [0]
-    y_max = max(v + e for v, e in zip(all_vals, all_err)) * 1.1
-    y_min = min(v - e for v, e in zip(all_vals, all_err))
+    y_max = max(max(norm_vals), 100) * 1.1
+    y_min = min(min(norm_vals), 100)
     ax.set_ylim(bottom=max(0, y_min * 0.9), top=y_max)
 
     plt.tight_layout()
@@ -286,28 +281,20 @@ def plot_cross_db_bars(cross_df: pd.DataFrame, scenario: str, metric: str,
         return ""
 
     # Normalize each database to its own SEQUENTIAL baseline
-    norm_data = {}  # {db: {kt: (norm_val, norm_std)}}
+    norm_data = {}  # {db: {kt: norm_val}}
     for db in db_labels:
         db_df = sdf[sdf["Database"] == db]
         if db_df.empty:
             continue
         seq_row = db_df[db_df["KeyType"] == "SEQUENTIAL"]
         if seq_row.empty or seq_row.iloc[0]["Median"] == 0:
-            # No SEQUENTIAL baseline -- use raw values
-            for kt in all_key_types:
-                kt_row = db_df[db_df["KeyType"] == kt]
-                if not kt_row.empty:
-                    norm_data.setdefault(db, {})[kt] = (
-                        kt_row.iloc[0]["Median"], kt_row.iloc[0]["StdDev"])
-            continue
+            continue  # Skip databases without SEQUENTIAL baseline
         baseline = seq_row.iloc[0]["Median"]
         for kt in all_key_types:
             kt_row = db_df[db_df["KeyType"] == kt]
             if not kt_row.empty:
                 norm_data.setdefault(db, {})[kt] = (
-                    kt_row.iloc[0]["Median"] / baseline * 100,
-                    kt_row.iloc[0]["StdDev"] / baseline * 100,
-                )
+                    kt_row.iloc[0]["Median"] / baseline * 100)
 
     dbs_with_data = [db for db in db_labels if db in norm_data]
     if not dbs_with_data:
@@ -322,16 +309,12 @@ def plot_cross_db_bars(cross_df: pd.DataFrame, scenario: str, metric: str,
 
     for i, kt in enumerate(all_key_types):
         vals = []
-        errs = []
         for db in dbs_with_data:
-            v, e = norm_data[db].get(kt, (0, 0))
-            vals.append(v)
-            errs.append(e)
+            vals.append(norm_data[db].get(kt, 0))
         offset = (i - (n_keys - 1) / 2) * bar_width
-        ax.bar(x + offset, vals, width=bar_width, yerr=errs,
+        ax.bar(x + offset, vals, width=bar_width,
                color=KEY_TYPE_COLORS.get(kt, "#999999"),
                edgecolor="white", linewidth=0.5,
-               capsize=2, error_kw={"linewidth": 0.6, "capthick": 0.6},
                label=KEY_TYPE_LABELS.get(kt, kt))
 
     # 100% baseline
@@ -438,6 +421,78 @@ def plot_heatmap(cross_df: pd.DataFrame, scenario: str, metric: str,
 
 
 # ---------------------------------------------------------------------------
+# Scale line charts (performance across record counts)
+# ---------------------------------------------------------------------------
+
+def _format_record_count(n: int) -> str:
+    """Format record count for display: 100000 -> '100K', 1000000 -> '1M'."""
+    if n >= 1_000_000 and n % 1_000_000 == 0:
+        return f"{n // 1_000_000}M"
+    if n >= 1_000 and n % 1_000 == 0:
+        return f"{n // 1_000}K"
+    return str(n)
+
+
+def plot_scale_lines(df: pd.DataFrame, scenario: str, metric: str,
+                     output_dir: str) -> str:
+    """Line chart: X = record count, Y = normalized performance, one line per key type."""
+    sdf = df[(df["Scenario"] == scenario) & (df["Metric"] == metric)]
+    if sdf.empty or "RecordCount" not in sdf.columns:
+        return ""
+
+    record_counts = sorted(sdf["RecordCount"].unique())
+    if len(record_counts) < 2:
+        return ""  # Need at least 2 scale points for a line chart
+
+    # Determine key types present (excluding SEQUENTIAL)
+    plot_keys = [k for k in KEY_TYPE_ORDER
+                 if k != "SEQUENTIAL" and k in sdf["KeyType"].values]
+    if not plot_keys:
+        return ""
+
+    # Check SEQUENTIAL exists for normalization
+    has_baseline = all(
+        not sdf[(sdf["RecordCount"] == rc) & (sdf["KeyType"] == "SEQUENTIAL")].empty
+        for rc in record_counts
+    )
+    if not has_baseline:
+        return ""  # Can't normalize without SEQUENTIAL at every scale
+
+    fig, ax = plt.subplots(figsize=FIGURE_SIZE)
+
+    for kt in plot_keys:
+        y_vals = []
+        for rc in record_counts:
+            baseline_row = sdf[(sdf["RecordCount"] == rc) & (sdf["KeyType"] == "SEQUENTIAL")]
+            kt_row = sdf[(sdf["RecordCount"] == rc) & (sdf["KeyType"] == kt)]
+            if baseline_row.empty or kt_row.empty or baseline_row.iloc[0]["Median"] == 0:
+                y_vals.append(np.nan)
+            else:
+                y_vals.append(kt_row.iloc[0]["Median"] / baseline_row.iloc[0]["Median"] * 100)
+        ax.plot(range(len(record_counts)), y_vals,
+                marker="o", markersize=5, linewidth=1.5,
+                color=KEY_TYPE_COLORS.get(kt, "#999999"),
+                label=KEY_TYPE_LABELS.get(kt, kt))
+
+    # 100% baseline
+    ax.axhline(y=100, color="#4e79a7", linestyle="--", linewidth=1.0,
+               alpha=0.7, label="Sequential baseline")
+
+    ax.set_xticks(range(len(record_counts)))
+    ax.set_xticklabels([_format_record_count(rc) for rc in record_counts])
+    ax.set_xlabel("Dataset Size (records)")
+    ax.set_ylabel(NORMALIZED_YLABEL.get(metric, r"Relative (\%)"))
+    ax.set_title(f"{scenario_title(scenario)} -- Scaling")
+    ax.legend(loc="best", framealpha=0.8)
+    _apply_style(ax)
+
+    plt.tight_layout()
+    filepath = os.path.join(output_dir, f"scale_{scenario}_{metric}.pdf")
+    _save(fig, filepath)
+    return filepath
+
+
+# ---------------------------------------------------------------------------
 # CSV loading
 # ---------------------------------------------------------------------------
 
@@ -478,6 +533,8 @@ def main():
                         help="Path to stats CSV (single-database mode)")
     parser.add_argument("--cross-db", nargs="+", metavar="LABEL:CSV",
                         help="Cross-database mode: postgres:pg.csv mysql:my.csv ...")
+    parser.add_argument("--scale", nargs="+", metavar="CSV",
+                        help="Scale mode: line charts across record counts from multiple CSVs")
     parser.add_argument("--output-dir", default="plots",
                         help="Output directory for PDFs/PGFs (default: plots/)")
     parser.add_argument("--scenario", default=None,
@@ -486,13 +543,35 @@ def main():
                         help="Filter to one metric (e.g., p99_latency_us)")
     args = parser.parse_args()
 
-    if not args.csv_file and not args.cross_db:
-        parser.error("Provide either a CSV file or --cross-db arguments")
+    if not args.csv_file and not args.cross_db and not args.scale:
+        parser.error("Provide a CSV file, --cross-db, or --scale arguments")
 
     os.makedirs(args.output_dir, exist_ok=True)
     generated = []
 
-    if args.cross_db:
+    if args.scale:
+        # ----- Scale mode: line charts across record counts -----
+        frames = []
+        for path in args.scale:
+            frames.append(load_csv(path))
+        scale_df = pd.concat(frames, ignore_index=True)
+
+        if "RecordCount" not in scale_df.columns:
+            print("Error: CSV missing RecordCount column (re-run benchmarks "
+                  "with updated exporter)", file=sys.stderr)
+            sys.exit(1)
+
+        if args.scenario:
+            scale_df = scale_df[scale_df["Scenario"] == args.scenario]
+        if args.metric:
+            scale_df = scale_df[scale_df["Metric"] == args.metric]
+
+        for (scenario, metric), _ in scale_df.groupby(["Scenario", "Metric"]):
+            path = plot_scale_lines(scale_df, scenario, metric, args.output_dir)
+            if path:
+                generated.append(path)
+
+    elif args.cross_db:
         # ----- Cross-database mode -----
         pairs = parse_cross_db_args(args.cross_db)
         frames = []

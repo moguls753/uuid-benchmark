@@ -19,14 +19,16 @@ func TestStatsToCSV_SingleScenario(t *testing.T) {
 
 	scenarios := []ScenarioStats{
 		{
-			Name: "insert_performance",
+			Name:        "insert_performance",
+			RecordCount: 100000,
+			Connections: 10,
 			Results: map[string]map[string]statistics.Stats{
 				"sequential": {
-					"throughput":   makeStats(100, 110, 105),
+					"throughput":      makeStats(100, 110, 105),
 					"p99_latency_us": makeStats(500, 520, 510),
 				},
 				"uuidv4": {
-					"throughput":   makeStats(80, 85, 82),
+					"throughput":      makeStats(80, 85, 82),
 					"p99_latency_us": makeStats(600, 620, 610),
 				},
 			},
@@ -46,13 +48,19 @@ func TestStatsToCSV_SingleScenario(t *testing.T) {
 		t.Fatalf("expected 5 rows (1 header + 4 data), got %d", len(rows))
 	}
 
-	// Verify header includes Scenario column
+	// Verify header includes Scenario column and new metadata columns
 	header := rows[0]
 	if header[0] != "Scenario" {
 		t.Errorf("expected first header column 'Scenario', got %q", header[0])
 	}
-	if len(header) != 9 {
-		t.Errorf("expected 9 header columns, got %d", len(header))
+	if len(header) != 11 {
+		t.Errorf("expected 11 header columns, got %d", len(header))
+	}
+	if header[9] != "RecordCount" {
+		t.Errorf("expected header[9] 'RecordCount', got %q", header[9])
+	}
+	if header[10] != "Connections" {
+		t.Errorf("expected header[10] 'Connections', got %q", header[10])
 	}
 
 	// Verify scenario name in data rows
@@ -63,6 +71,14 @@ func TestStatsToCSV_SingleScenario(t *testing.T) {
 	// Verify key type is uppercased
 	if rows[1][1] != "SEQUENTIAL" {
 		t.Errorf("expected key type 'SEQUENTIAL', got %q", rows[1][1])
+	}
+
+	// Verify RecordCount and Connections values
+	if rows[1][9] != "100000" {
+		t.Errorf("expected RecordCount '100000', got %q", rows[1][9])
+	}
+	if rows[1][10] != "10" {
+		t.Errorf("expected Connections '10', got %q", rows[1][10])
 	}
 }
 
@@ -130,16 +146,16 @@ func TestRawRunsToCSV_Padding(t *testing.T) {
 
 	rows := readCSV(t, path)
 
-	// Header: Scenario, KeyType, Metric, Run1, Run2, Run3
+	// Header: Scenario, KeyType, Metric, Run1, Run2, Run3, RecordCount, Connections
 	header := rows[0]
 	if header[0] != "Scenario" {
 		t.Errorf("expected first header column 'Scenario', got %q", header[0])
 	}
-	if len(header) != 6 { // 3 fixed + 3 runs (max)
-		t.Fatalf("expected 6 header columns, got %d", len(header))
+	if len(header) != 8 { // 3 fixed + 3 runs (max) + 2 metadata
+		t.Fatalf("expected 8 header columns, got %d", len(header))
 	}
 
-	// The p99_latency_us row should have 1 value + 2 empty padding cells
+	// The p99_latency_us row should have 1 value + 2 empty padding cells + metadata
 	for _, row := range rows[1:] {
 		if len(row) != len(header) {
 			t.Errorf("row %v has %d columns, expected %d", row, len(row), len(header))
@@ -151,6 +167,13 @@ func TestRawRunsToCSV_Padding(t *testing.T) {
 			}
 			if row[4] != "" || row[5] != "" {
 				t.Errorf("p99_latency_us should have empty padding for Run2/Run3, got %q/%q", row[4], row[5])
+			}
+			// RecordCount and Connections should be present (0 since not set)
+			if row[6] != "0" {
+				t.Errorf("expected RecordCount '0', got %q", row[6])
+			}
+			if row[7] != "0" {
+				t.Errorf("expected Connections '0', got %q", row[7])
 			}
 		}
 	}
