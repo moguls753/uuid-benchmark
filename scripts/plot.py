@@ -28,8 +28,12 @@ import pandas as pd
 
 matplotlib.rcParams.update({
     "text.usetex": True,
+    "pgf.texsystem": "pdflatex",
+    "pgf.preamble": "\n".join([
+        r"\usepackage[T1]{fontenc}",
+        r"\usepackage{tgpagella}",
+    ]),
     "font.family": "serif",
-    "font.serif": ["TeX Gyre Pagella"],
     "font.size": 10,
     "axes.titlesize": 12,
     "axes.labelsize": 11,
