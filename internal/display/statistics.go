@@ -63,25 +63,60 @@ func InsertPerformanceStatistics(results map[string]map[string]statistics.Stats,
 }
 
 func displayMetricTable(results map[string]map[string]statistics.Stats, keyTypes []string, metric, format string) {
-	fmt.Println("┌─────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬───────┐")
-	fmt.Println("│ Key Type    │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %  │")
-	fmt.Println("├─────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼───────┤")
+	// Compute column widths dynamically
+	keyW := len("Key Type")
+	for _, kt := range keyTypes {
+		if l := len(strings.ToUpper(kt)); l > keyW {
+			keyW = l
+		}
+	}
+
+	valW := len("Median") // minimum value column width
+	for _, kt := range keyTypes {
+		s := results[kt][metric]
+		for _, v := range []float64{s.Median, s.Mean, s.StdDev, s.Min, s.Max} {
+			if l := len(fmt.Sprintf(format, v)); l > valW {
+				valW = l
+			}
+		}
+	}
+	if valW < 8 {
+		valW = 8
+	}
+
+	cvW := 7 // CV column content width (fits "CV %" header and values like " 75.5")
+
+	// Build format strings — each cell is │ + space + content + space + │
+	// so the rule segment between ┬/┼ chars = content_width + 2
+	hRule := func(left, mid, right, fill string) string {
+		return left + strings.Repeat(fill, keyW+2) +
+			mid + strings.Repeat(fill, valW+2) +
+			mid + strings.Repeat(fill, valW+2) +
+			mid + strings.Repeat(fill, valW+2) +
+			mid + strings.Repeat(fill, valW+2) +
+			mid + strings.Repeat(fill, valW+2) +
+			mid + strings.Repeat(fill, cvW+2) + right
+	}
+
+	fmt.Println(hRule("┌", "┬", "┐", "─"))
+	fmt.Printf("│ %-*s │ %-*s │ %-*s │ %-*s │ %-*s │ %-*s │ %-*s │\n",
+		keyW, "Key Type", valW, "Median", valW, "Mean", valW, "StdDev", valW, "Min", valW, "Max", cvW, "CV %")
+	fmt.Println(hRule("├", "┼", "┤", "─"))
 
 	for _, keyType := range keyTypes {
 		stats := results[keyType][metric]
-
-		fmt.Printf("│ %-11s │ "+format+" │ "+format+" │ "+format+" │ "+format+" │ "+format+" │ %5.1f │\n",
-			strings.ToUpper(keyType),
-			stats.Median,
-			stats.Mean,
-			stats.StdDev,
-			stats.Min,
-			stats.Max,
-			stats.CV,
+		fmt.Printf("│ %-*s │ %*s │ %*s │ %*s │ %*s │ %*s │ %*.1f │\n",
+			keyW, strings.ToUpper(keyType),
+			valW, fmt.Sprintf(format, stats.Median),
+			valW, fmt.Sprintf(format, stats.Mean),
+			valW, fmt.Sprintf(format, stats.StdDev),
+			valW, fmt.Sprintf(format, stats.Min),
+			valW, fmt.Sprintf(format, stats.Max),
+			cvW, stats.CV,
 		)
 	}
 
-	fmt.Println("└─────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴───────┘")
+	fmt.Println(hRule("└", "┴", "┘", "─"))
 }
 
 // ScenarioStatistics displays multi-run statistical results for any scenario
@@ -152,10 +187,36 @@ func ScenarioStatistics(title string, results map[string]map[string]statistics.S
 }
 
 func displayComparisons(results map[string]map[string]statistics.Stats, keyTypes []string, metric string) {
+	// Compute comparison column width from key type names
+	compW := len("Comparison")
+	prefix := "SEQUENTIAL vs "
+	for _, kt := range keyTypes {
+		if kt == "sequential" {
+			continue
+		}
+		if l := len(prefix) + len(strings.ToUpper(kt)); l > compW {
+			compW = l
+		}
+	}
+
+	diffW := 11 // "Median Diff" header
+	pvalW := 8  // "p-value"
+	overW := 9  // "Overlap?"
+	sigW := 13  // "*** (p<0.001)"
+
+	hRule := func(left, mid, right, fill string) string {
+		return left + strings.Repeat(fill, compW+2) +
+			mid + strings.Repeat(fill, diffW+2) +
+			mid + strings.Repeat(fill, pvalW+2) +
+			mid + strings.Repeat(fill, overW+2) +
+			mid + strings.Repeat(fill, sigW+2) + right
+	}
+
 	fmt.Println("\nStatistical Comparisons (vs SEQUENTIAL):")
-	fmt.Println("┌─────────────────────────┬─────────────┬──────────┬───────────┬──────────────┐")
-	fmt.Println("│ Comparison              │ Median Diff │ p-value  │ Overlap?  │ Significant? │")
-	fmt.Println("├─────────────────────────┼─────────────┼──────────┼───────────┼──────────────┤")
+	fmt.Println(hRule("┌", "┬", "┐", "─"))
+	fmt.Printf("│ %-*s │ %-*s │ %-*s │ %-*s │ %-*s │\n",
+		compW, "Comparison", diffW, "Median Diff", pvalW, "p-value", overW, "Overlap?", sigW, "Significant?")
+	fmt.Println(hRule("├", "┼", "┤", "─"))
 
 	sequentialStats := results["sequential"][metric]
 
@@ -185,14 +246,14 @@ func displayComparisons(results map[string]map[string]statistics.Stats, keyTypes
 			overlap = "Yes"
 		}
 
-		fmt.Printf("│ SEQUENTIAL vs %-9s │ %+10.1f%% │ %8.4f │ %-9s │ %-12s │\n",
-			strings.ToUpper(keyType),
-			comp.MedianDiffPct,
-			comp.PValue,
-			overlap,
-			significance,
+		fmt.Printf("│ %-*s │ %+*.1f%% │ %*.4f │ %-*s │ %-*s │\n",
+			compW, prefix+strings.ToUpper(keyType),
+			diffW-1, comp.MedianDiffPct,
+			pvalW, comp.PValue,
+			overW, overlap,
+			sigW, significance,
 		)
 	}
 
-	fmt.Println("└─────────────────────────┴─────────────┴──────────┴───────────┴──────────────┘")
+	fmt.Println(hRule("└", "┴", "┘", "─"))
 }
