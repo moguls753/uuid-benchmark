@@ -15,22 +15,22 @@ const (
 func GenerateInsertScript(keyType, tableName string) string {
 	switch keyType {
 	case "sequential":
-		return fmt.Sprintf(`INSERT INTO %s (data) VALUES ('test_data_' || :client_id);`, tableName)
+		return fmt.Sprintf(`INSERT INTO %s (data) VALUES (decode(repeat('41', 1024), 'hex'));`, tableName)
 
 	case "uuidv4":
-		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (gen_random_uuid(), 'test_data_' || :client_id);`, tableName)
+		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (gen_random_uuid(), decode(repeat('41', 1024), 'hex'));`, tableName)
 
 	case "uuidv7":
-		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (uuidv7(), 'test_data_' || :client_id);`, tableName)
+		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (uuidv7(), decode(repeat('41', 1024), 'hex'));`, tableName)
 
 	case "uuidv1":
-		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (uuid_generate_v1(), 'test_data_' || :client_id);`, tableName)
+		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (uuid_generate_v1(), decode(repeat('41', 1024), 'hex'));`, tableName)
 
 	case "ulid":
-		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (gen_ulid(), 'test_data_' || :client_id);`, tableName)
+		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (gen_ulid(), decode(repeat('41', 1024), 'hex'));`, tableName)
 
 	case "ulid_monotonic":
-		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (gen_monotonic_ulid(), 'test_data_' || :client_id);`, tableName)
+		return fmt.Sprintf(`INSERT INTO %s (id, data) VALUES (gen_monotonic_ulid(), decode(repeat('41', 1024), 'hex'));`, tableName)
 
 	default:
 		return fmt.Sprintf(`-- Unknown key type: %s`, keyType)
@@ -46,7 +46,7 @@ SELECT * FROM %s WHERE id = (SELECT id FROM %s WHERE rn = :rn);`, tableName, loo
 func GenerateUpdateScript(keyType, tableName string) string {
 	lookupTable := tableName + "_ids"
 	return fmt.Sprintf(`\set rn random(1, :num_records)
-UPDATE %s SET data = 'updated_' || :client_id WHERE id = (SELECT id FROM %s WHERE rn = :rn);`, tableName, lookupTable)
+UPDATE %s SET data = decode(repeat('42', 1024), 'hex') WHERE id = (SELECT id FROM %s WHERE rn = :rn);`, tableName, lookupTable)
 }
 
 // pgbench doesn't support weighted random selection, so we use conditional logic

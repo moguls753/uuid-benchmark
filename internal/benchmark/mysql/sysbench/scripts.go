@@ -34,7 +34,7 @@ function thread_done()
 end
 
 function event()
-	con:query("INSERT INTO " .. sysbench.opt.table_name .. " (data) VALUES ('test_data_" .. sysbench.tid .. "')")
+	con:query("INSERT INTO " .. sysbench.opt.table_name .. " (data) VALUES (UNHEX(REPEAT('41', 1024)))")
 end
 `, tableName)
 
@@ -76,7 +76,7 @@ end
 function event()
 	uuid_idx = uuid_idx + 1
 	local uuid_hex = uuids[uuid_idx]
-	con:query("INSERT INTO " .. sysbench.opt.table_name .. " (id, data) VALUES (UNHEX('" .. uuid_hex .. "'), 'test_data_" .. sysbench.tid .. "')")
+	con:query("INSERT INTO " .. sysbench.opt.table_name .. " (id, data) VALUES (UNHEX('" .. uuid_hex .. "'), UNHEX(REPEAT('41', 1024)))")
 end
 `, tableName, threads)
 
@@ -134,7 +134,7 @@ end
 
 function event()
 	local rn = sysbench.rand.uniform(1, sysbench.opt.num_records)
-	con:query("UPDATE %s SET data = 'updated_" .. sysbench.tid .. "' WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
+	con:query("UPDATE %s SET data = UNHEX(REPEAT('42', 1024)) WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 end
 `, tableName, tableName, lookupTable)
 }
@@ -185,7 +185,7 @@ function event()
 		con:query("SELECT * FROM %s WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 	else
 		local rn = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
-		con:query("UPDATE %s SET data = 'updated_" .. sysbench.tid .. "' WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
+		con:query("UPDATE %s SET data = UNHEX(REPEAT('42', 1024)) WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 	end
 end
 `, insertWeight, readWeight, updateWeight, tableName, insertThreshold, readThreshold,
@@ -237,13 +237,13 @@ function event()
 		-- INSERT with pre-generated UUID
 		uuid_idx = uuid_idx + 1
 		local uuid_hex = uuids[uuid_idx]
-		con:query("INSERT INTO %s (id, data) VALUES (UNHEX('" .. uuid_hex .. "'), 'test_data_" .. sysbench.tid .. "')")
+		con:query("INSERT INTO %s (id, data) VALUES (UNHEX('" .. uuid_hex .. "'), UNHEX(REPEAT('41', 1024)))")
 	elseif op <= read_threshold then
 		local rn = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
 		con:query("SELECT * FROM %s WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 	else
 		local rn = sysbench.rand.uniform(1, math.max(1, sysbench.opt.num_records))
-		con:query("UPDATE %s SET data = 'updated_" .. sysbench.tid .. "' WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
+		con:query("UPDATE %s SET data = UNHEX(REPEAT('42', 1024)) WHERE id = (SELECT id FROM %s WHERE rn = " .. rn .. ")")
 	end
 end
 `, insertWeight, readWeight, updateWeight, tableName, insertThreshold, readThreshold, threads,
@@ -257,7 +257,7 @@ end
 // generateMixedInsertSQL returns the Lua insert statement for sequential types in mixed workloads.
 func generateMixedInsertSQL(keyType, tableName string) string {
 	if keyType == "sequential" {
-		return fmt.Sprintf(`con:query("INSERT INTO %s (data) VALUES ('test_data_" .. sysbench.tid .. "')")`, tableName)
+		return fmt.Sprintf(`con:query("INSERT INTO %s (data) VALUES (UNHEX(REPEAT('41', 1024)))")`, tableName)
 	}
 	return "" // UUID inserts handled in the UUID branch with pre-generated UUIDs
 }
@@ -290,7 +290,7 @@ end
 function event()
 	local values = {}
 	for i = 1, %d do
-		table.insert(values, "('test_data_" .. sysbench.tid .. "_" .. i .. "')")
+		table.insert(values, "(UNHEX(REPEAT('41', 1024)))")
 	end
 	con:query("INSERT INTO " .. sysbench.opt.table_name .. " (data) VALUES " .. table.concat(values, ","))
 end
@@ -333,7 +333,7 @@ function event()
 	for i = 1, %d do
 		uuid_idx = uuid_idx + 1
 		local uuid_hex = uuids[uuid_idx]
-		table.insert(values, "(UNHEX('" .. uuid_hex .. "'), 'test_data_" .. sysbench.tid .. "_" .. i .. "')")
+		table.insert(values, "(UNHEX('" .. uuid_hex .. "'), UNHEX(REPEAT('41', 1024)))")
 	end
 	con:query("INSERT INTO " .. sysbench.opt.table_name .. " (id, data) VALUES " .. table.concat(values, ","))
 end

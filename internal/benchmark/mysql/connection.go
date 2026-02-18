@@ -62,7 +62,7 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BIGINT AUTO_INCREMENT PRIMARY KEY,
-				data TEXT,
+				data BLOB,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			) ENGINE=InnoDB
 		`, m.tableName)
@@ -71,7 +71,7 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BINARY(16) PRIMARY KEY,
-				data TEXT,
+				data BLOB,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			) ENGINE=InnoDB
 		`, m.tableName)
@@ -80,7 +80,7 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BINARY(16) PRIMARY KEY,
-				data TEXT,
+				data BLOB,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			) ENGINE=InnoDB
 		`, m.tableName)
@@ -89,7 +89,7 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BINARY(16) PRIMARY KEY,
-				data TEXT,
+				data BLOB,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			) ENGINE=InnoDB
 		`, m.tableName)
@@ -98,7 +98,7 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BINARY(16) PRIMARY KEY,
-				data TEXT,
+				data BLOB,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			) ENGINE=InnoDB
 		`, m.tableName)
@@ -107,7 +107,7 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BINARY(16) PRIMARY KEY,
-				data TEXT,
+				data BLOB,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			) ENGINE=InnoDB
 		`, m.tableName)

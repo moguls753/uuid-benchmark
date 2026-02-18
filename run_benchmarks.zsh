@@ -91,7 +91,7 @@ echo "════════════════════════�
 echo "  TIER 1b: 1M records — all scenarios — 1 connection"
 echo "════════════════════════════════════════════════════════════════"
 for db in "${DATABASES[@]}"; do
-    run_benchmark "$db" all 1000000 1000000 1 \
+    run_benchmark "$db" all 1000000 200000 1 \
         "${RESULTS_DIR}/${db}_1m_all_1conn.csv" || true
 done
 
@@ -107,7 +107,7 @@ echo "════════════════════════�
 echo "  TIER 1c: 1M records — all scenarios — 8 connections"
 echo "════════════════════════════════════════════════════════════════"
 for db in "${DATABASES[@]}"; do
-    run_benchmark "$db" all 1000000 1000000 8 \
+    run_benchmark "$db" all 1000000 200000 8 \
         "${RESULTS_DIR}/${db}_1m_all_8conn.csv" || true
 done
 
@@ -118,8 +118,8 @@ done
 #  or exceeds the ~4 GB buffer pool, making cache hit ratio differences
 #  between key types observable. Also shows whether page split and
 #  fragmentation effects compound at larger scale.
-#  Read/update use 10M ops (same 1:1 ratio as other tiers) for consistent
-#  cache warmup behavior across scale points.
+#  Read/update use 500K ops (decoupled from record count) for steady-state
+#  measurement without excessive runtime.
 # ═══════════════════════════════════════════════════════════════════════════════
 echo ""
 echo "════════════════════════════════════════════════════════════════"
@@ -128,9 +128,9 @@ echo "════════════════════════�
 for db in "${DATABASES[@]}"; do
     run_benchmark "$db" insert-performance 10000000 10000000 1 \
         "${RESULTS_DIR}/${db}_10m_insert-performance_1conn.csv" || true
-    run_benchmark "$db" read-performance 10000000 10000000 1 \
+    run_benchmark "$db" read-performance 10000000 500000 1 \
         "${RESULTS_DIR}/${db}_10m_read-performance_1conn.csv" || true
-    run_benchmark "$db" update-performance 10000000 10000000 1 \
+    run_benchmark "$db" update-performance 10000000 500000 1 \
         "${RESULTS_DIR}/${db}_10m_update-performance_1conn.csv" || true
 done
 
@@ -159,7 +159,7 @@ echo ""
 echo "Results in ${RESULTS_DIR}/"
 echo ""
 echo "Run matrix summary:"
-echo "  Tier 1a: 4 DBs × 3 scenarios × 100K × 1 conn × ${NUM_RUNS} runs"
-echo "  Tier 1b: 4 DBs × 5 scenarios × 1M   × 1 conn × ${NUM_RUNS} runs"
-echo "  Tier 1c: 4 DBs × 5 scenarios × 1M   × 8 conn × ${NUM_RUNS} runs"
-echo "  Tier 2:  4 DBs × 3 scenarios × 10M   × 1 conn × ${NUM_RUNS} runs"
+echo "  Tier 1a: 4 DBs × 3 scenarios × 100K records × 100K ops × 1 conn × ${NUM_RUNS} runs"
+echo "  Tier 1b: 4 DBs × 5 scenarios × 1M records  × 200K ops × 1 conn × ${NUM_RUNS} runs"
+echo "  Tier 1c: 4 DBs × 5 scenarios × 1M records  × 200K ops × 8 conn × ${NUM_RUNS} runs"
+echo "  Tier 2:  4 DBs × 3 scenarios × 10M records × 500K ops × 1 conn × ${NUM_RUNS} runs"

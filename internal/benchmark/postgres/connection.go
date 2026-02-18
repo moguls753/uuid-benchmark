@@ -68,7 +68,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id BIGSERIAL PRIMARY KEY,
-				data TEXT,
+				data BYTEA,
 				created_at TIMESTAMP DEFAULT NOW()
 			)
 		`, p.tableName)
@@ -76,7 +76,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id UUID PRIMARY KEY,
-				data TEXT,
+				data BYTEA,
 				created_at TIMESTAMP DEFAULT NOW()
 			)
 		`, p.tableName)
@@ -84,7 +84,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id UUID PRIMARY KEY,
-				data TEXT,
+				data BYTEA,
 				created_at TIMESTAMP DEFAULT NOW()
 			)
 		`, p.tableName)
@@ -92,7 +92,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id ulid PRIMARY KEY,
-				data TEXT,
+				data BYTEA,
 				created_at TIMESTAMP DEFAULT NOW()
 			)
 		`, p.tableName)
@@ -100,7 +100,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id ulid PRIMARY KEY,
-				data TEXT,
+				data BYTEA,
 				created_at TIMESTAMP DEFAULT NOW()
 			)
 		`, p.tableName)
@@ -108,7 +108,7 @@ func (p *PostgresBenchmarker) CreateTable(keyType string) error {
 		createSQL = fmt.Sprintf(`
 			CREATE TABLE %s (
 				id UUID PRIMARY KEY,
-				data TEXT,
+				data BYTEA,
 				created_at TIMESTAMP DEFAULT NOW()
 			)
 		`, p.tableName)

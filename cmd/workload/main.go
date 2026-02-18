@@ -36,7 +36,7 @@ type Result struct {
 }
 
 // payload is a fixed-size byte slice to simulate realistic row sizes
-var payload = make([]byte, 100)
+var payload = make([]byte, 1024)
 
 func init() {
 	crand.Read(payload)
@@ -359,7 +359,7 @@ func mongoUpdate(ctx context.Context, coll *mongo.Collection, keyType string, nu
 		go func(threadID, offset, ops int) {
 			defer wg.Done()
 			latencies := make([]int64, 0, ops)
-			newPayload := make([]byte, 100)
+			newPayload := make([]byte, 1024)
 			crand.Read(newPayload)
 
 			for i := 0; i < ops; i++ {
@@ -425,7 +425,7 @@ func mongoMixed(ctx context.Context, coll *mongo.Collection, keyType string, num
 			defer wg.Done()
 			kg := newKeyGenerator(keyType, &counter)
 			latencies := make([]int64, 0, ops)
-			newPayload := make([]byte, 100)
+			newPayload := make([]byte, 1024)
 			crand.Read(newPayload)
 			rng := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 
@@ -736,7 +736,7 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads int
 		go func(threadID, offset, ops int) {
 			defer wg.Done()
 			latencies := make([]int64, 0, ops)
-			newPayload := make([]byte, 100)
+			newPayload := make([]byte, 1024)
 			crand.Read(newPayload)
 
 			for i := 0; i < ops; i++ {
@@ -799,7 +799,7 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 			defer wg.Done()
 			kg := newKeyGenerator(keyType, &counter)
 			latencies := make([]int64, 0, ops)
-			newPayload := make([]byte, 100)
+			newPayload := make([]byte, 1024)
 			crand.Read(newPayload)
 			rng := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
 
