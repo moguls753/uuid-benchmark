@@ -178,6 +178,22 @@ CREATE TABLE uuid_benchmark.bench (
     PRIMARY KEY ((bucket), id)
 ) WITH compaction = {'class': 'SizeTieredCompactionStrategy'};"
 
+echo "Waiting for schema to settle..."
+sleep 10
+
+# Verify Cassandra is still accepting connections
+for i in {1..15}; do
+    if docker exec uuid-bench-cassandra cqlsh -e "SELECT now() FROM system.local" > /dev/null 2>&1; then
+        echo "Cassandra ready"
+        break
+    fi
+    if [ $i -eq 15 ]; then
+        echo "Error: Cassandra not responding after table reset"
+        exit 1
+    fi
+    sleep 2
+done
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  Phase 4: INSERT — workload binary
 # ═══════════════════════════════════════════════════════════════════════════════
