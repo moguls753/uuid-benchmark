@@ -75,17 +75,11 @@ for i in {1..60}; do
     sleep 2
 done
 
-# ─── Create YCSB keyspace and table ──────────────────────────────────────────
-echo "Creating YCSB keyspace and table..."
+# ─── Create YCSB keyspace (table auto-created by go-ycsb) ─────────────────────
+echo "Creating YCSB keyspace..."
 docker exec uuid-bench-cassandra cqlsh -e "
 CREATE KEYSPACE IF NOT EXISTS ycsb
-  WITH REPLICATION = {'class':'SimpleStrategy','replication_factor':1};
-CREATE TABLE IF NOT EXISTS ycsb.usertable (
-    y_id varchar PRIMARY KEY,
-    field0 varchar, field1 varchar, field2 varchar, field3 varchar,
-    field4 varchar, field5 varchar, field6 varchar, field7 varchar,
-    field8 varchar, field9 varchar
-);"
+  WITH REPLICATION = {'class':'SimpleStrategy','replication_factor':1};"
 
 # ─── Create workload binary keyspace and table ───────────────────────────────
 echo "Creating workload binary keyspace and table..."
