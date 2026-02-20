@@ -36,7 +36,7 @@ func (m *MySQLBenchmarker) RunMixedWorkloadSysbench(keyType string, initialDatas
 
 	// Pre-generate UUIDs for the insert portion of the mixed workload
 	if insertWeight > 0 {
-		cleanup, err := sysbench.PrepareUUIDs("uuid-bench-mysql", keyType, totalOps)
+		cleanup, err := sysbench.PrepareUUIDs("uuid-bench-mysql", keyType, totalOps, connections)
 		if err != nil {
 			return nil, fmt.Errorf("prepare UUIDs for mixed workload: %w", err)
 		}

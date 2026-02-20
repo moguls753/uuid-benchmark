@@ -15,12 +15,23 @@ import (
 // PrepareUUIDs generates proper UUIDs using Go libraries and copies the file
 // into the container at /tmp/uuids.txt. Returns a cleanup function to remove
 // the host temp file. No-op for sequential key type.
-func PrepareUUIDs(containerName, keyType string, count int) (func(), error) {
+//
+// When threads > 1, generates 2x the requested count to provide headroom for
+// uneven sysbench event distribution across threads. Sysbench uses dynamic
+// work-stealing — faster threads grab more events — so a thread can exhaust
+// its UUID partition and overflow into the next thread's range, causing
+// duplicate key errors or nil reads.
+func PrepareUUIDs(containerName, keyType string, count, threads int) (func(), error) {
 	if keyType == "sequential" {
 		return func() {}, nil
 	}
 
-	hostPath, err := generateUUIDFile(keyType, count)
+	generateCount := count
+	if threads > 1 {
+		generateCount = count * 2
+	}
+
+	hostPath, err := generateUUIDFile(keyType, generateCount)
 	if err != nil {
 		return nil, fmt.Errorf("generate UUID file: %w", err)
 	}
