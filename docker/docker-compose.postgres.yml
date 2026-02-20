@@ -10,7 +10,7 @@ services:
       - "-c"
       - "checkpoint_timeout=1h"
       - "-c"
-      - "max_wal_size=10GB"
+      - "max_wal_size=50GB"
       - "-c"
       - "shared_preload_libraries=pgx_ulid"
     environment:
