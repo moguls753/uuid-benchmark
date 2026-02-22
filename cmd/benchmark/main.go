@@ -393,9 +393,8 @@ func aggregateInsertPerformanceResults(runs []*benchmark.InsertPerformanceResult
 		writeThroughputMB[i] = run.WriteThroughputMB
 	}
 
-	return map[string]statistics.Stats{
+	result := map[string]statistics.Stats{
 		"throughput":          statistics.Calculate(throughput),
-		"page_splits":         statistics.Calculate(pageSplits),
 		"fragmentation":       statistics.Calculate(fragmentation),
 		"avg_leaf_density":    statistics.Calculate(avgLeafDensity),
 		"table_size_mb":       statistics.Calculate(tableSizeMB),
@@ -408,6 +407,15 @@ func aggregateInsertPerformanceResults(runs []*benchmark.InsertPerformanceResult
 		"read_throughput_mb":  statistics.Calculate(readThroughputMB),
 		"write_throughput_mb": statistics.Calculate(writeThroughputMB),
 	}
+
+	// Cassandra uses SSTable count delta; B-tree databases use page splits
+	if currentDB.id == "cassandra" {
+		result["sstable_count_delta"] = statistics.Calculate(pageSplits)
+	} else {
+		result["page_splits"] = statistics.Calculate(pageSplits)
+	}
+
+	return result
 }
 
 func aggregateReadPerformanceResults(runs []*benchmark.ReadPerformanceResult) map[string]statistics.Stats {
