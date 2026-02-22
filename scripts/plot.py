@@ -96,7 +96,7 @@ METRIC_LABELS = {
     "cache_hit_ratio":    "Cache Hit Ratio",
     "index_hit_ratio":    "Index Hit Ratio",
     "page_splits":        "Page Splits",
-    "sstable_count_delta": "SSTable Count Delta",
+    "sstable_count":       "SSTable Count",
     "bloom_filter_fp":    "Bloom Filter False Positives",
     "fragmentation":       r"Fragmentation (\%)",
     "avg_leaf_density":    r"Avg Leaf Density (\%)",

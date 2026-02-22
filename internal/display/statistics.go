@@ -23,11 +23,11 @@ func InsertPerformanceStatistics(results map[string]map[string]statistics.Stats,
 		displayComparisons(results, keyTypes, "page_splits")
 	}
 
-	// SSTable Delta (Cassandra only)
+	// SSTable Count (Cassandra only)
 	if database == "cassandra" {
-		fmt.Println("\nSSTable Delta")
-		displayMetricTable(results, keyTypes, "page_splits", "%.0f")
-		displayComparisons(results, keyTypes, "page_splits")
+		fmt.Println("\nSSTable Count")
+		displayMetricTable(results, keyTypes, "sstable_count", "%.0f")
+		displayComparisons(results, keyTypes, "sstable_count")
 
 		fmt.Println("\nSpace Amplification (%)")
 		displayMetricTable(results, keyTypes, "fragmentation", "%.2f")
@@ -131,12 +131,6 @@ func ScenarioStatistics(title string, results map[string]map[string]statistics.S
 		fmt   string
 	}
 
-	// Database-aware label for page_splits
-	pageSplitsLabel := "Page Splits"
-	if database == "cassandra" {
-		pageSplitsLabel = "SSTable Delta"
-	}
-
 	// Database-aware label for fragmentation
 	fragLabel := "Fragmentation (%)"
 	switch database {
@@ -151,7 +145,9 @@ func ScenarioStatistics(title string, results map[string]map[string]statistics.S
 		{"read_throughput", "Read Throughput (ops/sec)", "%.0f"},
 		{"update_throughput", "Update Throughput (ops/sec)", "%.0f"},
 		{"overall_throughput", "Overall Throughput (ops/sec)", "%.0f"},
-		{"page_splits", pageSplitsLabel, "%.0f"},
+		{"page_splits", "Page Splits", "%.0f"},
+		{"sstable_count", "SSTable Count", "%.0f"},
+		{"bloom_filter_fp", "Bloom Filter FP (delta)", "%.0f"},
 		{"fragmentation", fragLabel, "%.2f"},
 		{"avg_leaf_density", "Avg Leaf Density (%)", "%.2f"},
 		{"cache_hit_ratio", "Cache Hit Ratio", "%.4f"},

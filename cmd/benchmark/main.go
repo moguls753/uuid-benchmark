@@ -410,7 +410,7 @@ func aggregateInsertPerformanceResults(runs []*benchmark.InsertPerformanceResult
 
 	// Cassandra uses SSTable count delta; B-tree databases use page splits
 	if currentDB.id == "cassandra" {
-		result["sstable_count_delta"] = statistics.Calculate(pageSplits)
+		result["sstable_count"] = statistics.Calculate(pageSplits)
 	} else {
 		result["page_splits"] = statistics.Calculate(pageSplits)
 	}
