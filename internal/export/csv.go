@@ -34,6 +34,7 @@ var logicalMetricOrder = []string{
 	"cache_hit_ratio",
 	"index_hit_ratio",
 	"page_splits",
+	"bloom_filter_fp",
 	"fragmentation",
 	"avg_leaf_density",
 	// Sizes

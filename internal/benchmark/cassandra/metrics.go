@@ -63,6 +63,13 @@ func (c *CassandraBenchmarker) MeasureMetrics() (*benchmark.BenchmarkResult, err
 			delta = 0
 		}
 		result.PageSplits = delta // Repurpose for SSTable count change
+
+		// Bloom filter false positives delta
+		fpDelta := stats.BloomFilterFP - c.metricsBefore.BloomFilterFP
+		if fpDelta < 0 {
+			fpDelta = 0
+		}
+		result.BloomFilterFP = fpDelta
 	}
 
 	// Cache hit ratio from nodetool info

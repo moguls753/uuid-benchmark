@@ -138,6 +138,9 @@ func ReadPerformance(results map[string]*benchmark.ReadPerformanceResult, keyTyp
 		printRow("Space Amplification", keyTypes, w, func(kt string) string {
 			return fmt.Sprintf("%.2f%%", results[kt].Fragmentation.FragmentationPercent)
 		})
+		printRow("Bloom Filter FP", keyTypes, w, func(kt string) string {
+			return fmt.Sprintf("%d", results[kt].BloomFilterFP)
+		})
 	}
 
 	printRow("Latency p50", keyTypes, w, func(kt string) string {

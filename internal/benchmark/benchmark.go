@@ -19,6 +19,7 @@ type BenchmarkResult struct {
 	Fragmentation       IndexFragmentationStats
 	BufferHitRatio      float64 // Cache hit ratio (0.0 to 1.0)
 	IndexBufferHitRatio float64 // Index-specific cache hit ratio
+	BloomFilterFP       int64   // Bloom filter false positives (delta, Cassandra only)
 }
 
 type IndexFragmentationStats struct {

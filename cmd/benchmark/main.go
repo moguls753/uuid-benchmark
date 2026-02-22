@@ -417,6 +417,7 @@ func aggregateReadPerformanceResults(runs []*benchmark.ReadPerformanceResult) ma
 	cacheHitRatio := make([]float64, numRuns)
 	indexHitRatio := make([]float64, numRuns)
 	fragmentation := make([]float64, numRuns)
+	bloomFilterFP := make([]float64, numRuns)
 	p50Latency := make([]float64, numRuns)
 	p95Latency := make([]float64, numRuns)
 	p99Latency := make([]float64, numRuns)
@@ -430,6 +431,7 @@ func aggregateReadPerformanceResults(runs []*benchmark.ReadPerformanceResult) ma
 		cacheHitRatio[i] = run.BufferHitRatio
 		indexHitRatio[i] = run.IndexBufferHitRatio
 		fragmentation[i] = run.Fragmentation.FragmentationPercent
+		bloomFilterFP[i] = float64(run.BloomFilterFP)
 		p50Latency[i] = float64(run.LatencyP50.Microseconds())
 		p95Latency[i] = float64(run.LatencyP95.Microseconds())
 		p99Latency[i] = float64(run.LatencyP99.Microseconds())
@@ -439,7 +441,7 @@ func aggregateReadPerformanceResults(runs []*benchmark.ReadPerformanceResult) ma
 		writeThroughputMB[i] = run.WriteThroughputMB
 	}
 
-	return map[string]statistics.Stats{
+	result := map[string]statistics.Stats{
 		"read_throughput":      statistics.Calculate(readThroughput),
 		"cache_hit_ratio":     statistics.Calculate(cacheHitRatio),
 		"index_hit_ratio":     statistics.Calculate(indexHitRatio),
@@ -452,6 +454,13 @@ func aggregateReadPerformanceResults(runs []*benchmark.ReadPerformanceResult) ma
 		"read_throughput_mb":  statistics.Calculate(readThroughputMB),
 		"write_throughput_mb": statistics.Calculate(writeThroughputMB),
 	}
+
+	// Bloom filter FP is only meaningful for Cassandra (LSM-tree SSTable lookups)
+	if currentDB.id == "cassandra" {
+		result["bloom_filter_fp"] = statistics.Calculate(bloomFilterFP)
+	}
+
+	return result
 }
 
 func aggregateUpdatePerformanceResults(runs []*benchmark.UpdatePerformanceResult) map[string]statistics.Stats {

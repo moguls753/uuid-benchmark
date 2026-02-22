@@ -154,6 +154,10 @@ func CassandraReadPerformance(keyType string, numRecords, numReads int) (*benchm
 	}
 	result.BufferHitRatio = finalMetrics.BufferHitRatio
 	result.IndexBufferHitRatio = finalMetrics.IndexBufferHitRatio
+	// Bloom filter FP delta is only tracked for the read scenario (not mixed/update)
+	// because concurrent writes would flush memtables and change SSTable layout,
+	// muddying the signal.
+	result.BloomFilterFP = finalMetrics.BloomFilterFP
 
 	return result, nil
 }
