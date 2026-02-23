@@ -50,23 +50,40 @@ sysbench.cmdline.options = {
 
 local uuids = {}
 local uuid_idx = 0
-local num_threads = %d
 
 function thread_init()
 	drv = sysbench.sql.driver()
 	con = drv:connect()
 
+	-- Count total lines to compute partition boundaries
+	local total_lines = 0
 	local f = io.open("/tmp/uuids.txt", "r")
 	if f then
-		for line in f:lines() do
-			uuids[#uuids + 1] = line
+		for _ in f:lines() do
+			total_lines = total_lines + 1
 		end
 		f:close()
 	end
 
-	-- Each thread uses a non-overlapping partition
-	local per_thread = math.floor(#uuids / num_threads)
-	uuid_idx = sysbench.tid * per_thread
+	-- Each thread reads only its own partition
+	if total_lines > 0 then
+		local per_thread = math.floor(total_lines / %d)
+		local start_line = sysbench.tid * per_thread + 1
+		local end_line = start_line + per_thread - 1
+
+		local line_num = 0
+		f = io.open("/tmp/uuids.txt", "r")
+		if f then
+			for line in f:lines() do
+				line_num = line_num + 1
+				if line_num >= start_line and line_num <= end_line then
+					uuids[#uuids + 1] = line
+				end
+				if line_num > end_line then break end
+			end
+			f:close()
+		end
+	end
 end
 
 function thread_done()
@@ -75,6 +92,7 @@ end
 
 function event()
 	uuid_idx = uuid_idx + 1
+	if uuid_idx > #uuids then uuid_idx = 1 end
 	local uuid_hex = uuids[uuid_idx]
 	con:query("INSERT INTO " .. sysbench.opt.table_name .. " (id, data) VALUES (UNHEX('" .. uuid_hex .. "'), UNHEX(REPEAT('41', 1024)))")
 end
@@ -206,23 +224,39 @@ local read_threshold = %d
 
 local uuids = {}
 local uuid_idx = 0
-local num_threads = %d
 
 function thread_init()
 	drv = sysbench.sql.driver()
 	con = drv:connect()
 
+	-- Count total lines to compute partition boundaries
+	local total_lines = 0
 	local f = io.open("/tmp/uuids.txt", "r")
 	if f then
-		for line in f:lines() do
-			uuids[#uuids + 1] = line
+		for _ in f:lines() do
+			total_lines = total_lines + 1
 		end
 		f:close()
 	end
 
-	if #uuids > 0 then
-		local per_thread = math.floor(#uuids / num_threads)
-		uuid_idx = sysbench.tid * per_thread
+	-- Each thread reads only its own partition
+	if total_lines > 0 then
+		local per_thread = math.floor(total_lines / %d)
+		local start_line = sysbench.tid * per_thread + 1
+		local end_line = start_line + per_thread - 1
+
+		local line_num = 0
+		f = io.open("/tmp/uuids.txt", "r")
+		if f then
+			for line in f:lines() do
+				line_num = line_num + 1
+				if line_num >= start_line and line_num <= end_line then
+					uuids[#uuids + 1] = line
+				end
+				if line_num > end_line then break end
+			end
+			f:close()
+		end
 	end
 end
 
@@ -236,6 +270,7 @@ function event()
 	if op <= insert_threshold then
 		-- INSERT with pre-generated UUID
 		uuid_idx = uuid_idx + 1
+		if uuid_idx > #uuids then uuid_idx = 1 end
 		local uuid_hex = uuids[uuid_idx]
 		con:query("INSERT INTO %s (id, data) VALUES (UNHEX('" .. uuid_hex .. "'), UNHEX(REPEAT('41', 1024)))")
 	elseif op <= read_threshold then
@@ -306,22 +341,40 @@ sysbench.cmdline.options = {
 
 local uuids = {}
 local uuid_idx = 0
-local num_threads = %d
 
 function thread_init()
 	drv = sysbench.sql.driver()
 	con = drv:connect()
 
+	-- Count total lines to compute partition boundaries
+	local total_lines = 0
 	local f = io.open("/tmp/uuids.txt", "r")
 	if f then
-		for line in f:lines() do
-			uuids[#uuids + 1] = line
+		for _ in f:lines() do
+			total_lines = total_lines + 1
 		end
 		f:close()
 	end
 
-	local per_thread = math.floor(#uuids / num_threads)
-	uuid_idx = sysbench.tid * per_thread
+	-- Each thread reads only its own partition
+	if total_lines > 0 then
+		local per_thread = math.floor(total_lines / %d)
+		local start_line = sysbench.tid * per_thread + 1
+		local end_line = start_line + per_thread - 1
+
+		local line_num = 0
+		f = io.open("/tmp/uuids.txt", "r")
+		if f then
+			for line in f:lines() do
+				line_num = line_num + 1
+				if line_num >= start_line and line_num <= end_line then
+					uuids[#uuids + 1] = line
+				end
+				if line_num > end_line then break end
+			end
+			f:close()
+		end
+	end
 end
 
 function thread_done()
@@ -332,6 +385,7 @@ function event()
 	local values = {}
 	for i = 1, %d do
 		uuid_idx = uuid_idx + 1
+		if uuid_idx > #uuids then uuid_idx = 1 end
 		local uuid_hex = uuids[uuid_idx]
 		table.insert(values, "(UNHEX('" .. uuid_hex .. "'), UNHEX(REPEAT('41', 1024)))")
 	end

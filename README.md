@@ -68,7 +68,7 @@ Each database uses a workload tool that runs **inside the Docker container** (lo
 
 | Metric | PostgreSQL | MySQL | MongoDB | Cassandra |
 |---|---|---|---|---|
-| Page splits / compaction | WAL analysis | innodb_metrics | WiredTiger cache splits | SSTable count delta |
+| Page splits / compaction | WAL analysis | innodb_metrics | WiredTiger cache splits | SSTable count |
 | Fragmentation | pgstatindex | B-tree overhead ratio | freeStorageSize/storageSize | Space amplification |
 | Cache hit ratio | pg_stat_database | performance_schema | WiredTiger cache | Key cache (nodetool) |
 | Disk size | pg_relation_size | information_schema | collStats | nodetool tablestats |

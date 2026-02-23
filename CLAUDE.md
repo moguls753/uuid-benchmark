@@ -178,7 +178,7 @@ display.ComparisonTable(results)
 **Docker:** `docker/docker-compose.postgres.yml` + `docker/Dockerfile.postgres`
 - Base: `postgres:18`, custom build with Rust toolchain for pgx_ulid
 - Container: `uuid-bench-postgres`, port `5432`
-- Config: `checkpoint_timeout=1h`, `max_wal_size=10GB`, 8GB memory, 4 CPUs
+- Config: `checkpoint_timeout=1h`, `max_wal_size=50GB`, 8GB memory, 4 CPUs
 
 **Extensions:**
 - `pgstattuple` -- index fragmentation (`pgstatindex()` → `leaf_fragmentation`, `avg_leaf_density`)
