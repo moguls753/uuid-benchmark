@@ -1,0 +1,87 @@
+Using request distribution 'uniform' a keyrange of [0 99999]
+***************** properties *****************
+"threadcount"="1"
+"fieldcount"="10"
+"command"="load"
+"table"="usertable"
+"cassandra.cluster"="127.0.0.1:9042"
+"recordcount"="100000"
+"fieldlength"="100"
+"dotransactions"="false"
+"cassandra.keyspace"="ycsb"
+"operationcount"="100000"
+**********************************************
+INSERT - Takes(s): 10.0, Count: 7541, OPS: 754.8, Avg(us): 1313, Min(us): 413, Max(us): 9831, 50th(us): 1290, 90th(us): 1422, 95th(us): 1493, 99th(us): 1702, 99.9th(us): 2125, 99.99th(us): 4331
+TOTAL  - Takes(s): 10.0, Count: 7541, OPS: 754.8, Avg(us): 1313, Min(us): 413, Max(us): 9831, 50th(us): 1290, 90th(us): 1422, 95th(us): 1493, 99th(us): 1702, 99.9th(us): 2125, 99.99th(us): 4331
+INSERT - Takes(s): 20.0, Count: 15560, OPS: 778.4, Avg(us): 1273, Min(us): 339, Max(us): 9831, 50th(us): 1259, 90th(us): 1363, 95th(us): 1425, 99th(us): 1601, 99.9th(us): 1924, 99.99th(us): 2981
+TOTAL  - Takes(s): 20.0, Count: 15560, OPS: 778.3, Avg(us): 1273, Min(us): 339, Max(us): 9831, 50th(us): 1259, 90th(us): 1363, 95th(us): 1425, 99th(us): 1601, 99.9th(us): 1924, 99.99th(us): 2981
+INSERT - Takes(s): 30.0, Count: 23595, OPS: 786.8, Avg(us): 1259, Min(us): 339, Max(us): 9831, 50th(us): 1251, 90th(us): 1337, 95th(us): 1392, 99th(us): 1552, 99.9th(us): 1877, 99.99th(us): 2981
+TOTAL  - Takes(s): 30.0, Count: 23595, OPS: 786.7, Avg(us): 1259, Min(us): 339, Max(us): 9831, 50th(us): 1251, 90th(us): 1337, 95th(us): 1392, 99th(us): 1552, 99.9th(us): 1877, 99.99th(us): 2981
+INSERT - Takes(s): 40.0, Count: 31627, OPS: 790.9, Avg(us): 1252, Min(us): 339, Max(us): 9831, 50th(us): 1247, 90th(us): 1325, 95th(us): 1371, 99th(us): 1524, 99.9th(us): 1848, 99.99th(us): 2769
+TOTAL  - Takes(s): 40.0, Count: 31627, OPS: 790.9, Avg(us): 1252, Min(us): 339, Max(us): 9831, 50th(us): 1247, 90th(us): 1325, 95th(us): 1371, 99th(us): 1524, 99.9th(us): 1848, 99.99th(us): 2769
+INSERT - Takes(s): 50.0, Count: 39676, OPS: 793.7, Avg(us): 1248, Min(us): 339, Max(us): 9831, 50th(us): 1244, 90th(us): 1316, 95th(us): 1358, 99th(us): 1503, 99.9th(us): 1833, 99.99th(us): 2765
+TOTAL  - Takes(s): 50.0, Count: 39676, OPS: 793.7, Avg(us): 1248, Min(us): 339, Max(us): 9831, 50th(us): 1244, 90th(us): 1316, 95th(us): 1358, 99th(us): 1503, 99.9th(us): 1833, 99.99th(us): 2765
+INSERT - Takes(s): 60.0, Count: 47728, OPS: 795.6, Avg(us): 1245, Min(us): 339, Max(us): 9831, 50th(us): 1242, 90th(us): 1311, 95th(us): 1348, 99th(us): 1485, 99.9th(us): 1821, 99.99th(us): 2407
+TOTAL  - Takes(s): 60.0, Count: 47728, OPS: 795.6, Avg(us): 1245, Min(us): 339, Max(us): 9831, 50th(us): 1242, 90th(us): 1311, 95th(us): 1348, 99th(us): 1485, 99.9th(us): 1821, 99.99th(us): 2407
+INSERT - Takes(s): 70.0, Count: 55775, OPS: 796.9, Avg(us): 1243, Min(us): 339, Max(us): 9831, 50th(us): 1240, 90th(us): 1306, 95th(us): 1342, 99th(us): 1473, 99.9th(us): 1848, 99.99th(us): 2253
+TOTAL  - Takes(s): 70.0, Count: 55775, OPS: 796.9, Avg(us): 1243, Min(us): 339, Max(us): 9831, 50th(us): 1240, 90th(us): 1306, 95th(us): 1342, 99th(us): 1473, 99.9th(us): 1848, 99.99th(us): 2253
+INSERT - Takes(s): 80.0, Count: 63777, OPS: 797.3, Avg(us): 1242, Min(us): 327, Max(us): 9831, 50th(us): 1239, 90th(us): 1305, 95th(us): 1340, 99th(us): 1470, 99.9th(us): 1840, 99.99th(us): 2253
+TOTAL  - Takes(s): 80.0, Count: 63777, OPS: 797.3, Avg(us): 1242, Min(us): 327, Max(us): 9831, 50th(us): 1239, 90th(us): 1305, 95th(us): 1340, 99th(us): 1470, 99.9th(us): 1840, 99.99th(us): 2253
+INSERT - Takes(s): 90.0, Count: 71771, OPS: 797.5, Avg(us): 1242, Min(us): 327, Max(us): 9831, 50th(us): 1239, 90th(us): 1303, 95th(us): 1337, 99th(us): 1465, 99.9th(us): 1859, 99.99th(us): 2245
+TOTAL  - Takes(s): 90.0, Count: 71771, OPS: 797.5, Avg(us): 1242, Min(us): 327, Max(us): 9831, 50th(us): 1239, 90th(us): 1303, 95th(us): 1337, 99th(us): 1465, 99.9th(us): 1859, 99.99th(us): 2245
+INSERT - Takes(s): 100.0, Count: 79798, OPS: 798.1, Avg(us): 1241, Min(us): 327, Max(us): 27855, 50th(us): 1239, 90th(us): 1300, 95th(us): 1332, 99th(us): 1457, 99.9th(us): 1859, 99.99th(us): 2245
+TOTAL  - Takes(s): 100.0, Count: 79798, OPS: 798.1, Avg(us): 1241, Min(us): 327, Max(us): 27855, 50th(us): 1239, 90th(us): 1300, 95th(us): 1332, 99th(us): 1457, 99.9th(us): 1859, 99.99th(us): 2245
+INSERT - Takes(s): 110.0, Count: 87864, OPS: 798.8, Avg(us): 1240, Min(us): 327, Max(us): 27855, 50th(us): 1238, 90th(us): 1299, 95th(us): 1329, 99th(us): 1450, 99.9th(us): 1860, 99.99th(us): 2253
+TOTAL  - Takes(s): 110.0, Count: 87864, OPS: 798.8, Avg(us): 1240, Min(us): 327, Max(us): 27855, 50th(us): 1238, 90th(us): 1299, 95th(us): 1329, 99th(us): 1450, 99.9th(us): 1860, 99.99th(us): 2253
+INSERT - Takes(s): 120.0, Count: 95946, OPS: 799.6, Avg(us): 1238, Min(us): 324, Max(us): 27855, 50th(us): 1236, 90th(us): 1296, 95th(us): 1327, 99th(us): 1446, 99.9th(us): 1872, 99.99th(us): 2245
+TOTAL  - Takes(s): 120.0, Count: 95946, OPS: 799.6, Avg(us): 1238, Min(us): 324, Max(us): 27855, 50th(us): 1236, 90th(us): 1296, 95th(us): 1327, 99th(us): 1446, 99.9th(us): 1872, 99.99th(us): 2245
+**********************************************
+Run finished, takes 2m5.021643501s
+INSERT - Takes(s): 125.0, Count: 100000, OPS: 799.9, Avg(us): 1238, Min(us): 324, Max(us): 27855, 50th(us): 1236, 90th(us): 1296, 95th(us): 1326, 99th(us): 1443, 99.9th(us): 1876, 99.99th(us): 2245
+TOTAL  - Takes(s): 125.0, Count: 100000, OPS: 799.9, Avg(us): 1238, Min(us): 324, Max(us): 27855, 50th(us): 1236, 90th(us): 1296, 95th(us): 1326, 99th(us): 1443, 99.9th(us): 1876, 99.99th(us): 2245
+Using request distribution 'uniform' a keyrange of [0 99999]
+***************** properties *****************
+"scanproportion"="0.0"
+"recordcount"="100000"
+"threadcount"="1"
+"workload"="core"
+"requestdistribution"="uniform"
+"table"="usertable"
+"cassandra.cluster"="127.0.0.1:9042"
+"cassandra.keyspace"="ycsb"
+"insertproportion"="0.0"
+"dotransactions"="true"
+"command"="run"
+"operationcount"="10000"
+"readproportion"="1.0"
+"updateproportion"="0.0"
+**********************************************
+READ   - Takes(s): 10.0, Count: 7888, OPS: 789.3, Avg(us): 1264, Min(us): 437, Max(us): 6595, 50th(us): 1254, 90th(us): 1336, 95th(us): 1382, 99th(us): 1559, 99.9th(us): 2209, 99.99th(us): 2685
+TOTAL  - Takes(s): 10.0, Count: 7888, OPS: 789.3, Avg(us): 1264, Min(us): 437, Max(us): 6595, 50th(us): 1254, 90th(us): 1336, 95th(us): 1382, 99th(us): 1559, 99.9th(us): 2209, 99.99th(us): 2685
+**********************************************
+Run finished, takes 12.580404242s
+READ   - Takes(s): 12.6, Count: 10000, OPS: 795.3, Avg(us): 1255, Min(us): 348, Max(us): 6595, 50th(us): 1245, 90th(us): 1327, 95th(us): 1368, 99th(us): 1541, 99.9th(us): 2091, 99.99th(us): 2685
+TOTAL  - Takes(s): 12.6, Count: 10000, OPS: 795.3, Avg(us): 1255, Min(us): 348, Max(us): 6595, 50th(us): 1245, 90th(us): 1327, 95th(us): 1368, 99th(us): 1541, 99.9th(us): 2091, 99.99th(us): 2685
+Using request distribution 'uniform' a keyrange of [0 99999]
+***************** properties *****************
+"operationcount"="10000"
+"insertproportion"="0.0"
+"requestdistribution"="uniform"
+"cassandra.cluster"="127.0.0.1:9042"
+"workload"="core"
+"readproportion"="0.0"
+"updateproportion"="1.0"
+"command"="run"
+"threadcount"="1"
+"scanproportion"="0.0"
+"table"="usertable"
+"dotransactions"="true"
+"cassandra.keyspace"="ycsb"
+"recordcount"="100000"
+**********************************************
+TOTAL  - Takes(s): 10.0, Count: 8117, OPS: 812.1, Avg(us): 1227, Min(us): 354, Max(us): 5271, 50th(us): 1214, 90th(us): 1277, 95th(us): 1298, 99th(us): 1366, 99.9th(us): 3273, 99.99th(us): 4539
+UPDATE - Takes(s): 10.0, Count: 8117, OPS: 812.0, Avg(us): 1227, Min(us): 354, Max(us): 5271, 50th(us): 1214, 90th(us): 1277, 95th(us): 1298, 99th(us): 1366, 99.9th(us): 3273, 99.99th(us): 4539
+**********************************************
+Run finished, takes 12.290517672s
+TOTAL  - Takes(s): 12.3, Count: 10000, OPS: 813.9, Avg(us): 1224, Min(us): 354, Max(us): 5271, 50th(us): 1212, 90th(us): 1274, 95th(us): 1294, 99th(us): 1357, 99.9th(us): 2687, 99.99th(us): 4539
+UPDATE - Takes(s): 12.3, Count: 10000, OPS: 813.9, Avg(us): 1224, Min(us): 354, Max(us): 5271, 50th(us): 1212, 90th(us): 1274, 95th(us): 1294, 99th(us): 1357, 99.9th(us): 2687, 99.99th(us): 4539

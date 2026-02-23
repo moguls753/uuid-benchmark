@@ -1,0 +1,7 @@
+2026/02/19 14:24:50 gocql: unable to dial control conn 127.0.0.1:9042: dial tcp 127.0.0.1:9042: connect: connection refused
+2026/02/19 14:24:50 gocql: unable to connect to any ring node: dial tcp 127.0.0.1:9042: connect: connection refused
+2026/02/19 14:24:50 gocql: control falling back to initial contact points.
+2026/02/19 14:24:50 gocql: unable to dial control conn 127.0.0.1:9042: dial tcp 127.0.0.1:9042: connect: connection refused
+2026/02/19 14:24:50 gocql: unable to reconnect control connection: dial tcp 127.0.0.1:9042: connect: connection refused
+{"throughput":65822.48903218954,"latency_p50_us":0,"latency_p95_us":0,"latency_p99_us":93,"total_ops":100000,"duration_ms":1519,"errors":99006}
+2026/02/19 14:24:50 Operation failed: connect: gocql: unable to create session: unable to discover protocol version: dial tcp 127.0.0.1:9042: connect: connection refused

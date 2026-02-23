@@ -1,0 +1,69 @@
+Using request distribution 'uniform' a keyrange of [0 99999]
+***************** properties *****************
+"fieldlength"="100"
+"dotransactions"="false"
+"cassandra.keyspace"="ycsb"
+"operationcount"="100000"
+"threadcount"="1"
+"table"="usertable"
+"cassandra.cluster"="127.0.0.1:9042"
+"fieldcount"="10"
+"command"="load"
+"recordcount"="100000"
+**********************************************
+INSERT_ERROR - Takes(s): 10.0, Count: 8028, OPS: 802.9, Avg(us): 1233, Min(us): 327, Max(us): 26719, 50th(us): 1214, 90th(us): 1272, 95th(us): 1313, 99th(us): 1558, 99.9th(us): 2251, 99.99th(us): 26031
+INSERT_ERROR - Takes(s): 20.0, Count: 16267, OPS: 813.4, Avg(us): 1217, Min(us): 327, Max(us): 26719, 50th(us): 1205, 90th(us): 1256, 95th(us): 1282, 99th(us): 1488, 99.9th(us): 2063, 99.99th(us): 2913
+INSERT_ERROR - Takes(s): 30.0, Count: 24503, OPS: 816.8, Avg(us): 1211, Min(us): 327, Max(us): 26719, 50th(us): 1201, 90th(us): 1249, 95th(us): 1270, 99th(us): 1432, 99.9th(us): 2037, 99.99th(us): 25039
+INSERT_ERROR - Takes(s): 40.0, Count: 32735, OPS: 818.4, Avg(us): 1209, Min(us): 327, Max(us): 26719, 50th(us): 1200, 90th(us): 1246, 95th(us): 1267, 99th(us): 1416, 99.9th(us): 2059, 99.99th(us): 3547
+INSERT_ERROR - Takes(s): 50.0, Count: 40960, OPS: 819.2, Avg(us): 1208, Min(us): 327, Max(us): 26719, 50th(us): 1199, 90th(us): 1245, 95th(us): 1265, 99th(us): 1396, 99.9th(us): 2040, 99.99th(us): 2913
+INSERT_ERROR - Takes(s): 60.0, Count: 49198, OPS: 820.0, Avg(us): 1207, Min(us): 327, Max(us): 26719, 50th(us): 1199, 90th(us): 1243, 95th(us): 1263, 99th(us): 1385, 99.9th(us): 2055, 99.99th(us): 3181
+INSERT_ERROR - Takes(s): 70.0, Count: 57468, OPS: 821.0, Avg(us): 1205, Min(us): 325, Max(us): 26719, 50th(us): 1198, 90th(us): 1241, 95th(us): 1260, 99th(us): 1364, 99.9th(us): 2045, 99.99th(us): 2913
+INSERT_ERROR - Takes(s): 80.0, Count: 65726, OPS: 821.6, Avg(us): 1204, Min(us): 325, Max(us): 26719, 50th(us): 1197, 90th(us): 1240, 95th(us): 1258, 99th(us): 1349, 99.9th(us): 2036, 99.99th(us): 2913
+INSERT_ERROR - Takes(s): 90.0, Count: 73991, OPS: 822.1, Avg(us): 1204, Min(us): 325, Max(us): 26719, 50th(us): 1197, 90th(us): 1239, 95th(us): 1256, 99th(us): 1342, 99.9th(us): 2040, 99.99th(us): 2913
+INSERT_ERROR - Takes(s): 100.0, Count: 82256, OPS: 822.6, Avg(us): 1203, Min(us): 325, Max(us): 26719, 50th(us): 1197, 90th(us): 1239, 95th(us): 1255, 99th(us): 1334, 99.9th(us): 2036, 99.99th(us): 2913
+INSERT_ERROR - Takes(s): 110.0, Count: 90526, OPS: 823.0, Avg(us): 1202, Min(us): 325, Max(us): 26719, 50th(us): 1196, 90th(us): 1238, 95th(us): 1254, 99th(us): 1328, 99.9th(us): 2035, 99.99th(us): 2571
+INSERT_ERROR - Takes(s): 120.0, Count: 98792, OPS: 823.3, Avg(us): 1202, Min(us): 325, Max(us): 26719, 50th(us): 1196, 90th(us): 1237, 95th(us): 1253, 99th(us): 1323, 99.9th(us): 2032, 99.99th(us): 2533
+**********************************************
+Run finished, takes 2m1.466637727s
+INSERT_ERROR - Takes(s): 121.5, Count: 100000, OPS: 823.3, Avg(us): 1202, Min(us): 325, Max(us): 26719, 50th(us): 1196, 90th(us): 1237, 95th(us): 1253, 99th(us): 1323, 99.9th(us): 2033, 99.99th(us): 2533
+Using request distribution 'uniform' a keyrange of [0 99999]
+***************** properties *****************
+"table"="usertable"
+"cassandra.cluster"="127.0.0.1:9042"
+"cassandra.keyspace"="ycsb"
+"workload"="core"
+"dotransactions"="true"
+"command"="run"
+"operationcount"="10000"
+"threadcount"="1"
+"requestdistribution"="uniform"
+"recordcount"="100000"
+"readproportion"="1.0"
+"updateproportion"="0.0"
+"scanproportion"="0.0"
+"insertproportion"="0.0"
+**********************************************
+READ_ERROR - Takes(s): 10.0, Count: 8218, OPS: 821.9, Avg(us): 1213, Min(us): 368, Max(us): 15735, 50th(us): 1204, 90th(us): 1250, 95th(us): 1271, 99th(us): 1362, 99.9th(us): 2105, 99.99th(us): 2433
+**********************************************
+Run finished, takes 12.155115931s
+READ_ERROR - Takes(s): 12.2, Count: 10000, OPS: 822.8, Avg(us): 1212, Min(us): 368, Max(us): 15735, 50th(us): 1203, 90th(us): 1249, 95th(us): 1270, 99th(us): 1367, 99.9th(us): 2095, 99.99th(us): 2433
+Using request distribution 'uniform' a keyrange of [0 99999]
+***************** properties *****************
+"dotransactions"="true"
+"cassandra.keyspace"="ycsb"
+"threadcount"="1"
+"workload"="core"
+"scanproportion"="0.0"
+"requestdistribution"="uniform"
+"cassandra.cluster"="127.0.0.1:9042"
+"operationcount"="10000"
+"insertproportion"="0.0"
+"command"="run"
+"readproportion"="0.0"
+"updateproportion"="1.0"
+"table"="usertable"
+"recordcount"="100000"
+**********************************************
+**********************************************
+Run finished, takes 5.738310781s
+UPDATE_ERROR - Takes(s): 5.7, Count: 10000, OPS: 1743.1, Avg(us): 570, Min(us): 0, Max(us): 42847, 50th(us): 1, 90th(us): 1232, 95th(us): 1261, 99th(us): 1381, 99.9th(us): 2083, 99.99th(us): 37055

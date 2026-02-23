@@ -1,0 +1,3285 @@
+Building workload binary for NoSQL databases...
+Workload binary built: /tmp/uuid-workload-3869797236/workload
+UUID Benchmark - Cassandra
+======================================================================
+Database:     Cassandra
+Scenario:     all
+Records:      1000000
+Connections:  8
+Batch Size:   100
+Runs:         5 (statistical mode)
+Testing:      [sequential uuidv4 uuidv7 ulid ulid_monotonic uuidv1]
+======================================================================
+
+
+====================================================================================================
+RUNNING ALL SCENARIOS - COMPREHENSIVE BENCHMARK SUITE
+====================================================================================================
+
+
+[1/5] INSERT PERFORMANCE
+====================================================================================================
+
+Testing SEQUENTIAL (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.846s
+Throughput: 127448.80 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.404s
+Throughput: 135043.93 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.374s
+Throughput: 135604.57 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.592s
+Throughput: 131702.81 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 6.838s
+Throughput: 146231.94 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV4 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 12.709s
+Throughput: 78682.37 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 12.325s
+Throughput: 81131.26 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 12.081s
+Throughput: 82771.18 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 11.877s
+Throughput: 84195.45 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 12.542s
+Throughput: 79727.96 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV7 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.381s
+Throughput: 135474.20 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 8.076s
+Throughput: 123816.75 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.87s
+Throughput: 127053.56 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.431s
+Throughput: 134561.94 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.649s
+Throughput: 130733.21 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 8.446s
+Throughput: 118388.97 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.872s
+Throughput: 127020.06 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 8.293s
+Throughput: 120577.13 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 8.374s
+Throughput: 119412.94 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 8.489s
+Throughput: 117792.17 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID_MONOTONIC (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.74s
+Throughput: 129186.72 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.665s
+Throughput: 130453.59 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.397s
+Throughput: 135182.89 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 8.11s
+Throughput: 123292.93 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.832s
+Throughput: 127669.61 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV1 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.45s
+Throughput: 134227.61 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.654s
+Throughput: 130645.94 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.753s
+Throughput: 128970.29 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.851s
+Throughput: 127372.17 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records (connections=8, batch=100)...
+Inserted 1000000 records in 7.651s
+Throughput: 130697.45 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Insert Performance - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Throughput (records/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   135044 │   135206 │     6968 │   127449 │   146232 │     5.2 │
+│ UUIDV4         │    81131 │    81302 │     2230 │    78682 │    84195 │     2.7 │
+│ UUIDV7         │   130733 │   130328 │     4942 │   123817 │   135474 │     3.8 │
+│ ULID           │   119413 │   120638 │     3721 │   117792 │   127020 │     3.1 │
+│ ULID_MONOTONIC │   129187 │   129157 │     4318 │   123293 │   135183 │     3.3 │
+│ UUIDV1         │   130646 │   130383 │     2550 │   127372 │   134228 │     2.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -39.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -3.2% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │      -11.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -4.3% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -3.3% │   0.1172 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+SSTable Count
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        4 │        4 │        0 │        4 │        4 │     0.0 │
+│ UUIDV4         │        4 │        4 │        0 │        4 │        4 │     0.0 │
+│ UUIDV7         │        4 │        4 │        0 │        4 │        4 │     0.0 │
+│ ULID           │        5 │        4 │        1 │        2 │        5 │    30.5 │
+│ ULID_MONOTONIC │        4 │        4 │        0 │        4 │        4 │     0.0 │
+│ UUIDV1         │        4 │        4 │        0 │        4 │        4 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │      +25.0% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Space Amplification (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV4         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV7         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID           │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID_MONOTONIC │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV1         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Table Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     63.6 │     63.4 │      1.5 │     61.0 │     65.0 │     2.4 │
+│ UUIDV4         │     89.3 │     89.4 │      1.3 │     87.9 │     91.1 │     1.5 │
+│ UUIDV7         │     70.4 │     70.3 │      0.6 │     69.6 │     71.0 │     0.9 │
+│ ULID           │     79.4 │     79.6 │      2.0 │     77.4 │     82.2 │     2.5 │
+│ ULID_MONOTONIC │     65.4 │     65.5 │      1.1 │     63.9 │     66.7 │     1.6 │
+│ UUIDV1         │     63.6 │     63.6 │      0.6 │     63.1 │     64.7 │     1.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +40.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +10.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +24.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +2.7% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       -0.1% │   0.6015 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │    75627 │    75621 │      405 │    75196 │    76203 │     0.5 │
+│ UUIDV4         │    80280 │    80113 │      784 │    79141 │    81011 │     1.0 │
+│ UUIDV7         │    75586 │    75646 │      159 │    75456 │    75839 │     0.2 │
+│ ULID           │    76482 │    76387 │      263 │    76066 │    76652 │     0.3 │
+│ ULID_MONOTONIC │    76035 │    76006 │      345 │    75573 │    76512 │     0.5 │
+│ UUIDV1         │    75815 │    75605 │      332 │    75144 │    75860 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +6.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -0.1% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +1.1% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.5% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.2% │   0.7540 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1028 │     1031 │       50 │      979 │     1113 │     4.8 │
+│ UUIDV4         │      699 │      699 │       19 │      677 │      721 │     2.7 │
+│ UUIDV7         │     1040 │     1033 │       39 │      985 │     1073 │     3.7 │
+│ ULID           │      954 │      958 │       28 │      929 │     1004 │     2.9 │
+│ ULID_MONOTONIC │     1022 │     1021 │       27 │      984 │     1057 │     2.6 │
+│ UUIDV1         │     1025 │     1026 │       17 │     1003 │     1050 │     1.7 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -32.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +1.2% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -7.2% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.6% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -0.2% │   0.9168 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+[2/5] READ PERFORMANCE
+====================================================================================================
+
+Testing SEQUENTIAL (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.515s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.638s
+Read throughput: 814.20 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.575s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.59s
+Read throughput: 814.36 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.557s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.625s
+Read throughput: 814.25 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.749s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.513s
+Read throughput: 814.62 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.711s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.661s
+Read throughput: 814.13 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV4 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 18.184s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m7.085s
+Read throughput: 809.44 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 18.383s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m7.049s
+Read throughput: 809.55 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 18.429s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m7.003s
+Read throughput: 809.71 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 18.526s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m7.107s
+Read throughput: 809.36 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 18.348s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m7.117s
+Read throughput: 809.33 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV7 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.972s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.488s
+Read throughput: 814.70 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.767s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.612s
+Read throughput: 814.29 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.782s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.564s
+Read throughput: 814.45 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.818s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.827s
+Read throughput: 813.58 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.657s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.541s
+Read throughput: 814.53 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.936s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.536s
+Read throughput: 814.54 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 15.127s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.704s
+Read throughput: 813.99 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 15.045s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.666s
+Read throughput: 814.11 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 15.013s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.852s
+Read throughput: 813.50 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 15.082s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.576s
+Read throughput: 814.41 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID_MONOTONIC (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.63s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.596s
+Read throughput: 814.34 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.724s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.455s
+Read throughput: 814.81 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.516s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.681s
+Read throughput: 814.06 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.751s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.554s
+Read throughput: 814.48 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.522s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.375s
+Read throughput: 815.08 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV1 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.762s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.682s
+Read throughput: 814.06 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.729s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.734s
+Read throughput: 813.89 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.685s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.654s
+Read throughput: 814.15 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.675s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.776s
+Read throughput: 813.75 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records to create data...
+Inserted 1000000 records in 14.734s
+Measuring fragmentation...
+SSTable count: 3
+Running 200000 point lookups...
+Completed 200000 reads in 4m5.559s
+Read throughput: 814.47 ops/sec
+Measuring cache hit ratios...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Read Performance - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Read Throughput (ops/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      814 │      814 │        0 │      814 │      815 │     0.0 │
+│ UUIDV4         │      809 │      809 │        0 │      809 │      810 │     0.0 │
+│ UUIDV7         │      814 │      814 │        0 │      814 │      815 │     0.1 │
+│ ULID           │      814 │      814 │        0 │      813 │      815 │     0.1 │
+│ ULID_MONOTONIC │      814 │      815 │        0 │      814 │      815 │     0.0 │
+│ UUIDV1         │      814 │      814 │        0 │      814 │      814 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.4647 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -0.0% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.1172 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Bloom Filter FP (delta)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Space Amplification (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV4         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV7         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID           │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID_MONOTONIC │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV1         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Cache Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV4         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV7         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ ULID           │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ ULID_MONOTONIC │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV1         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV4         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV7         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ ULID           │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ ULID_MONOTONIC │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV1         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P50 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1217 │     1217 │        0 │     1216 │     1217 │     0.0 │
+│ UUIDV4         │     1227 │     1227 │        1 │     1226 │     1227 │     0.0 │
+│ UUIDV7         │     1216 │     1216 │        1 │     1216 │     1217 │     0.0 │
+│ ULID           │     1216 │     1216 │        0 │     1216 │     1217 │     0.0 │
+│ ULID_MONOTONIC │     1216 │     1216 │        1 │     1215 │     1216 │     0.0 │
+│ UUIDV1         │     1217 │     1217 │        1 │     1216 │     1217 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -0.1% │   0.2963 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -0.1% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.1% │   0.0216 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.6015 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P95 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1301 │     1301 │        1 │     1301 │     1302 │     0.0 │
+│ UUIDV4         │     1317 │     1317 │        0 │     1316 │     1317 │     0.0 │
+│ UUIDV7         │     1300 │     1301 │        1 │     1300 │     1302 │     0.1 │
+│ ULID           │     1301 │     1301 │        1 │     1300 │     1302 │     0.1 │
+│ ULID_MONOTONIC │     1300 │     1300 │        1 │     1299 │     1300 │     0.0 │
+│ UUIDV1         │     1301 │     1302 │        1 │     1301 │     1303 │     0.1 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +1.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -0.1% │   0.1437 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.8345 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1371 │     1371 │        3 │     1369 │     1376 │     0.2 │
+│ UUIDV4         │     1390 │     1391 │        3 │     1388 │     1395 │     0.2 │
+│ UUIDV7         │     1368 │     1368 │        2 │     1366 │     1371 │     0.2 │
+│ ULID           │     1374 │     1375 │        4 │     1370 │     1380 │     0.3 │
+│ ULID_MONOTONIC │     1370 │     1371 │        3 │     1368 │     1375 │     0.2 │
+│ UUIDV1         │     1373 │     1373 │        2 │     1371 │     1377 │     0.2 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +1.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -0.2% │   0.0947 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.2% │   0.1437 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.1% │   0.5309 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.1% │   0.1745 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        1 │        1 │        0 │        1 │        1 │     0.5 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     1.6 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     1.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     1.0 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     1.5 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │    12.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -60.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      -61.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      -60.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -60.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -61.3% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.1 │      0.1 │      0.0 │      0.1 │      0.1 │     0.1 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     2.5 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.7 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.1 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     1.9 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    21.3 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -72.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      -73.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      -73.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -73.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -73.9% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+[3/5] UPDATE PERFORMANCE
+====================================================================================================
+
+Testing SEQUENTIAL (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.865s
+Update throughput: 833.80 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.947s
+Update throughput: 833.51 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.009s
+Update throughput: 833.30 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.964s
+Update throughput: 833.46 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.021s
+Update throughput: 833.26 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV4 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.936s
+Update throughput: 833.56 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.044s
+Update throughput: 833.18 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.006s
+Update throughput: 833.31 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.661s
+Update throughput: 831.04 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.08s
+Update throughput: 833.05 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV7 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.009s
+Update throughput: 833.30 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.038s
+Update throughput: 833.20 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.07s
+Update throughput: 833.09 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.186s
+Update throughput: 832.69 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.087s
+Update throughput: 833.03 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.757s
+Update throughput: 834.18 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.814s
+Update throughput: 833.98 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.825s
+Update throughput: 833.94 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.819s
+Update throughput: 833.96 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.816s
+Update throughput: 833.97 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID_MONOTONIC (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m0.094s
+Update throughput: 833.01 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.949s
+Update throughput: 833.51 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.757s
+Update throughput: 834.17 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 3m59.972s
+Update throughput: 833.43 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m4.97s
+Update throughput: 816.43 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV1 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m3.452s
+Update throughput: 821.51 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m3.322s
+Update throughput: 821.95 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m3.019s
+Update throughput: 822.98 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m2.953s
+Update throughput: 823.20 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 4m1.827s
+Update throughput: 827.04 ops/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Update Performance - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Update Throughput (ops/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      833 │      833 │        0 │      833 │      834 │     0.0 │
+│ UUIDV4         │      833 │      833 │        1 │      831 │      834 │     0.1 │
+│ UUIDV7         │      833 │      833 │        0 │      833 │      833 │     0.0 │
+│ ULID           │      834 │      834 │        0 │      834 │      834 │     0.0 │
+│ ULID_MONOTONIC │      833 │      830 │        8 │      816 │      834 │     0.9 │
+│ UUIDV1         │      823 │      823 │        2 │      822 │      827 │     0.3 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.0% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -0.0% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID           │       +0.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -1.3% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Space Amplification (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV4         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV7         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID           │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID_MONOTONIC │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV1         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P50 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1195 │     1195 │        0 │     1195 │     1195 │     0.0 │
+│ UUIDV4         │     1195 │     1195 │        0 │     1195 │     1196 │     0.0 │
+│ UUIDV7         │     1195 │     1195 │        0 │     1195 │     1195 │     0.0 │
+│ ULID           │     1194 │     1194 │        0 │     1194 │     1194 │     0.0 │
+│ ULID_MONOTONIC │     1195 │     1198 │        8 │     1194 │     1213 │     0.7 │
+│ UUIDV1         │     1207 │     1206 │        3 │     1201 │     1209 │     0.3 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -0.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +1.0% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P95 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1267 │     1267 │        0 │     1266 │     1267 │     0.0 │
+│ UUIDV4         │     1267 │     1268 │        2 │     1267 │     1271 │     0.1 │
+│ UUIDV7         │     1267 │     1267 │        0 │     1267 │     1268 │     0.0 │
+│ ULID           │     1266 │     1266 │        0 │     1266 │     1266 │     0.0 │
+│ ULID_MONOTONIC │     1267 │     1276 │       21 │     1266 │     1314 │     1.7 │
+│ UUIDV1         │     1286 │     1286 │        4 │     1281 │     1290 │     0.3 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -0.1% │   0.0367 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +1.5% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1316 │     1315 │        1 │     1314 │     1316 │     0.1 │
+│ UUIDV4         │     1317 │     1321 │       10 │     1316 │     1339 │     0.8 │
+│ UUIDV7         │     1319 │     1319 │        1 │     1318 │     1320 │     0.1 │
+│ ULID           │     1314 │     1313 │        1 │     1312 │     1314 │     0.1 │
+│ ULID_MONOTONIC │     1315 │     1334 │       45 │     1311 │     1414 │     3.3 │
+│ UUIDV1         │     1347 │     1347 │        5 │     1340 │     1353 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.1% │   0.0472 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV7         │       +0.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       -0.2% │   0.0216 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.1% │   0.8345 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +2.4% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │       12 │       12 │        0 │       12 │       12 │     0.1 │
+│ UUIDV4         │       11 │       11 │        0 │       11 │       11 │     0.2 │
+│ UUIDV7         │       11 │       11 │        0 │       11 │       11 │     0.4 │
+│ ULID           │       11 │       11 │        0 │       11 │       11 │     0.2 │
+│ ULID_MONOTONIC │       11 │       11 │        0 │       11 │       11 │     1.1 │
+│ UUIDV1         │       11 │       11 │        0 │       11 │       11 │     0.7 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -4.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       -3.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -3.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       -5.6% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      1.4 │      1.4 │      0.0 │      1.4 │      1.4 │     0.1 │
+│ UUIDV4         │      1.4 │      1.4 │      0.0 │      1.4 │      1.4 │     0.1 │
+│ UUIDV7         │      1.3 │      1.3 │      0.0 │      1.3 │      1.3 │     0.4 │
+│ ULID           │      1.3 │      1.3 │      0.0 │      1.3 │      1.3 │     0.2 │
+│ ULID_MONOTONIC │      1.3 │      1.3 │      0.0 │      1.3 │      1.3 │     1.2 │
+│ UUIDV1         │      1.3 │      1.3 │      0.0 │      1.3 │      1.3 │     0.5 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -3.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       -3.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -4.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       -5.3% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+[4/5] MIXED INSERT-HEAVY
+====================================================================================================
+
+Testing SEQUENTIAL (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6279.73 ops/sec
+Cache hit ratio: 92.63%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6283.70 ops/sec
+Cache hit ratio: 92.63%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6266.51 ops/sec
+Cache hit ratio: 92.63%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6231.03 ops/sec
+Cache hit ratio: 92.63%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6229.71 ops/sec
+Cache hit ratio: 92.63%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV4 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6321.04 ops/sec
+Cache hit ratio: 99.92%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6297.77 ops/sec
+Cache hit ratio: 99.91%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6193.96 ops/sec
+Cache hit ratio: 99.89%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6331.23 ops/sec
+Cache hit ratio: 99.88%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6334.97 ops/sec
+Cache hit ratio: 99.88%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV7 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6342.12 ops/sec
+Cache hit ratio: 99.52%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6297.49 ops/sec
+Cache hit ratio: 99.54%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6354.77 ops/sec
+Cache hit ratio: 99.61%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6139.36 ops/sec
+Cache hit ratio: 99.84%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6236.80 ops/sec
+Cache hit ratio: 99.78%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6199.34 ops/sec
+Cache hit ratio: 99.84%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6201.42 ops/sec
+Cache hit ratio: 99.81%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6158.97 ops/sec
+Cache hit ratio: 99.79%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6197.85 ops/sec
+Cache hit ratio: 99.76%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6124.82 ops/sec
+Cache hit ratio: 99.81%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID_MONOTONIC (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6168.79 ops/sec
+Cache hit ratio: 99.83%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6206.69 ops/sec
+Cache hit ratio: 99.80%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6139.94 ops/sec
+Cache hit ratio: 99.79%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6118.10 ops/sec
+Cache hit ratio: 99.77%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6181.38 ops/sec
+Cache hit ratio: 99.81%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV1 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6191.73 ops/sec
+Cache hit ratio: 99.81%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6272.90 ops/sec
+Cache hit ratio: 99.81%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6172.41 ops/sec
+Cache hit ratio: 99.84%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6244.66 ops/sec
+Cache hit ratio: 99.83%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6218.94 ops/sec
+Cache hit ratio: 99.83%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Mixed Insert-Heavy (70% insert, 30% read) - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Overall Throughput (ops/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     6267 │     6258 │       26 │     6230 │     6284 │     0.4 │
+│ UUIDV4         │     6321 │     6296 │       59 │     6194 │     6335 │     0.9 │
+│ UUIDV7         │     6297 │     6274 │       88 │     6139 │     6355 │     1.4 │
+│ ULID           │     6198 │     6176 │       34 │     6125 │     6201 │     0.5 │
+│ ULID_MONOTONIC │     6169 │     6163 │       35 │     6118 │     6207 │     0.6 │
+│ UUIDV1         │     6219 │     6220 │       40 │     6172 │     6273 │     0.6 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.9% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.5% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -1.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -1.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       -0.8% │   0.1172 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Space Amplification (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV4         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV7         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID           │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID_MONOTONIC │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV1         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Cache Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   0.9263 │   0.9263 │   0.0000 │   0.9263 │   0.9263 │     0.0 │
+│ UUIDV4         │   0.9989 │   0.9989 │   0.0002 │   0.9988 │   0.9992 │     0.0 │
+│ UUIDV7         │   0.9961 │   0.9966 │   0.0015 │   0.9952 │   0.9984 │     0.1 │
+│ ULID           │   0.9981 │   0.9980 │   0.0003 │   0.9976 │   0.9984 │     0.0 │
+│ ULID_MONOTONIC │   0.9980 │   0.9980 │   0.0002 │   0.9977 │   0.9983 │     0.0 │
+│ UUIDV1         │   0.9983 │   0.9982 │   0.0001 │   0.9981 │   0.9984 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +7.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +7.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +7.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +7.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +7.8% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   0.9263 │   0.9263 │   0.0000 │   0.9263 │   0.9263 │     0.0 │
+│ UUIDV4         │   0.9989 │   0.9989 │   0.0002 │   0.9988 │   0.9992 │     0.0 │
+│ UUIDV7         │   0.9961 │   0.9966 │   0.0015 │   0.9952 │   0.9984 │     0.1 │
+│ ULID           │   0.9981 │   0.9980 │   0.0003 │   0.9976 │   0.9984 │     0.0 │
+│ ULID_MONOTONIC │   0.9980 │   0.9980 │   0.0002 │   0.9977 │   0.9983 │     0.0 │
+│ UUIDV1         │   0.9983 │   0.9982 │   0.0001 │   0.9981 │   0.9984 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +7.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +7.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +7.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +7.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +7.8% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Table Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │     33.6 │     33.8 │      0.4 │     33.4 │     34.3 │     1.1 │
+│ UUIDV7         │     19.7 │     19.4 │      0.4 │     19.0 │     19.7 │     1.9 │
+│ ULID           │     19.3 │     19.4 │      0.1 │     19.2 │     19.5 │     0.8 │
+│ ULID_MONOTONIC │     18.8 │     18.8 │      0.1 │     18.7 │     18.9 │     0.3 │
+│ UUIDV1         │     17.5 │     17.5 │      0.1 │     17.5 │     17.6 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P50 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1227 │     1227 │        1 │     1227 │     1229 │     0.1 │
+│ UUIDV4         │     1233 │     1232 │        5 │     1225 │     1237 │     0.4 │
+│ UUIDV7         │     1220 │     1229 │       13 │     1219 │     1244 │     1.1 │
+│ ULID           │     1240 │     1240 │        2 │     1236 │     1242 │     0.2 │
+│ ULID_MONOTONIC │     1239 │     1240 │        2 │     1238 │     1244 │     0.2 │
+│ UUIDV1         │     1241 │     1241 │        3 │     1236 │     1243 │     0.2 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.5% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -0.6% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +1.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +1.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +1.1% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P95 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1356 │     1355 │        4 │     1351 │     1361 │     0.3 │
+│ UUIDV4         │     1385 │     1368 │       25 │     1334 │     1386 │     1.8 │
+│ UUIDV7         │     1326 │     1359 │       49 │     1321 │     1420 │     3.6 │
+│ ULID           │     1401 │     1400 │        6 │     1394 │     1408 │     0.4 │
+│ ULID_MONOTONIC │     1404 │     1406 │        9 │     1396 │     1421 │     0.7 │
+│ UUIDV1         │     1397 │     1395 │       11 │     1382 │     1409 │     0.8 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +2.1% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -2.2% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +3.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +3.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +3.0% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1627 │     1626 │       15 │     1604 │     1646 │     0.9 │
+│ UUIDV4         │     1601 │     1590 │       36 │     1533 │     1629 │     2.2 │
+│ UUIDV7         │     1579 │     1613 │       57 │     1565 │     1686 │     3.5 │
+│ ULID           │     1652 │     1678 │       50 │     1631 │     1753 │     3.0 │
+│ ULID_MONOTONIC │     1697 │     1691 │       32 │     1638 │     1719 │     1.9 │
+│ UUIDV1         │     1702 │     1698 │       27 │     1666 │     1724 │     1.6 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -1.6% │   0.0601 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -3.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +1.5% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +4.3% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       +4.6% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │       52 │       52 │        0 │       51 │       52 │     0.3 │
+│ UUIDV4         │       59 │       59 │        1 │       58 │       60 │     1.0 │
+│ UUIDV7         │       57 │       56 │        1 │       55 │       57 │     2.0 │
+│ ULID           │       55 │       55 │        0 │       55 │       55 │     0.6 │
+│ ULID_MONOTONIC │       55 │       55 │        0 │       55 │       56 │     0.7 │
+│ UUIDV1         │       55 │       55 │        0 │       55 │       56 │     0.7 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +15.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +10.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +7.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +7.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +7.1% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      6.3 │      6.3 │      0.0 │      6.3 │      6.3 │     0.3 │
+│ UUIDV4         │      7.2 │      7.2 │      0.1 │      7.1 │      7.3 │     1.2 │
+│ UUIDV7         │      6.9 │      6.9 │      0.1 │      6.7 │      7.0 │     2.1 │
+│ ULID           │      6.7 │      6.7 │      0.0 │      6.6 │      6.7 │     0.6 │
+│ ULID_MONOTONIC │      6.7 │      6.7 │      0.0 │      6.6 │      6.7 │     0.6 │
+│ UUIDV1         │      6.7 │      6.7 │      0.0 │      6.7 │      6.8 │     0.6 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +14.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +10.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +7.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +6.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +6.9% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+[5/5] MIXED READ-UPDATE (YCSB-A)
+====================================================================================================
+
+Testing SEQUENTIAL (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6176.46 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6233.07 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6374.98 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6305.76 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6420.24 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV4 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6303.97 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6470.60 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6346.12 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6521.91 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6490.46 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV7 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6360.37 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6422.26 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6569.27 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6444.29 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6617.37 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6689.92 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6381.57 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6358.15 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6370.67 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6308.00 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID_MONOTONIC (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6359.10 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6504.20 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6244.49 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6281.48 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6280.39 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV1 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6275.40 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6310.75 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6274.11 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6317.29 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh Cassandra container...
+Waiting for Cassandra to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6723.01 ops/sec
+Cache hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Mixed YCSB-A (50% read, 50% update) - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Overall Throughput (ops/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     6306 │     6302 │      100 │     6176 │     6420 │     1.6 │
+│ UUIDV4         │     6471 │     6427 │       96 │     6304 │     6522 │     1.5 │
+│ UUIDV7         │     6444 │     6483 │      107 │     6360 │     6617 │     1.6 │
+│ ULID           │     6371 │     6422 │      153 │     6308 │     6690 │     2.4 │
+│ ULID_MONOTONIC │     6281 │     6334 │      104 │     6244 │     6504 │     1.6 │
+│ UUIDV1         │     6311 │     6380 │      193 │     6274 │     6723 │     3.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +2.6% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +2.2% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID           │       +1.0% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.4% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.1% │   0.6015 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Space Amplification (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV4         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV7         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID           │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID_MONOTONIC │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV1         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Cache Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ UUIDV4         │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ UUIDV7         │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ ULID           │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ ULID_MONOTONIC │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ UUIDV1         │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.0% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.4647 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.7540 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ UUIDV4         │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ UUIDV7         │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ ULID           │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ ULID_MONOTONIC │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+│ UUIDV1         │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   0.9999 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.0% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.4647 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.7540 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Table Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     50.4 │     50.4 │      0.1 │     50.2 │     50.5 │     0.2 │
+│ UUIDV4         │     68.7 │     68.7 │      0.1 │     68.6 │     68.9 │     0.2 │
+│ UUIDV7         │     53.6 │     53.6 │      0.1 │     53.5 │     53.7 │     0.1 │
+│ ULID           │     54.1 │     54.1 │      0.1 │     53.9 │     54.2 │     0.2 │
+│ ULID_MONOTONIC │     52.0 │     51.9 │      0.3 │     51.6 │     52.2 │     0.5 │
+│ UUIDV1         │     50.3 │     50.3 │      0.1 │     50.1 │     50.4 │     0.2 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +36.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +6.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +7.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +3.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       -0.2% │   0.1745 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P50 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1278 │     1278 │        5 │     1270 │     1282 │     0.4 │
+│ UUIDV4         │     1279 │     1279 │        3 │     1276 │     1282 │     0.2 │
+│ UUIDV7         │     1283 │     1282 │        4 │     1278 │     1287 │     0.3 │
+│ ULID           │     1283 │     1284 │        3 │     1282 │     1289 │     0.2 │
+│ ULID_MONOTONIC │     1264 │     1270 │        9 │     1263 │     1280 │     0.7 │
+│ UUIDV1         │     1262 │     1265 │        5 │     1260 │     1271 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.1% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.4% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.4% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -1.1% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -1.3% │   0.0163 │ Yes       │ * (p<0.05)    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P95 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1452 │     1457 │       12 │     1446 │     1472 │     0.9 │
+│ UUIDV4         │     1477 │     1470 │       14 │     1449 │     1481 │     1.0 │
+│ UUIDV7         │     1463 │     1462 │        3 │     1457 │     1466 │     0.2 │
+│ ULID           │     1452 │     1456 │       16 │     1440 │     1484 │     1.1 │
+│ ULID_MONOTONIC │     1396 │     1422 │       42 │     1389 │     1475 │     2.9 │
+│ UUIDV1         │     1390 │     1402 │       24 │     1384 │     1440 │     1.7 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +1.7% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.8% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -3.9% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -4.3% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1756 │     1753 │       50 │     1686 │     1824 │     2.9 │
+│ UUIDV4         │     1709 │     1706 │       29 │     1661 │     1734 │     1.7 │
+│ UUIDV7         │     1696 │     1688 │       18 │     1667 │     1708 │     1.1 │
+│ ULID           │     1644 │     1648 │       26 │     1613 │     1686 │     1.6 │
+│ ULID_MONOTONIC │     1610 │     1648 │       56 │     1605 │     1717 │     3.4 │
+│ UUIDV1         │     1611 │     1610 │       13 │     1590 │     1626 │     0.8 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -2.7% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -3.4% │   0.0472 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID           │       -6.4% │   0.0122 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -8.3% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       -8.3% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID           │        0 │        1 │        1 │        0 │        3 │   217.4 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   0.2963 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      121 │      121 │        1 │      119 │      122 │     1.1 │
+│ UUIDV4         │      119 │      119 │        1 │      118 │      121 │     1.2 │
+│ UUIDV7         │      124 │      124 │        1 │      123 │      126 │     0.9 │
+│ ULID           │      123 │      124 │        2 │      122 │      128 │     2.0 │
+│ ULID_MONOTONIC │      123 │      123 │        0 │      122 │      124 │     0.4 │
+│ UUIDV1         │      123 │      124 │        2 │      122 │      128 │     1.8 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -1.1% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +2.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +1.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +1.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +1.6% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │   193.1 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   0.2963 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     14.9 │     14.9 │      0.2 │     14.6 │     15.0 │     1.1 │
+│ UUIDV4         │     14.7 │     14.7 │      0.2 │     14.5 │     14.9 │     1.3 │
+│ UUIDV7         │     15.2 │     15.3 │      0.1 │     15.1 │     15.5 │     0.8 │
+│ ULID           │     15.1 │     15.2 │      0.3 │     15.1 │     15.8 │     2.0 │
+│ ULID_MONOTONIC │     15.1 │     15.1 │      0.1 │     15.1 │     15.3 │     0.5 │
+│ UUIDV1         │     15.1 │     15.2 │      0.3 │     15.1 │     15.7 │     1.8 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -1.2% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +2.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +1.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +1.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +1.6% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+====================================================================================================
+ALL SCENARIOS COMPLETED IN 7h46m1s
+====================================================================================================
+
+Exporting results to CSV...
+  Statistical summary: /home/eike/dev/studium/uuid-benchmark/results/cassandra_1m_all_8conn.csv
+  Raw runs data: /home/eike/dev/studium/uuid-benchmark/results/cassandra_1m_all_8conn_raw.csv
+
+All scenarios completed successfully!
