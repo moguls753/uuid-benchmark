@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	crand "crypto/rand"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -11,9 +12,11 @@ import (
 	"os"
 	"sort"
 	"sync"
+	"regexp"
 	"sync/atomic"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocql/gocql"
 	"github.com/google/uuid"
 	"github.com/oklog/ulid/v2"
@@ -54,6 +57,7 @@ func main() {
 	insertPct := flag.Int("insert-pct", 0, "Insert percentage for mixed workload")
 	readPct := flag.Int("read-pct", 0, "Read percentage for mixed workload")
 	updatePct := flag.Int("update-pct", 0, "Update percentage for mixed workload")
+	tableName := flag.String("table-name", "bench", "Table/collection name")
 	flag.Parse()
 
 	if *dbType == "" || *op == "" || *keyType == "" {
@@ -68,6 +72,8 @@ func main() {
 		result, err = runMongoDB(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct)
 	case "cassandra":
 		result, err = runCassandra(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct)
+	case "mysql":
+		result, err = runMySQL(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct, *tableName)
 	default:
 		log.Fatalf("Unknown db-type: %s", *dbType)
 	}
@@ -152,6 +158,35 @@ func (kg *keyGenerator) generateCassandraKey() any {
 	default:
 		u := uuid.New()
 		return gocql.UUID(u)
+	}
+}
+
+// generateMySQLKey returns a []byte key suitable for MySQL BINARY(16) columns.
+// Returns nil for sequential (AUTO_INCREMENT handled by MySQL).
+func (kg *keyGenerator) generateMySQLKey() []byte {
+	switch kg.keyType {
+	case "sequential":
+		return nil // AUTO_INCREMENT
+	case "uuidv1":
+		u, _ := uuid.NewUUID()
+		return u[:]
+	case "uuidv4":
+		u := uuid.New()
+		return u[:]
+	case "uuidv7":
+		u, _ := uuid.NewV7()
+		return u[:]
+	case "ulid":
+		u := ulid.MustNew(ulid.Now(), crand.Reader)
+		return u[:]
+	case "ulid_monotonic":
+		kg.entropyMu.Lock()
+		u := ulid.MustNew(ulid.Now(), kg.entropy)
+		kg.entropyMu.Unlock()
+		return u[:]
+	default:
+		u := uuid.New()
+		return u[:]
 	}
 }
 
@@ -539,6 +574,438 @@ func fetchMongoIDs(ctx context.Context, coll *mongo.Collection, limit int) ([]an
 		ids = append(ids, doc["_id"])
 	}
 	return ids, nil
+}
+
+var validTableName = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+
+func runMySQL(op, keyType string, numRecords, numOps, batchSize, threads int, connString string, insertPct, readPct, updatePct int, tableName string) (*Result, error) {
+	if !validTableName.MatchString(tableName) {
+		return nil, fmt.Errorf("invalid table name: %s", tableName)
+	}
+
+	db, err := sql.Open("mysql", connString)
+	if err != nil {
+		return nil, fmt.Errorf("connect: %w", err)
+	}
+	defer db.Close()
+
+	db.SetMaxOpenConns(threads + 5)
+	db.SetMaxIdleConns(threads)
+
+	if err := db.Ping(); err != nil {
+		return nil, fmt.Errorf("ping: %w", err)
+	}
+
+	switch op {
+	case "insert":
+		return mysqlInsert(db, tableName, keyType, numRecords, batchSize, threads)
+	case "read":
+		return mysqlRead(db, tableName, keyType, numOps, threads)
+	case "update":
+		return mysqlUpdate(db, tableName, keyType, numOps, threads)
+	case "mixed":
+		return mysqlMixed(db, tableName, keyType, numOps, threads, insertPct, readPct, updatePct)
+	default:
+		return nil, fmt.Errorf("unknown operation: %s", op)
+	}
+}
+
+func mysqlInsert(db *sql.DB, tableName, keyType string, numRecords, batchSize, threads int) (*Result, error) {
+	var counter atomic.Int64
+	recordsPerThread := numRecords / threads
+	remainder := numRecords % threads
+
+	var wg sync.WaitGroup
+	allLatencies := make([][]int64, threads)
+	var totalErrors atomic.Int64
+
+	start := time.Now()
+
+	for t := 0; t < threads; t++ {
+		records := recordsPerThread
+		if t < remainder {
+			records++
+		}
+		wg.Add(1)
+		go func(threadID, records int) {
+			defer wg.Done()
+			kg := newKeyGenerator(keyType, &counter)
+			latencies := make([]int64, 0, (records/batchSize)+1)
+
+			for i := 0; i < records; i += batchSize {
+				batchEnd := i + batchSize
+				if batchEnd > records {
+					batchEnd = records
+				}
+				currentBatch := batchEnd - i
+
+				opStart := time.Now()
+				var err error
+				if keyType == "sequential" {
+					err = mysqlInsertBatchSequential(db, tableName, currentBatch)
+				} else {
+					keys := make([][]byte, currentBatch)
+					for j := 0; j < currentBatch; j++ {
+						keys[j] = kg.generateMySQLKey()
+					}
+					err = mysqlInsertBatchUUID(db, tableName, keys)
+				}
+				latUS := time.Since(opStart).Microseconds()
+				latencies = append(latencies, latUS)
+
+				if err != nil {
+					totalErrors.Add(1)
+				}
+			}
+			allLatencies[threadID] = latencies
+		}(t, records)
+	}
+
+	wg.Wait()
+	duration := time.Since(start)
+
+	var merged []int64
+	for _, l := range allLatencies {
+		merged = append(merged, l...)
+	}
+
+	p50, p95, p99 := calculatePercentiles(merged)
+
+	return &Result{
+		Throughput: float64(numRecords) / duration.Seconds(),
+		LatencyP50: p50,
+		LatencyP95: p95,
+		LatencyP99: p99,
+		TotalOps:   numRecords,
+		DurationMs: duration.Milliseconds(),
+		Errors:     int(totalErrors.Load()),
+	}, nil
+}
+
+func mysqlInsertBatchSequential(db *sql.DB, tableName string, count int) error {
+	query := fmt.Sprintf("INSERT INTO %s (data) VALUES ", tableName)
+	vals := make([]any, 0, count)
+	for i := 0; i < count; i++ {
+		if i > 0 {
+			query += ","
+		}
+		query += "(?)"
+		vals = append(vals, payload)
+	}
+	_, err := db.Exec(query, vals...)
+	return err
+}
+
+func mysqlInsertBatchUUID(db *sql.DB, tableName string, keys [][]byte) error {
+	query := fmt.Sprintf("INSERT INTO %s (id, data) VALUES ", tableName)
+	vals := make([]any, 0, len(keys)*2)
+	for i, key := range keys {
+		if i > 0 {
+			query += ","
+		}
+		query += "(?,?)"
+		vals = append(vals, key, payload)
+	}
+	_, err := db.Exec(query, vals...)
+	return err
+}
+
+func fetchMySQLIDs(db *sql.DB, tableName, keyType string, limit int) ([]any, error) {
+	query := fmt.Sprintf("SELECT id FROM %s", tableName)
+	if limit > 0 {
+		query += fmt.Sprintf(" LIMIT %d", limit)
+	}
+
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var ids []any
+	for rows.Next() {
+		if keyType == "sequential" {
+			var id int64
+			if err := rows.Scan(&id); err != nil {
+				continue
+			}
+			ids = append(ids, id)
+		} else {
+			var id []byte
+			if err := rows.Scan(&id); err != nil {
+				continue
+			}
+			idCopy := make([]byte, len(id))
+			copy(idCopy, id)
+			ids = append(ids, idCopy)
+		}
+	}
+	return ids, rows.Err()
+}
+
+func mysqlRead(db *sql.DB, tableName, keyType string, numOps, threads int) (*Result, error) {
+	ids, err := fetchMySQLIDs(db, tableName, keyType, numOps)
+	if err != nil {
+		return nil, fmt.Errorf("fetch ids: %w", err)
+	}
+
+	query := fmt.Sprintf("SELECT id, data FROM %s WHERE id = ?", tableName)
+
+	opsPerThread := numOps / threads
+	remainder := numOps % threads
+
+	var wg sync.WaitGroup
+	allLatencies := make([][]int64, threads)
+	var totalErrors atomic.Int64
+
+	start := time.Now()
+
+	for t := 0; t < threads; t++ {
+		ops := opsPerThread
+		if t < remainder {
+			ops++
+		}
+		offset := t * opsPerThread
+		if t < remainder {
+			offset += t
+		} else {
+			offset += remainder
+		}
+		wg.Add(1)
+		go func(threadID, offset, ops int) {
+			defer wg.Done()
+			latencies := make([]int64, 0, ops)
+
+			for i := 0; i < ops; i++ {
+				idx := (offset + i) % len(ids)
+				opStart := time.Now()
+				row := db.QueryRow(query, ids[idx])
+				var readID any
+				var readData []byte
+				err := row.Scan(&readID, &readData)
+				latUS := time.Since(opStart).Microseconds()
+				latencies = append(latencies, latUS)
+				if err != nil {
+					totalErrors.Add(1)
+				}
+			}
+			allLatencies[threadID] = latencies
+		}(t, offset, ops)
+	}
+
+	wg.Wait()
+	duration := time.Since(start)
+
+	var merged []int64
+	for _, l := range allLatencies {
+		merged = append(merged, l...)
+	}
+
+	p50, p95, p99 := calculatePercentiles(merged)
+
+	return &Result{
+		Throughput: float64(numOps) / duration.Seconds(),
+		LatencyP50: p50,
+		LatencyP95: p95,
+		LatencyP99: p99,
+		TotalOps:   numOps,
+		DurationMs: duration.Milliseconds(),
+		Errors:     int(totalErrors.Load()),
+	}, nil
+}
+
+func mysqlUpdate(db *sql.DB, tableName, keyType string, numOps, threads int) (*Result, error) {
+	ids, err := fetchMySQLIDs(db, tableName, keyType, numOps)
+	if err != nil {
+		return nil, fmt.Errorf("fetch ids: %w", err)
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET data = ? WHERE id = ?", tableName)
+
+	opsPerThread := numOps / threads
+	remainder := numOps % threads
+
+	var wg sync.WaitGroup
+	allLatencies := make([][]int64, threads)
+	var totalErrors atomic.Int64
+
+	start := time.Now()
+
+	for t := 0; t < threads; t++ {
+		ops := opsPerThread
+		if t < remainder {
+			ops++
+		}
+		offset := t * opsPerThread
+		if t < remainder {
+			offset += t
+		} else {
+			offset += remainder
+		}
+		wg.Add(1)
+		go func(threadID, offset, ops int) {
+			defer wg.Done()
+			latencies := make([]int64, 0, ops)
+			newPayload := make([]byte, 1024)
+			crand.Read(newPayload)
+
+			for i := 0; i < ops; i++ {
+				idx := (offset + i) % len(ids)
+				opStart := time.Now()
+				_, err := db.Exec(query, newPayload, ids[idx])
+				latUS := time.Since(opStart).Microseconds()
+				latencies = append(latencies, latUS)
+				if err != nil {
+					totalErrors.Add(1)
+				}
+			}
+			allLatencies[threadID] = latencies
+		}(t, offset, ops)
+	}
+
+	wg.Wait()
+	duration := time.Since(start)
+
+	var merged []int64
+	for _, l := range allLatencies {
+		merged = append(merged, l...)
+	}
+
+	p50, p95, p99 := calculatePercentiles(merged)
+
+	return &Result{
+		Throughput: float64(numOps) / duration.Seconds(),
+		LatencyP50: p50,
+		LatencyP95: p95,
+		LatencyP99: p99,
+		TotalOps:   numOps,
+		DurationMs: duration.Milliseconds(),
+		Errors:     int(totalErrors.Load()),
+	}, nil
+}
+
+func mysqlMixed(db *sql.DB, tableName, keyType string, numOps, threads, insertPct, readPct, updatePct int) (*Result, error) {
+	ids, _ := fetchMySQLIDs(db, tableName, keyType, numOps)
+	var idsMu sync.RWMutex
+
+	insertSeqQuery := fmt.Sprintf("INSERT INTO %s (data) VALUES (?)", tableName)
+	insertUUIDQuery := fmt.Sprintf("INSERT INTO %s (id, data) VALUES (?, ?)", tableName)
+	readQuery := fmt.Sprintf("SELECT id, data FROM %s WHERE id = ?", tableName)
+	updateQuery := fmt.Sprintf("UPDATE %s SET data = ? WHERE id = ?", tableName)
+
+	opsPerThread := numOps / threads
+	remainder := numOps % threads
+
+	var wg sync.WaitGroup
+	allLatencies := make([][]int64, threads)
+	var totalErrors atomic.Int64
+	var totalInserts, totalReads, totalUpdates atomic.Int64
+	var counter atomic.Int64
+
+	start := time.Now()
+
+	for t := 0; t < threads; t++ {
+		ops := opsPerThread
+		if t < remainder {
+			ops++
+		}
+		wg.Add(1)
+		go func(threadID, ops int) {
+			defer wg.Done()
+			kg := newKeyGenerator(keyType, &counter)
+			latencies := make([]int64, 0, ops)
+			newPayload := make([]byte, 1024)
+			crand.Read(newPayload)
+			rng := rand.New(rand.NewPCG(rand.Uint64(), rand.Uint64()))
+
+			for i := 0; i < ops; i++ {
+				roll := rng.IntN(100)
+
+				if roll < insertPct {
+					key := kg.generateMySQLKey()
+					opStart := time.Now()
+					var err error
+					if keyType == "sequential" {
+						_, err = db.Exec(insertSeqQuery, payload)
+					} else {
+						_, err = db.Exec(insertUUIDQuery, key, payload)
+					}
+					latencies = append(latencies, time.Since(opStart).Microseconds())
+					if err != nil {
+						totalErrors.Add(1)
+					} else if key != nil {
+						idsMu.Lock()
+						ids = append(ids, key)
+						idsMu.Unlock()
+					}
+					totalInserts.Add(1)
+				} else if roll < insertPct+readPct {
+					idsMu.RLock()
+					idLen := len(ids)
+					var id any
+					if idLen > 0 {
+						id = ids[rng.IntN(idLen)]
+					}
+					idsMu.RUnlock()
+
+					if id != nil {
+						opStart := time.Now()
+						row := db.QueryRow(readQuery, id)
+						var readID any
+						var readData []byte
+						err := row.Scan(&readID, &readData)
+						latencies = append(latencies, time.Since(opStart).Microseconds())
+						if err != nil {
+							totalErrors.Add(1)
+						}
+					}
+					totalReads.Add(1)
+				} else {
+					idsMu.RLock()
+					idLen := len(ids)
+					var id any
+					if idLen > 0 {
+						id = ids[rng.IntN(idLen)]
+					}
+					idsMu.RUnlock()
+
+					if id != nil {
+						opStart := time.Now()
+						_, err := db.Exec(updateQuery, newPayload, id)
+						latencies = append(latencies, time.Since(opStart).Microseconds())
+						if err != nil {
+							totalErrors.Add(1)
+						}
+					}
+					totalUpdates.Add(1)
+				}
+			}
+			allLatencies[threadID] = latencies
+		}(t, ops)
+	}
+
+	wg.Wait()
+	duration := time.Since(start)
+
+	var merged []int64
+	for _, l := range allLatencies {
+		merged = append(merged, l...)
+	}
+
+	p50, p95, p99 := calculatePercentiles(merged)
+
+	return &Result{
+		Throughput: float64(numOps) / duration.Seconds(),
+		LatencyP50: p50,
+		LatencyP95: p95,
+		LatencyP99: p99,
+		TotalOps:   numOps,
+		DurationMs: duration.Milliseconds(),
+		Errors:     int(totalErrors.Load()),
+		InsertOps:  int(totalInserts.Load()),
+		ReadOps:    int(totalReads.Load()),
+		UpdateOps:  int(totalUpdates.Load()),
+	}, nil
 }
 
 func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int, connString string, insertPct, readPct, updatePct int) (*Result, error) {

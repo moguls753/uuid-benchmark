@@ -20,16 +20,16 @@ The benchmark measures several categories of metrics:
 - **Latency**: pgbench provides p50, p95, p99 percentiles via `--log` option
 
 ### MySQL
-- **Tool**: sysbench (industry-standard database benchmarking tool)
-- **Measurement**: sysbench reports transactions per second and total execution time
-- **Latency**: sysbench provides p50, p95, p99 percentiles in its output
+- **Tool**: Custom Go workload binary (`cmd/workload/main.go`), shared with MongoDB and Cassandra
+- **Measurement**: Go binary reports throughput (ops/sec) and total duration via JSON output
+- **Latency**: Go binary measures per-operation latency and calculates p50, p95, p99 percentiles
 
 ### Comparability
 Both tools measure the same concept (operations per second), but implementation details differ:
 - pgbench runs inside the PostgreSQL container, connecting via Unix socket
-- sysbench runs inside the MySQL container, connecting via TCP localhost
+- Go workload binary runs inside the MySQL/MongoDB/Cassandra containers, connecting via TCP localhost
 
-This is comparable because both tools execute operations from within the same container as the database, eliminating network latency as a variable.
+This is comparable because all tools execute operations from within the same container as the database, eliminating network latency as a variable.
 
 ---
 
@@ -268,8 +268,8 @@ Identical measurement method for all four databases — same kernel accounting, 
 
 | Metric | PostgreSQL | MySQL | MongoDB | Cassandra | Comparable? |
 |--------|-----------|-------|---------|-----------|-------------|
-| Throughput | pgbench TPS | sysbench TPS | Go workload binary | Go workload binary | Yes |
-| Latency | pgbench percentiles | sysbench percentiles | Go workload binary | Go workload binary | Yes |
+| Throughput | pgbench TPS | Go workload binary | Go workload binary | Go workload binary | Yes |
+| Latency | pgbench percentiles | Go workload binary | Go workload binary | Go workload binary | Yes |
 | Table Size | pg_table_size() | data_length + index_length | collStats storageSize | nodetool tablestats | Yes |
 | Index Size | pg_indexes_size() | data_length (clustered) | collStats totalIndexSize | N/A (LSM-tree) | Comparable* |
 | Page Splits | WAL inspection | innodb_metrics counter | WiredTiger cache splits | N/A (compaction count) | Conceptually** |
@@ -292,6 +292,6 @@ Identical measurement method for all four databases — same kernel accounting, 
 
 3. **Page splits vs compaction**: B-tree databases (PostgreSQL, MySQL, MongoDB) count page splits. Cassandra's LSM-tree uses compaction instead — a fundamentally different mechanism. Both represent the cost of non-sequential key ordering, but should be discussed separately.
 
-4. **Throughput is comparable**: Despite using different tools (pgbench, sysbench, custom Go binary), all measure operations per second under similar conditions (in-container execution, localhost connection, same workload patterns).
+4. **Throughput is comparable**: Despite using different tools (pgbench for PostgreSQL, custom Go binary for MySQL/MongoDB/Cassandra), all measure operations per second under similar conditions (in-container execution, localhost connection, same workload patterns).
 
 5. **I/O metrics are directly comparable**: All four databases use the same cgroup v2 kernel accounting for container-isolated I/O measurement.

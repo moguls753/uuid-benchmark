@@ -21,6 +21,13 @@ const (
 	dbUser     = "benchmark"
 	dbPassword = "benchmark123"
 	dbName     = "uuid_benchmark"
+
+	// ContainerName is the Docker container name for MySQL.
+	ContainerName = "uuid-bench-mysql"
+
+	// WorkloadConnString is the connection string used by the workload binary
+	// running inside the container (port 3306 inside, not 3307).
+	WorkloadConnString = "benchmark:benchmark123@tcp(127.0.0.1:3306)/uuid_benchmark"
 )
 
 func (m *MySQLBenchmarker) Connect() error {
@@ -118,35 +125,6 @@ func (m *MySQLBenchmarker) CreateTable(keyType string) error {
 	_, err = m.db.Exec(createSQL)
 	if err != nil {
 		return fmt.Errorf("create table: %w", err)
-	}
-
-	return nil
-}
-
-func (m *MySQLBenchmarker) CreateLookupTable() error {
-	lookupTable := m.tableName + "_ids"
-
-	_, err := m.db.Exec(fmt.Sprintf("DROP TABLE IF EXISTS %s", lookupTable))
-	if err != nil {
-		return fmt.Errorf("drop lookup table: %w", err)
-	}
-
-	_, err = m.db.Exec(fmt.Sprintf(
-		"CREATE TABLE %s AS SELECT ROW_NUMBER() OVER () AS rn, id FROM %s",
-		lookupTable, m.tableName,
-	))
-	if err != nil {
-		return fmt.Errorf("create lookup table: %w", err)
-	}
-
-	_, err = m.db.Exec(fmt.Sprintf("ALTER TABLE %s ADD PRIMARY KEY (rn)", lookupTable))
-	if err != nil {
-		return fmt.Errorf("add primary key to lookup table: %w", err)
-	}
-
-	_, err = m.db.Exec(fmt.Sprintf("ANALYZE TABLE %s", lookupTable))
-	if err != nil {
-		return fmt.Errorf("analyze lookup table: %w", err)
 	}
 
 	return nil

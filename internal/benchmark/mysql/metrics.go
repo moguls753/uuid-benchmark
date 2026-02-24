@@ -119,6 +119,29 @@ func (m *MySQLBenchmarker) measureIndexFragmentation() (benchmark.IndexFragmenta
 	return stats, nil
 }
 
+// CapturePageSplitsBefore records the current page split counter.
+// Call before workload execution.
+func (m *MySQLBenchmarker) CapturePageSplitsBefore() {
+	count, err := m.capturePageSplitCount()
+	if err != nil {
+		fmt.Printf("Warning: Could not capture start page splits: %v\n", err)
+		m.pageSplitCountsCaptured = false
+		return
+	}
+	m.startPageSplitCount = count
+	m.pageSplitCountsCaptured = true
+}
+
+// CapturePageSplitsAfter records the page split counter after workload execution.
+func (m *MySQLBenchmarker) CapturePageSplitsAfter() {
+	count, err := m.capturePageSplitCount()
+	if err != nil {
+		fmt.Printf("Warning: Could not capture end page splits: %v\n", err)
+		return
+	}
+	m.endPageSplitCount = count
+}
+
 func (m *MySQLBenchmarker) capturePageSplitCount() (int64, error) {
 	// MySQL tracks page splits globally via innodb_metrics or global status
 	// SHOW GLOBAL STATUS LIKE 'Innodb_pages_split' doesn't exist in all versions

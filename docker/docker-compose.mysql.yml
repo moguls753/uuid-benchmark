@@ -1,9 +1,6 @@
 services:
   mysql:
-    build:
-      context: .
-      dockerfile: Dockerfile.mysql
-    image: uuid-benchmark-mysql:8
+    image: mysql:8-debian
     container_name: uuid-bench-mysql
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass123}

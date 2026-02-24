@@ -94,7 +94,7 @@ func ResetCopyCache() {
 // ExecutorConfig configures a workload binary execution.
 type ExecutorConfig struct {
 	ContainerName    string
-	DBType           string // mongodb or cassandra
+	DBType           string // mongodb, cassandra, or mysql
 	Op               string // insert, read, update, mixed
 	KeyType          string
 	NumRecords       int
@@ -102,9 +102,10 @@ type ExecutorConfig struct {
 	BatchSize        int
 	Threads          int
 	ConnectionString string
-	InsertPct        int // Insert percentage for mixed workload
-	ReadPct          int // Read percentage for mixed workload
-	UpdatePct        int // Update percentage for mixed workload
+	InsertPct        int    // Insert percentage for mixed workload
+	ReadPct          int    // Read percentage for mixed workload
+	UpdatePct        int    // Update percentage for mixed workload
+	TableName        string // Table/collection name (default "bench")
 }
 
 // Execute runs the workload binary inside a container and returns parsed results.
@@ -133,6 +134,10 @@ func Execute(cfg ExecutorConfig) (*WorkloadResult, error) {
 	}
 	if cfg.Threads > 0 {
 		args = append(args, "--threads", fmt.Sprintf("%d", cfg.Threads))
+	}
+
+	if cfg.TableName != "" {
+		args = append(args, "--table-name", cfg.TableName)
 	}
 
 	if cfg.Op == "mixed" {
