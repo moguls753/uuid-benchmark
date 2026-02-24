@@ -68,6 +68,7 @@ func Execute(cfg ExecutorConfig) (*ExecuteResult, error) {
 
 	if cfg.Events > 0 {
 		args = append(args, fmt.Sprintf("--events=%d", cfg.Events))
+		args = append(args, "--time=0") // Disable default 10s time limit
 	} else {
 		args = append(args, fmt.Sprintf("--time=%d", cfg.Duration))
 	}
