@@ -128,6 +128,8 @@ func (kg *keyGenerator) generateMongoKey() any {
 		u := ulid.MustNew(ulid.Now(), kg.entropy)
 		kg.entropyMu.Unlock()
 		return bson.Binary{Subtype: 0x00, Data: u[:]}
+	case "objectid":
+		return bson.NewObjectID()
 	default:
 		return uuid.New()
 	}

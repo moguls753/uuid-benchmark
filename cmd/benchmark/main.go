@@ -95,6 +95,7 @@ func main() {
 		currentDB = mysqlDB
 	case "mongodb", "mongo":
 		currentDB = mongodbDB
+		allKeyTypes = append(allKeyTypes, "objectid")
 		buildWorkloadBinary()
 	case "cassandra", "cass":
 		currentDB = cassandraDB
