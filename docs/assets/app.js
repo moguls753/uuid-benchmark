@@ -279,31 +279,70 @@ function populateFilters() {
   // 2. For each visible filter: update the <select>, preserve selection if valid,
   //    otherwise fall back to first option.
   visible.forEach(function (key) {
-    var opts = validOptions[key];
-    var select = dom.filters[key];
-    var prev = filterState[key];
+    fillSelect(key, validOptions[key]);
+  });
+}
 
-    // Clear
-    select.innerHTML = '';
+/**
+ * Populate a single <select> element with options, using <optgroup> for metrics.
+ * Preserves previous selection if still valid, otherwise defaults to first option.
+ */
+function fillSelect(key, opts) {
+  var select = dom.filters[key];
+  var prev = filterState[key];
 
+  select.innerHTML = '';
+
+  if (key === 'metric' && opts.length > 0) {
+    // Group metrics using METRIC_GROUPS
+    var optSet = {};
+    opts.forEach(function (v) { optSet[v] = true; });
+
+    METRIC_GROUPS.forEach(function (group) {
+      var groupMetrics = group.metrics.filter(function (m) { return optSet[m]; });
+      if (groupMetrics.length === 0) return;
+
+      var optgroup = document.createElement('optgroup');
+      optgroup.label = group.label;
+      groupMetrics.forEach(function (val) {
+        var option = document.createElement('option');
+        option.value = val;
+        option.textContent = formatOption(key, val);
+        optgroup.appendChild(option);
+        delete optSet[val];
+      });
+      select.appendChild(optgroup);
+    });
+
+    // Any ungrouped metrics
+    var remaining = Object.keys(optSet);
+    if (remaining.length > 0) {
+      remaining.forEach(function (val) {
+        var option = document.createElement('option');
+        option.value = val;
+        option.textContent = formatOption(key, val);
+        select.appendChild(option);
+      });
+    }
+  } else {
     opts.forEach(function (val) {
       var option = document.createElement('option');
       option.value = val;
       option.textContent = formatOption(key, val);
       select.appendChild(option);
     });
+  }
 
-    // Restore or default
-    if (prev != null && opts.indexOf(coerceFilterValue(key, String(prev))) >= 0) {
-      select.value = String(prev);
-      filterState[key] = prev;
-    } else if (opts.length > 0) {
-      select.value = String(opts[0]);
-      filterState[key] = opts[0];
-    } else {
-      filterState[key] = null;
-    }
-  });
+  // Restore or default
+  if (prev != null && opts.indexOf(coerceFilterValue(key, String(prev))) >= 0) {
+    select.value = String(prev);
+    filterState[key] = prev;
+  } else if (opts.length > 0) {
+    select.value = String(opts[0]);
+    filterState[key] = opts[0];
+  } else {
+    filterState[key] = null;
+  }
 }
 
 /**
@@ -316,28 +355,8 @@ function cascadeFilters(changedKey) {
   // Recompute all filters except the one that just changed
   visible.forEach(function (key) {
     if (key === changedKey) return;
-
     var opts = deriveValidOptions(key, visible);
-    var select = dom.filters[key];
-    var prev = filterState[key];
-
-    select.innerHTML = '';
-    opts.forEach(function (val) {
-      var option = document.createElement('option');
-      option.value = val;
-      option.textContent = formatOption(key, val);
-      select.appendChild(option);
-    });
-
-    if (prev != null && opts.indexOf(coerceFilterValue(key, String(prev))) >= 0) {
-      select.value = String(prev);
-      filterState[key] = prev;
-    } else if (opts.length > 0) {
-      select.value = String(opts[0]);
-      filterState[key] = opts[0];
-    } else {
-      filterState[key] = null;
-    }
+    fillSelect(key, opts);
   });
 }
 
@@ -367,6 +386,21 @@ function deriveValidOptions(key, visible) {
   var opts = Object.keys(seen).map(function (v) {
     return coerceFilterValue(key, v);
   });
+
+  // Cross-DB Impact: only show metrics that have a SEQUENTIAL baseline in 2+ databases
+  if (activeTab === 'cross-db' && key === 'metric') {
+    opts = opts.filter(function (metric) {
+      var dbsWithBaseline = {};
+      allEntries.forEach(function (e) {
+        if (e.metric !== metric || e.keyType !== 'SEQUENTIAL') return;
+        if (partial.scenario && e.scenario !== partial.scenario) return;
+        if (partial.scale && e.scale !== partial.scale) return;
+        if (partial.connections != null && String(e.connections) !== String(partial.connections)) return;
+        dbsWithBaseline[e.database] = true;
+      });
+      return Object.keys(dbsWithBaseline).length >= 2;
+    });
+  }
 
   // Sort
   opts.sort(function (a, b) {
@@ -493,6 +527,17 @@ const KEY_TYPE_ORDER = ['SEQUENTIAL', 'OBJECTID', 'UUIDV1', 'UUIDV4', 'UUIDV7', 
 const DATABASE_ORDER = ['postgres', 'mysql', 'mongodb', 'cassandra'];
 const SCALE_ORDER    = ['100k', '1m', '10m', '100m'];
 
+/** Metric groups for organized dropdowns */
+const METRIC_GROUPS = [
+  { label: 'Performance', metrics: ['throughput', 'overall_throughput', 'read_throughput', 'update_throughput'] },
+  { label: 'Latency',     metrics: ['p50_latency_us', 'p95_latency_us', 'p99_latency_us'] },
+  { label: 'Storage',     metrics: ['table_size_mb', 'index_size_mb'] },
+  { label: 'Cache',       metrics: ['cache_hit_ratio', 'index_hit_ratio'] },
+  { label: 'I/O',         metrics: ['read_iops', 'write_iops', 'read_throughput_mb', 'write_throughput_mb'] },
+  { label: 'B-tree',      metrics: ['page_splits', 'fragmentation', 'avg_leaf_density'] },
+  { label: 'LSM-tree',    metrics: ['sstable_count', 'bloom_filter_fp'] },
+];
+
 /* --------------------------------------------------------------------------
    Shared Chart.js defaults
    -------------------------------------------------------------------------- */
@@ -606,15 +651,6 @@ function formatNumber(val) {
    -------------------------------------------------------------------------- */
 
 function renderCurrentView() {
-  var entries = getFilteredEntries();
-
-  if (entries.length === 0) {
-    showNoData(true);
-    return;
-  }
-
-  showNoData(false);
-
   // Ensure correct panel is visible
   if (activeTab === 'raw-data') {
     dom.chartPanel.hidden = true;
@@ -624,12 +660,25 @@ function renderCurrentView() {
     dom.tablePanel.hidden = true;
   }
 
+  // Cross-DB Impact queries allEntries directly (no per-entry filtering)
+  if (activeTab === 'cross-db') {
+    showNoData(false);
+    renderCrossDB();
+    return;
+  }
+
+  var entries = getFilteredEntries();
+
+  if (entries.length === 0) {
+    showNoData(true);
+    return;
+  }
+
+  showNoData(false);
+
   switch (activeTab) {
     case 'cross-uuid':
       renderCrossUUID(entries);
-      break;
-    case 'cross-db':
-      renderCrossDB();
       break;
     case 'scale':
       renderScale(entries);
@@ -848,6 +897,15 @@ function renderCrossDB(/* entries arg unused — we query allEntries directly */
     ? formatMetricName(filterState.metric)
     : 'Value';
 
+  // Build subtitle when not all databases are shown
+  var missingNote = '';
+  if (dbsWithBaseline.length < DATABASE_ORDER.length) {
+    var missing = DATABASE_ORDER.filter(function (db) {
+      return dbsWithBaseline.indexOf(db) < 0;
+    }).map(formatDatabaseName);
+    missingNote = 'Not available: ' + missing.join(', ');
+  }
+
   chartInstance = new Chart(dom.canvas, {
     type: 'bar',
     data: {
@@ -865,7 +923,14 @@ function renderCrossDB(/* entries arg unused — we query allEntries directly */
             + ' \u2014 % vs Sequential',
           font: { size: 14, weight: '600', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
           color: '#1c1917',
-          padding: { bottom: 16 },
+          padding: { bottom: missingNote ? 4 : 16 },
+        },
+        subtitle: {
+          display: !!missingNote,
+          text: missingNote,
+          font: { size: 11, style: 'italic', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
+          color: '#78716c',
+          padding: { bottom: 12 },
         },
         legend: {
           display: true,
