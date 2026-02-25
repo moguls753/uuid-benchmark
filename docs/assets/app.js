@@ -118,7 +118,7 @@ const filterState = {
 /** Which filters are visible per tab */
 const TAB_FILTERS = {
   'cross-uuid': ['database', 'scenario', 'scale', 'connections', 'metric'],
-  'cross-db':   ['keyType', 'scenario', 'scale', 'connections', 'metric'],
+  'cross-db':   ['scenario', 'scale', 'connections', 'metric'],
   'scale':      ['database', 'scenario', 'connections', 'metric'],
   'raw-data':   ['database', 'scenario', 'scale', 'connections'],
 };
@@ -629,7 +629,7 @@ function renderCurrentView() {
       renderCrossUUID(entries);
       break;
     case 'cross-db':
-      renderCrossDB(entries);
+      renderCrossDB();
       break;
     case 'scale':
       renderScale(entries);
@@ -756,39 +756,93 @@ function renderCrossUUID(entries) {
 }
 
 /* ==========================================================================
-   Task 6: Cross-DB Chart View (bar chart)
+   Task 6: Cross-DB Impact View (grouped bar chart — % vs Sequential baseline)
    ========================================================================== */
 
-function renderCrossDB(entries) {
+function renderCrossDB(/* entries arg unused — we query allEntries directly */) {
   destroyChart();
 
-  // Group entries by database
-  var byDB = {};
-  entries.forEach(function (e) {
-    byDB[e.database] = e;
-  });
+  var scenario    = filterState.scenario;
+  var scale       = filterState.scale;
+  var connections = filterState.connections;
+  var metric      = filterState.metric;
 
-  var labels = [];
-  var data = [];
-  var colors = [];
-  var errorBars = [];
-
-  DATABASE_ORDER.forEach(function (db) {
-    if (!byDB[db]) return;
-    var e = byDB[db];
-    labels.push(formatDatabaseName(db));
-    data.push(e.median);
-    colors.push(DATABASE_COLORS[db] || '#999');
-    errorBars.push({
-      low:  Math.max(0, e.median - e.stddev),
-      high: e.median + e.stddev,
-    });
-  });
-
-  if (labels.length === 0) {
+  if (!scenario || !scale || connections == null || !metric) {
     showNoData(true);
     return;
   }
+
+  // Get all entries matching the selected scenario/scale/connections/metric
+  var matching = allEntries.filter(function (e) {
+    return e.scenario === scenario
+      && e.scale === scale
+      && String(e.connections) === String(connections)
+      && e.metric === metric;
+  });
+
+  // Group: database -> keyType -> entry
+  var byDB = {};
+  matching.forEach(function (e) {
+    if (!byDB[e.database]) byDB[e.database] = {};
+    byDB[e.database][e.keyType] = e;
+  });
+
+  // Determine which databases have a SEQUENTIAL baseline
+  var dbsWithBaseline = [];
+  DATABASE_ORDER.forEach(function (db) {
+    if (byDB[db] && byDB[db].SEQUENTIAL) {
+      dbsWithBaseline.push(db);
+    }
+  });
+
+  if (dbsWithBaseline.length === 0) {
+    showNoData(true);
+    return;
+  }
+
+  // Determine which non-baseline key types appear in at least one database
+  var keyTypesPresent = [];
+  KEY_TYPE_ORDER.forEach(function (kt) {
+    if (kt === 'SEQUENTIAL') return;
+    var found = dbsWithBaseline.some(function (db) {
+      return byDB[db][kt] != null;
+    });
+    if (found) keyTypesPresent.push(kt);
+  });
+
+  if (keyTypesPresent.length === 0) {
+    showNoData(true);
+    return;
+  }
+
+  // X-axis labels = database names
+  var labels = dbsWithBaseline.map(function (db) {
+    return formatDatabaseName(db);
+  });
+
+  // One dataset per key type, each bar = % difference vs SEQUENTIAL for that database
+  var datasets = keyTypesPresent.map(function (kt) {
+    var data = [];
+    dbsWithBaseline.forEach(function (db) {
+      var baseline = byDB[db].SEQUENTIAL.median;
+      var entry    = byDB[db][kt];
+      if (entry && baseline !== 0) {
+        var pctDiff = ((entry.median - baseline) / Math.abs(baseline)) * 100;
+        data.push(Math.round(pctDiff * 100) / 100);
+      } else {
+        data.push(null);
+      }
+    });
+
+    var color = KEY_TYPE_COLORS[kt] || '#999';
+    return {
+      label: formatKeyTypeName(kt),
+      data: data,
+      backgroundColor: color + 'cc',
+      borderColor: color,
+      borderWidth: 1,
+    };
+  });
 
   var metricLabel = filterState.metric
     ? formatMetricName(filterState.metric)
@@ -798,14 +852,7 @@ function renderCrossDB(entries) {
     type: 'bar',
     data: {
       labels: labels,
-      datasets: [{
-        label: metricLabel,
-        data: data,
-        backgroundColor: colors.map(function (c) { return c + 'cc'; }),
-        borderColor: colors,
-        borderWidth: 1,
-        errorBars: errorBars,
-      }],
+      datasets: datasets,
     },
     options: {
       responsive: true,
@@ -814,25 +861,38 @@ function renderCrossDB(entries) {
       plugins: {
         title: {
           display: true,
-          text: buildChartTitle({ database: false }),
+          text: buildChartTitle({ database: false, keyType: false })
+            + ' \u2014 % vs Sequential',
           font: { size: 14, weight: '600', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
           color: '#1c1917',
           padding: { bottom: 16 },
         },
         legend: {
-          display: false,
+          display: true,
+          position: 'bottom',
+          labels: {
+            usePointStyle: true,
+            pointStyle: 'rect',
+            padding: 16,
+            font: { size: 11, family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
+            color: '#1c1917',
+          },
         },
         tooltip: {
           callbacks: {
             label: function (ctx) {
-              var e = entries.find(function (en) {
-                return formatDatabaseName(en.database) === ctx.label;
-              });
-              var lines = [metricLabel + ': ' + formatNumber(ctx.parsed.y)];
-              if (e) {
-                lines.push('Mean: ' + formatNumber(e.mean));
-                lines.push('StdDev: ' + formatNumber(e.stddev));
-                lines.push('CV: ' + formatNumber(e.cv) + '%');
+              var pct = ctx.parsed.y;
+              var sign = pct >= 0 ? '+' : '';
+              var db = dbsWithBaseline[ctx.dataIndex];
+              var kt = keyTypesPresent[ctx.datasetIndex];
+              var entry = byDB[db] && byDB[db][kt];
+              var baseline = byDB[db] && byDB[db].SEQUENTIAL;
+              var lines = [ctx.dataset.label + ': ' + sign + formatNumber(pct) + '%'];
+              if (entry) {
+                lines.push('Actual: ' + formatNumber(entry.median));
+              }
+              if (baseline) {
+                lines.push('Baseline (Sequential): ' + formatNumber(baseline.median));
               }
               return lines;
             },
@@ -849,23 +909,24 @@ function renderCrossDB(entries) {
           },
         },
         y: {
-          beginAtZero: true,
           grid: CHART_GRID_STYLE,
           border: CHART_BORDER_STYLE,
           title: {
             display: true,
-            text: metricLabel,
+            text: '% Difference vs Sequential (' + metricLabel + ')',
             font: { size: 11, weight: '600', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
             color: '#78716c',
           },
           ticks: {
             font: { size: 10, family: '"JetBrains Mono", "SF Mono", "Consolas", monospace' },
             color: '#78716c',
+            callback: function (value) {
+              return (value >= 0 ? '+' : '') + value + '%';
+            },
           },
         },
       },
     },
-    plugins: [errorBarPlugin],
   });
 }
 
