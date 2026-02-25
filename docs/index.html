@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UUID Benchmark Results</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7" defer></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <h1 class="site-title">UUID Benchmark Results</h1>
+    <p class="site-subtitle">Cross-database performance comparison of identifier strategies</p>
+  </header>
+
+  <nav class="tab-bar" role="tablist" aria-label="View selection">
+    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-chart" data-tab="cross-uuid">Cross-UUID</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-chart" data-tab="cross-db">Cross-DB</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-chart" data-tab="scale">Scale</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-table" data-tab="raw-data">Raw Data</button>
+  </nav>
+
+  <main class="main-content">
+    <section class="filter-bar" aria-label="Filters">
+      <div class="filter-group" data-filter="database">
+        <label for="filter-database">Database</label>
+        <select id="filter-database"></select>
+      </div>
+      <div class="filter-group" data-filter="keyType">
+        <label for="filter-keyType">Key Type</label>
+        <select id="filter-keyType"></select>
+      </div>
+      <div class="filter-group" data-filter="scenario">
+        <label for="filter-scenario">Scenario</label>
+        <select id="filter-scenario"></select>
+      </div>
+      <div class="filter-group" data-filter="scale">
+        <label for="filter-scale">Scale</label>
+        <select id="filter-scale"></select>
+      </div>
+      <div class="filter-group" data-filter="connections">
+        <label for="filter-connections">Connections</label>
+        <select id="filter-connections"></select>
+      </div>
+      <div class="filter-group" data-filter="metric">
+        <label for="filter-metric">Metric</label>
+        <select id="filter-metric"></select>
+      </div>
+    </section>
+
+    <section id="panel-chart" class="chart-container" role="tabpanel">
+      <canvas id="main-chart"></canvas>
+    </section>
+
+    <section id="panel-table" class="table-container" role="tabpanel" hidden>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="no-data" hidden>
+      <p>No data available for this filter combination.</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>Data from automated benchmark runs. Each value is the median of 5 runs with stddev error bars shown.</p>
+  </footer>
+</body>
+</html>
