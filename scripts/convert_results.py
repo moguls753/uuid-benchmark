@@ -43,6 +43,17 @@ SCENARIO_ORDER = [
     "mixed_insert_heavy", "mixed_read_update",
 ]
 
+# ---------------------------------------------------------------------------
+# Metric normalization -- unify scenario-specific variants into one name.
+# Each scenario records its primary ops/sec under a different name; we
+# collapse them so the dashboard can offer "throughput" across all scenarios.
+# ---------------------------------------------------------------------------
+METRIC_RENAMES = {
+    "read_throughput": "throughput",
+    "update_throughput": "throughput",
+    "overall_throughput": "throughput",
+}
+
 
 def record_count_to_scale(count):
     """Map a numeric record count to a human-friendly scale label."""
@@ -101,13 +112,16 @@ def parse_csv_file(filepath):
 
             scale = record_count_to_scale(record_count)
 
+            raw_metric = row["Metric"]
+            metric = METRIC_RENAMES.get(raw_metric, raw_metric)
+
             yield {
                 "database": database,
                 "scale": scale,
                 "scenario": row["Scenario"],
                 "connections": connections,
                 "keyType": row["KeyType"],
-                "metric": row["Metric"],
+                "metric": metric,
                 "median": round(float(row["Median"]), 2),
                 "mean": round(float(row["Mean"]), 2),
                 "stddev": round(float(row["StdDev"]), 2),

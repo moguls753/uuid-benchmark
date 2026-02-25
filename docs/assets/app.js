@@ -31,9 +31,6 @@ const DATABASE_COLORS = {
 
 const METRIC_LABELS = {
   throughput:          'Throughput (ops/s)',
-  overall_throughput:  'Overall Throughput (ops/s)',
-  read_throughput:     'Read Throughput (ops/s)',
-  update_throughput:   'Update Throughput (ops/s)',
   p50_latency_us:     'P50 Latency (\u00b5s)',
   p95_latency_us:     'P95 Latency (\u00b5s)',
   p99_latency_us:     'P99 Latency (\u00b5s)',
@@ -535,7 +532,7 @@ const SCALE_ORDER    = ['100k', '1m', '10m', '100m'];
 
 /** Metric groups for organized dropdowns */
 const METRIC_GROUPS = [
-  { label: 'Performance', metrics: ['throughput', 'overall_throughput', 'read_throughput', 'update_throughput'] },
+  { label: 'Performance', metrics: ['throughput'] },
   { label: 'Latency',     metrics: ['p50_latency_us', 'p95_latency_us', 'p99_latency_us'] },
   { label: 'Storage',     metrics: ['table_size_mb', 'index_size_mb'] },
   { label: 'Cache',       metrics: ['cache_hit_ratio', 'index_hit_ratio'] },
