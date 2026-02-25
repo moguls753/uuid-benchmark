@@ -387,9 +387,15 @@ function deriveValidOptions(key, visible) {
     return coerceFilterValue(key, v);
   });
 
-  // Cross-DB Impact: only show metrics that have a SEQUENTIAL baseline in 2+ databases
+  // Cross-DB Impact: only show metrics that are comparable across databases
+  // and have a SEQUENTIAL baseline in 2+ databases
   if (activeTab === 'cross-db' && key === 'metric') {
+    // Metrics that use different definitions per database — not comparable
+    var nonComparable = ['fragmentation', 'avg_leaf_density', 'bloom_filter_fp', 'sstable_count', 'page_splits', 'index_size_mb'];
+
     opts = opts.filter(function (metric) {
+      if (nonComparable.indexOf(metric) >= 0) return false;
+
       var dbsWithBaseline = {};
       allEntries.forEach(function (e) {
         if (e.metric !== metric || e.keyType !== 'SEQUENTIAL') return;
@@ -869,6 +875,10 @@ function renderCrossDB(/* entries arg unused — we query allEntries directly */
     return formatDatabaseName(db);
   });
 
+  var metricLabel = filterState.metric
+    ? formatMetricName(filterState.metric)
+    : 'Value';
+
   // One dataset per key type, each bar = % difference vs SEQUENTIAL for that database
   var datasets = keyTypesPresent.map(function (kt) {
     var data = [];
@@ -876,8 +886,7 @@ function renderCrossDB(/* entries arg unused — we query allEntries directly */
       var baseline = byDB[db].SEQUENTIAL.median;
       var entry    = byDB[db][kt];
       if (entry && baseline !== 0) {
-        var pctDiff = ((entry.median - baseline) / Math.abs(baseline)) * 100;
-        data.push(Math.round(pctDiff * 100) / 100);
+        data.push(Math.round(((entry.median - baseline) / Math.abs(baseline)) * 10000) / 100);
       } else {
         data.push(null);
       }
@@ -892,19 +901,6 @@ function renderCrossDB(/* entries arg unused — we query allEntries directly */
       borderWidth: 1,
     };
   });
-
-  var metricLabel = filterState.metric
-    ? formatMetricName(filterState.metric)
-    : 'Value';
-
-  // Build subtitle when not all databases are shown
-  var missingNote = '';
-  if (dbsWithBaseline.length < DATABASE_ORDER.length) {
-    var missing = DATABASE_ORDER.filter(function (db) {
-      return dbsWithBaseline.indexOf(db) < 0;
-    }).map(formatDatabaseName);
-    missingNote = 'Not available: ' + missing.join(', ');
-  }
 
   chartInstance = new Chart(dom.canvas, {
     type: 'bar',
@@ -923,14 +919,7 @@ function renderCrossDB(/* entries arg unused — we query allEntries directly */
             + ' \u2014 % vs Sequential',
           font: { size: 14, weight: '600', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
           color: '#1c1917',
-          padding: { bottom: missingNote ? 4 : 16 },
-        },
-        subtitle: {
-          display: !!missingNote,
-          text: missingNote,
-          font: { size: 11, style: 'italic', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
-          color: '#78716c',
-          padding: { bottom: 12 },
+          padding: { bottom: 16 },
         },
         legend: {
           display: true,
@@ -953,12 +942,8 @@ function renderCrossDB(/* entries arg unused — we query allEntries directly */
               var entry = byDB[db] && byDB[db][kt];
               var baseline = byDB[db] && byDB[db].SEQUENTIAL;
               var lines = [ctx.dataset.label + ': ' + sign + formatNumber(pct) + '%'];
-              if (entry) {
-                lines.push('Actual: ' + formatNumber(entry.median));
-              }
-              if (baseline) {
-                lines.push('Baseline (Sequential): ' + formatNumber(baseline.median));
-              }
+              if (entry) lines.push('Actual: ' + formatNumber(entry.median));
+              if (baseline) lines.push('Baseline (Sequential): ' + formatNumber(baseline.median));
               return lines;
             },
           },
