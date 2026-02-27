@@ -42,10 +42,19 @@ var CassandraConfig = Config{
 	WaitForReady: cassandra.WaitForReady,
 }
 
+// composeCmd returns the appropriate docker compose command.
+// Prefers "docker compose" (V2 plugin); falls back to "docker-compose" (V1 binary).
+func composeCmd(composeFile string, args ...string) *exec.Cmd {
+	if exec.Command("docker", "compose", "version").Run() == nil {
+		return exec.Command("docker", append([]string{"compose", "-f", composeFile}, args...)...)
+	}
+	return exec.Command("docker-compose", append([]string{"-f", composeFile}, args...)...)
+}
+
 func Start(cfg Config) {
 	fmt.Printf("Starting fresh %s container...\n", cfg.Name)
 
-	cmd := exec.Command("docker", "compose", "-f", cfg.ComposeFile, "up", "-d")
+	cmd := composeCmd(cfg.ComposeFile, "up", "-d")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Fatalf("Failed to start container: %v\nOutput: %s", err, string(output))
@@ -62,7 +71,7 @@ func Start(cfg Config) {
 func Stop(composeFile string) {
 	fmt.Println("\nCleaning up container...")
 
-	cmd := exec.Command("docker", "compose", "-f", composeFile, "down", "-v")
+	cmd := composeCmd(composeFile, "down", "-v")
 	// Ignore errors on cleanup - container might already be stopped
 	cmd.Run()
 
