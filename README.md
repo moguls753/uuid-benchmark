@@ -4,9 +4,21 @@ Benchmarks UUID types (UUIDv1, UUIDv4, UUIDv7, ULID non-monotonic, ULID monotoni
 
 ## Requirements
 
-- Go 1.25+
-- Docker & Docker Compose
-- Linux (for I/O metrics)
+| Requirement | Minimum | Notes |
+|---|---|---|
+| Go | 1.22 | Needed on the host to build the benchmark binary and the workload binary |
+| Docker | 20.10 | Must be able to run containers with `--cpus` and `--memory` flags |
+| Docker Compose | V1 ≥ 1.29 (`docker-compose`) **or** V2 plugin (`docker compose`) | Either works |
+| Linux | kernel ≥ 5.10 | cgroup v2 required for container-isolated I/O metrics |
+| Disk space | ≥ 20 GB free | Each database image + volumes can reach several GB; images are rebuilt per run |
+| RAM | ≥ 8 GB | PostgreSQL and MongoDB containers are configured with 8 GB memory limits |
+| Internet access | — | First run fetches Docker base images and builds pgx_ulid from source |
+
+**cgroup v2 check:**
+```bash
+mount | grep cgroup2   # should show a cgroup2 mount
+```
+If cgroup v2 is not mounted, I/O metrics will be zeroed out but all other metrics will work normally.
 
 ## Build & Run
 
