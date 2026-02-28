@@ -15,14 +15,14 @@ Testing SEQUENTIAL (5 runs)
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.721s
+Inserted 100000 records in 1m17.852s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.92%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.645s
-Read throughput: 15047.27 ops/sec
+Completed 100000 reads in 22.295s
+Read throughput: 4485.11 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -33,14 +33,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.71s
+Inserted 100000 records in 1m17.349s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.92%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.604s
-Read throughput: 15141.93 ops/sec
+Completed 100000 reads in 22.715s
+Read throughput: 4402.28 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -51,14 +51,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.72s
+Inserted 100000 records in 1m16.39s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.92%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.699s
-Read throughput: 14925.94 ops/sec
+Completed 100000 reads in 20.76s
+Read throughput: 4816.89 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -69,14 +69,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.744s
+Inserted 100000 records in 1m16.33s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.92%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.638s
-Read throughput: 15063.44 ops/sec
+Completed 100000 reads in 22.35s
+Read throughput: 4474.16 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -87,14 +87,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.724s
+Inserted 100000 records in 1m15.107s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.92%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.596s
-Read throughput: 15159.25 ops/sec
+Completed 100000 reads in 19.928s
+Read throughput: 5017.85 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -108,14 +108,14 @@ Testing UUIDV4 (5 runs)
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.225s
+Inserted 100000 records in 1m27.819s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 13.14%
+Index fragmentation: 13.10%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.81s
-Read throughput: 14682.72 ops/sec
+Completed 100000 reads in 20.491s
+Read throughput: 4879.96 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -126,14 +126,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.08s
+Inserted 100000 records in 1m25.166s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 12.90%
+Index fragmentation: 13.06%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.314s
-Read throughput: 15837.00 ops/sec
+Completed 100000 reads in 22.827s
+Read throughput: 4380.77 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -144,14 +144,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.14s
+Inserted 100000 records in 1m25.272s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 13.15%
+Index fragmentation: 12.96%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.466s
-Read throughput: 15464.37 ops/sec
+Completed 100000 reads in 22.057s
+Read throughput: 4533.51 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -162,14 +162,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.157s
+Inserted 100000 records in 1m25.792s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 12.95%
+Index fragmentation: 13.13%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.418s
-Read throughput: 15578.85 ops/sec
+Completed 100000 reads in 21.896s
+Read throughput: 4567.03 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -180,14 +180,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.078s
+Inserted 100000 records in 1m24.624s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 12.92%
+Index fragmentation: 13.04%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.376s
-Read throughput: 15683.51 ops/sec
+Completed 100000 reads in 22.617s
+Read throughput: 4421.40 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -201,14 +201,14 @@ Testing UUIDV7 (5 runs)
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.727s
+Inserted 100000 records in 1m15.239s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.458s
-Read throughput: 15484.03 ops/sec
+Completed 100000 reads in 23.311s
+Read throughput: 4289.79 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -219,14 +219,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.843s
+Inserted 100000 records in 1m13.971s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.751s
-Read throughput: 14812.38 ops/sec
+Completed 100000 reads in 23.032s
+Read throughput: 4341.62 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -237,14 +237,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.872s
+Inserted 100000 records in 1m24.56s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.741s
-Read throughput: 14833.33 ops/sec
+Completed 100000 reads in 20.292s
+Read throughput: 4927.95 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -255,14 +255,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.835s
+Inserted 100000 records in 1m23.442s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.61s
-Read throughput: 15128.31 ops/sec
+Completed 100000 reads in 19.518s
+Read throughput: 5123.25 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -273,14 +273,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.91s
+Inserted 100000 records in 1m23.486s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.846s
-Read throughput: 14605.95 ops/sec
+Completed 100000 reads in 18.996s
+Read throughput: 5264.06 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -294,14 +294,14 @@ Testing ULID (5 runs)
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.086s
+Inserted 100000 records in 1m31.474s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 12.94%
+Index fragmentation: 12.77%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.82s
-Read throughput: 14662.01 ops/sec
+Completed 100000 reads in 20.906s
+Read throughput: 4783.16 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -312,14 +312,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.096s
+Inserted 100000 records in 1m32.269s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 12.81%
+Index fragmentation: 13.01%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.748s
-Read throughput: 14817.68 ops/sec
+Completed 100000 reads in 21.304s
+Read throughput: 4693.90 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -330,14 +330,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.05s
+Inserted 100000 records in 1m29.118s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 12.89%
+Index fragmentation: 12.69%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.89s
-Read throughput: 14513.11 ops/sec
+Completed 100000 reads in 21.72s
+Read throughput: 4603.99 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -348,14 +348,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.129s
+Inserted 100000 records in 1m31.674s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 13.10%
+Index fragmentation: 13.02%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.765s
-Read throughput: 14780.03 ops/sec
+Completed 100000 reads in 21.491s
+Read throughput: 4653.11 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -366,14 +366,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 3.069s
+Inserted 100000 records in 1m28.14s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 12.99%
+Index fragmentation: 13.06%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.771s
-Read throughput: 14767.40 ops/sec
+Completed 100000 reads in 22.068s
+Read throughput: 4531.29 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -387,14 +387,14 @@ Testing ULID_MONOTONIC (5 runs)
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.842s
+Inserted 100000 records in 1m19.615s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.789s
-Read throughput: 14728.47 ops/sec
+Completed 100000 reads in 21.808s
+Read throughput: 4585.47 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -405,14 +405,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.851s
+Inserted 100000 records in 1m19.726s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.762s
-Read throughput: 14787.30 ops/sec
+Completed 100000 reads in 20.355s
+Read throughput: 4912.75 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -423,14 +423,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.828s
+Inserted 100000 records in 1m20.343s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.58s
-Read throughput: 15195.86 ops/sec
+Completed 100000 reads in 22.091s
+Read throughput: 4526.54 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -441,14 +441,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.675s
+Inserted 100000 records in 1m16.972s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.422s
-Read throughput: 15571.06 ops/sec
+Completed 100000 reads in 22.685s
+Read throughput: 4408.05 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -459,14 +459,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.671s
+Inserted 100000 records in 1m18s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.291s
-Read throughput: 15894.11 ops/sec
+Completed 100000 reads in 20.175s
+Read throughput: 4956.42 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -480,14 +480,14 @@ Testing UUIDV1 (5 runs)
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.738s
+Inserted 100000 records in 1m17.119s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.375s
-Read throughput: 15684.45 ops/sec
+Completed 100000 reads in 21.251s
+Read throughput: 4705.59 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -498,14 +498,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.724s
+Inserted 100000 records in 1m17.497s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.577s
-Read throughput: 15202.48 ops/sec
+Completed 100000 reads in 22.895s
+Read throughput: 4367.69 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -516,14 +516,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.854s
+Inserted 100000 records in 1m17.335s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
-Index fragmentation: 0.97%
+Index fragmentation: 1.27%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.878s
-Read throughput: 14537.86 ops/sec
+Completed 100000 reads in 20.426s
+Read throughput: 4895.53 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -534,14 +534,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.882s
+Inserted 100000 records in 1m17.974s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.799s
-Read throughput: 14707.76 ops/sec
+Completed 100000 reads in 18.354s
+Read throughput: 5448.27 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -552,14 +552,14 @@ done
 Waiting for MySQL to initialize...
 Container ready
 Inserting 100000 records to create index...
-Inserted 100000 records in 2.82s
+Inserted 100000 records in 1m18.375s
 Measuring fragmentation...
 Warning: Could not count page splits: page split counts not captured
 Index fragmentation: 0.97%
 Resetting MySQL statistics...
 Running 100000 point lookups...
-Completed 100000 reads in 6.702s
-Read throughput: 14920.20 ops/sec
+Completed 100000 reads in 21.021s
+Read throughput: 4757.06 ops/sec
 Measuring buffer pool hit ratios...
 Warning: Could not count page splits: page split counts not captured
 
@@ -575,23 +575,23 @@ Read Throughput (ops/sec)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │    15063 │    15068 │       93 │    14926 │    15159 │     0.6 │
-│ UUIDV4         │    15579 │    15449 │      450 │    14683 │    15837 │     2.9 │
-│ UUIDV7         │    14833 │    14973 │      341 │    14606 │    15484 │     2.3 │
-│ ULID           │    14767 │    14708 │      123 │    14513 │    14818 │     0.8 │
-│ ULID_MONOTONIC │    15196 │    15235 │      501 │    14728 │    15894 │     3.3 │
-│ UUIDV1         │    14920 │    15011 │      451 │    14538 │    15684 │     3.0 │
+│ SEQUENTIAL     │     4485 │     4639 │      266 │     4402 │     5018 │     5.7 │
+│ UUIDV4         │     4534 │     4557 │      196 │     4381 │     4880 │     4.3 │
+│ UUIDV7         │     4928 │     4789 │      449 │     4290 │     5264 │     9.4 │
+│ ULID           │     4653 │     4653 │       95 │     4531 │     4783 │     2.0 │
+│ ULID_MONOTONIC │     4585 │     4678 │      243 │     4408 │     4956 │     5.2 │
+│ UUIDV1         │     4757 │     4835 │      394 │     4368 │     5448 │     8.1 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       +3.4% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV7         │       -1.5% │   0.3472 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │       -2.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +0.9% │   0.6015 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       -1.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +1.1% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +9.9% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +3.7% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +2.2% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +6.1% │   0.6015 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Fragmentation (%)
@@ -599,20 +599,20 @@ Fragmentation (%)
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
 │ SEQUENTIAL     │     0.92 │     0.92 │     0.00 │     0.92 │     0.92 │     0.0 │
-│ UUIDV4         │    12.95 │    13.01 │     0.12 │    12.90 │    13.15 │     0.9 │
+│ UUIDV4         │    13.06 │    13.06 │     0.06 │    12.96 │    13.13 │     0.5 │
 │ UUIDV7         │     0.97 │     0.97 │     0.00 │     0.97 │     0.97 │     0.0 │
-│ ULID           │    12.94 │    12.95 │     0.11 │    12.81 │    13.10 │     0.9 │
+│ ULID           │    13.01 │    12.91 │     0.17 │    12.69 │    13.06 │     1.3 │
 │ ULID_MONOTONIC │     0.97 │     0.97 │     0.00 │     0.97 │     0.97 │     0.0 │
-│ UUIDV1         │     0.97 │     0.97 │     0.00 │     0.97 │     0.97 │     0.0 │
+│ UUIDV1         │     0.97 │     1.03 │     0.13 │     0.97 │     1.27 │    13.0 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │    +1314.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV4         │    +1326.4% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs UUIDV7         │       +6.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID           │    +1313.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │    +1321.6% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID_MONOTONIC │       +6.0% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs UUIDV1         │       +6.0% │   0.0090 │ No        │ No overlap    │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
@@ -621,12 +621,12 @@ Cache Hit Ratio
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9982 │     0.0 │
+│ SEQUENTIAL     │   0.9982 │   0.9982 │   0.0000 │   0.9981 │   0.9982 │     0.0 │
 │ UUIDV4         │   0.9985 │   0.9985 │   0.0000 │   0.9985 │   0.9985 │     0.0 │
-│ UUIDV7         │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9981 │     0.0 │
+│ UUIDV7         │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9982 │     0.0 │
 │ ULID           │   0.9985 │   0.9985 │   0.0000 │   0.9985 │   0.9985 │     0.0 │
-│ ULID_MONOTONIC │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9981 │     0.0 │
-│ UUIDV1         │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9981 │     0.0 │
+│ ULID_MONOTONIC │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9982 │     0.0 │
+│ UUIDV1         │   0.9982 │   0.9982 │   0.0000 │   0.9982 │   0.9982 │     0.0 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
@@ -634,22 +634,22 @@ Statistical Comparisons (vs SEQUENTIAL):
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
 │ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       -0.0% │   0.0758 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -0.0% │   0.0472 │ Yes       │ * (p<0.05)    │
 │ SEQUENTIAL vs ULID           │       +0.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       -0.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.0% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.1172 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Index Hit Ratio
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9982 │     0.0 │
+│ SEQUENTIAL     │   0.9982 │   0.9982 │   0.0000 │   0.9981 │   0.9982 │     0.0 │
 │ UUIDV4         │   0.9985 │   0.9985 │   0.0000 │   0.9985 │   0.9985 │     0.0 │
-│ UUIDV7         │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9981 │     0.0 │
+│ UUIDV7         │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9982 │     0.0 │
 │ ULID           │   0.9985 │   0.9985 │   0.0000 │   0.9985 │   0.9985 │     0.0 │
-│ ULID_MONOTONIC │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9981 │     0.0 │
-│ UUIDV1         │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9981 │     0.0 │
+│ ULID_MONOTONIC │   0.9981 │   0.9981 │   0.0000 │   0.9981 │   0.9982 │     0.0 │
+│ UUIDV1         │   0.9982 │   0.9982 │   0.0000 │   0.9982 │   0.9982 │     0.0 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
@@ -657,79 +657,79 @@ Statistical Comparisons (vs SEQUENTIAL):
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
 │ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       -0.0% │   0.0758 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -0.0% │   0.0472 │ Yes       │ * (p<0.05)    │
 │ SEQUENTIAL vs ULID           │       +0.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       -0.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.0% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.1172 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Latency P50 (µs)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │       60 │       60 │        1 │       60 │       61 │     0.9 │
-│ UUIDV4         │       60 │       60 │        1 │       59 │       62 │     2.0 │
-│ UUIDV7         │       61 │       61 │        1 │       60 │       62 │     1.6 │
-│ ULID           │       63 │       63 │        1 │       62 │       63 │     0.9 │
-│ ULID_MONOTONIC │       61 │       61 │        2 │       59 │       62 │     2.5 │
-│ UUIDV1         │       61 │       61 │        1 │       59 │       62 │     2.1 │
+│ SEQUENTIAL     │      220 │      220 │       10 │      203 │      228 │     4.6 │
+│ UUIDV4         │      227 │      223 │        8 │      209 │      227 │     3.5 │
+│ UUIDV7         │      206 │      211 │       20 │      191 │      235 │     9.5 │
+│ ULID           │      219 │      218 │        6 │      209 │      224 │     2.5 │
+│ ULID_MONOTONIC │      223 │      221 │        8 │      211 │      232 │     3.7 │
+│ UUIDV1         │      218 │      212 │       16 │      187 │      227 │     7.4 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.3472 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV7         │       +1.7% │   0.3472 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │       +5.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +1.7% │   0.7540 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       +1.7% │   0.5309 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +3.2% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -6.4% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -0.5% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +1.4% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -0.9% │   0.3472 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Latency P95 (µs)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │       90 │       90 │        0 │       89 │       90 │     0.5 │
-│ UUIDV4         │       82 │       84 │        5 │       81 │       93 │     5.9 │
-│ UUIDV7         │       90 │       89 │        4 │       83 │       93 │     4.2 │
-│ ULID           │       90 │       91 │        1 │       90 │       92 │     1.0 │
-│ ULID_MONOTONIC │       86 │       86 │        4 │       80 │       90 │     5.1 │
-│ UUIDV1         │       89 │       89 │        5 │       82 │       94 │     5.2 │
+│ SEQUENTIAL     │      261 │      257 │        8 │      243 │      263 │     3.2 │
+│ UUIDV4         │      262 │      262 │        1 │      261 │      263 │     0.3 │
+│ UUIDV7         │      256 │      253 │       10 │      241 │      266 │     4.0 │
+│ ULID           │      263 │      263 │        8 │      256 │      273 │     2.9 │
+│ ULID_MONOTONIC │      252 │      257 │       14 │      248 │      282 │     5.5 │
+│ UUIDV1         │      254 │      252 │       10 │      238 │      262 │     4.0 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       -8.9% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.8345 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │       +0.0% │   0.1745 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID_MONOTONIC │       -4.4% │   0.1745 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       -1.1% │   0.6761 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +0.4% │   0.2101 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -1.9% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.8% │   0.2101 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -3.4% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -2.7% │   0.3472 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Latency P99 (µs)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      122 │      122 │        2 │      121 │      124 │     1.2 │
-│ UUIDV4         │      113 │      115 │        9 │      106 │      131 │     8.2 │
-│ UUIDV7         │      125 │      124 │        8 │      111 │      130 │     6.1 │
-│ ULID           │      125 │      124 │        2 │      121 │      126 │     1.6 │
-│ ULID_MONOTONIC │      120 │      116 │        8 │      106 │      122 │     6.6 │
-│ UUIDV1         │      124 │      124 │        7 │      113 │      132 │     5.7 │
+│ SEQUENTIAL     │      317 │      323 │       46 │      258 │      374 │    14.4 │
+│ UUIDV4         │      325 │      338 │       37 │      305 │      398 │    11.0 │
+│ UUIDV7         │      300 │      294 │       22 │      269 │      322 │     7.5 │
+│ ULID           │      314 │      310 │       20 │      284 │      330 │     6.5 │
+│ ULID_MONOTONIC │      277 │      296 │       30 │      272 │      338 │    10.0 │
+│ UUIDV1         │      300 │      291 │       19 │      270 │      310 │     6.5 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       -7.4% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV7         │       +2.5% │   0.1745 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │       +2.5% │   0.1745 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID_MONOTONIC │       -1.6% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       +1.6% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +2.5% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -5.4% │   0.2963 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -0.9% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -12.6% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -5.4% │   0.1745 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Read IOPS
@@ -759,23 +759,23 @@ Write IOPS
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      170 │      179 │       20 │      169 │      214 │    11.1 │
-│ UUIDV4         │      318 │      315 │        9 │      299 │      323 │     3.0 │
-│ UUIDV7         │      211 │      204 │       16 │      176 │      215 │     7.9 │
-│ ULID           │      302 │      301 │        3 │      297 │      303 │     0.9 │
-│ ULID_MONOTONIC │      179 │      189 │       20 │      170 │      210 │    10.4 │
-│ UUIDV1         │      209 │      204 │       16 │      176 │      216 │     7.9 │
+│ SEQUENTIAL     │      156 │      160 │       10 │      152 │      178 │     6.5 │
+│ UUIDV4         │      177 │      177 │        8 │      168 │      187 │     4.4 │
+│ UUIDV7         │      160 │      162 │        7 │      154 │      170 │     4.0 │
+│ ULID           │      160 │      161 │        6 │      155 │      172 │     4.0 │
+│ ULID_MONOTONIC │      169 │      168 │        7 │      158 │      175 │     4.2 │
+│ UUIDV1         │      174 │      171 │        9 │      156 │      178 │     5.2 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      +86.7% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │      +23.9% │   0.0758 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │      +77.6% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +5.3% │   0.1745 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │      +22.9% │   0.0758 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      +14.0% │   0.0472 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV7         │       +3.0% │   0.4647 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +2.8% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +8.6% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │      +12.0% │   0.1745 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Read Throughput (MB/s)
@@ -805,27 +805,27 @@ Write Throughput (MB/s)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      3.4 │      3.6 │      0.4 │      3.4 │      4.3 │    11.5 │
-│ UUIDV4         │      6.5 │      6.4 │      0.2 │      6.1 │      6.6 │     2.9 │
-│ UUIDV7         │      4.3 │      4.1 │      0.4 │      3.5 │      4.4 │     8.5 │
-│ ULID           │      6.1 │      6.1 │      0.1 │      6.0 │      6.2 │     0.8 │
-│ ULID_MONOTONIC │      3.6 │      3.8 │      0.4 │      3.4 │      4.3 │    10.7 │
-│ UUIDV1         │      4.2 │      4.1 │      0.3 │      3.5 │      4.4 │     8.1 │
+│ SEQUENTIAL     │      3.6 │      3.7 │      0.2 │      3.5 │      4.1 │     6.8 │
+│ UUIDV4         │      4.2 │      4.1 │      0.2 │      3.9 │      4.3 │     4.7 │
+│ UUIDV7         │      3.7 │      3.8 │      0.1 │      3.6 │      3.9 │     3.6 │
+│ ULID           │      3.7 │      3.7 │      0.1 │      3.6 │      4.0 │     4.0 │
+│ ULID_MONOTONIC │      3.9 │      3.9 │      0.2 │      3.7 │      4.0 │     4.0 │
+│ UUIDV1         │      4.0 │      3.9 │      0.2 │      3.6 │      4.1 │     5.5 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      +88.8% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │      +24.6% │   0.0758 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │      +79.4% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +4.9% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │      +23.7% │   0.0758 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      +15.9% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV7         │       +3.6% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +3.2% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +8.7% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │      +12.1% │   0.1745 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Exporting results to CSV...
-  Statistical summary: /home/eike/dev/studium/uuid-benchmark/results/mysql_100k_read-performance_1conn.csv
-  Raw runs data: /home/eike/dev/studium/uuid-benchmark/results/mysql_100k_read-performance_1conn_raw.csv
+  Statistical summary: /home/aaeirack/uuid-benchmark/results/mysql_100k_read-performance_1conn.csv
+  Raw runs data: /home/aaeirack/uuid-benchmark/results/mysql_100k_read-performance_1conn_raw.csv
 
 All scenarios completed successfully!
