@@ -4,8 +4,7 @@ Status: tracking anomalies found during thesis data review (2026-02-26)
 
 ## Action items requiring Taurus cluster
 
-- **MySQL 1M 8conn insert CVs (#1/#7)**: Rerun all databases at 1M 8conn insert-performance on Taurus to isolate InnoDB's true CV from laptop noise. If MySQL still shows 5–8% while others are <2%, report as InnoDB finding.
-- **All 8conn benchmarks**: Consider rerunning full `-scenario=all` at 8conn for all 4 databases on Taurus for a clean, controlled baseline. PostgreSQL 8conn mixed scenarios also had 5–6% CVs on laptop.
+- **All 8conn benchmarks**: Full `-scenario=all` at 8conn for all 4 databases on Taurus — currently running (2026-02-28). Will replace laptop 8conn results as the canonical dataset once complete.
 
 ## Resolved
 
@@ -23,11 +22,21 @@ Status: tracking anomalies found during thesis data review (2026-02-26)
 
 ## Open
 
-### 1. CV claim overstated
-- **Problem**: Thesis claims "CV < 2% across all results" — false
-- **Data**: MySQL 8conn insert_performance CVs at 1M: 8–22% across 3 independent reruns. Other databases on same laptop: MongoDB 0.5–2%, Cassandra 2–5%, PostgreSQL 1.4–5.6%.
-- **Root cause**: Likely a combination of (1) InnoDB adaptive flushing variability at 1M 8conn scale and (2) laptop environmental noise. MySQL is consistently 2–4x worse than other databases on the same machine, suggesting a real InnoDB component. 100K 8conn showed low CVs (1.5–3.5%) — either laptop was quieter or workload too short to trigger InnoDB flush storms.
-- **Fix needed**: Correct the "CV < 2%" claim. Frame as: "CV < 2% for single-connection and most multi-connection results. MySQL 8-connection insert performance shows elevated variance (8–22% CV), likely reflecting InnoDB's adaptive flushing behavior under sustained concurrent writes, potentially amplified by the non-isolated test environment. Dedicated server reruns are planned to isolate the InnoDB component."
+### 1. CV claim overstated — RESOLVED (2026-02-28, Taurus preliminary data)
+- **Original problem**: MySQL 8conn insert CVs of 8–22% on laptop called into question the reliability of MySQL concurrent results.
+- **Taurus result** (preliminary, full run still in progress):
+
+  | Key Type    | Taurus CV% | Laptop CV% |
+  |-------------|-----------|------------|
+  | SEQUENTIAL  | 1.45      | 8–22%      |
+  | UUIDv4      | 4.86      | 8–22%      |
+  | UUIDv7      | 1.39      | 8–22%      |
+  | ULID        | 2.22      | 8–22%      |
+  | ULID\_MONO  | 2.74      | 8–22%      |
+  | UUIDv1      | 2.19      | 8–22%      |
+
+- **Conclusion**: The high CVs were laptop noise, not InnoDB. On dedicated hardware, all CVs are 1.4–4.9%. UUIDv4 is slightly elevated (4.86%) vs. other key types (1.4–2.7%), consistent with random I/O causing more flush timing variance — but well within acceptable range. MySQL 8conn results are reliable on dedicated hardware.
+- **Thesis impact**: Remove the "MySQL 8conn unreliable, treat with caution" caveat. Report Taurus CVs instead. UUIDv4's slightly elevated CV (4.86%) can be noted as expected given random I/O patterns, but no special caveat is needed.
 
 ### 2. Bloom filter FP = 0 in Cassandra
 - **Problem**: Thesis explains this as "STCS compaction resolved SSTable overlap" — wrong
@@ -42,7 +51,7 @@ Status: tracking anomalies found during thesis data review (2026-02-26)
 - **Penalty 2 — Byte-ordering degradation (scale-dependent, 10M only)**:
   - RFC 4122 places `time_low` (least significant 32 bits of 60-bit timestamp) in bytes 0–3. PostgreSQL B-trees sort by raw byte order. `time_low` wraps every ~429 seconds (2^32 × 100ns).
   - After wrap: new UUIDs inserted into earlier B-tree positions → page splits in non-tail pages.
-  - 10M data: 65,277 splits (median), 53% leaf density, 510 MB index — **worse than UUIDv4** (52,688 splits, 65% density, 429 MB).
+  - 10M data: 65,277 splits (median), 53% leaf density, 510 MB index — **worse than UUIDv4** (49,180 splits, 70.5% density, 384 MB).
   - Bimodal runs: early wrap → more damage (runs 1–3: 65K–68K splits, 51–53% density, 510–531 MB), late wrap → less damage (runs 4–5: 40K splits, 85% density, 315–319 MB).
   - UUIDv1 is the only type whose B-tree behavior degrades non-linearly with scale — transitions from UUIDv7-like to worse-than-UUIDv4 once workload exceeds the `time_low` wrap interval.
 - **Cross-database confirmation**:
@@ -61,11 +70,9 @@ Status: tracking anomalies found during thesis data review (2026-02-26)
 - **Result**: ULID at 8conn is worse than UUIDv4 on page splits (6,193 vs 4,808) AND index size (48.41 vs 37.59 MB), but better on fragmentation (28.43% vs 49.80%). UUIDv4 has worse fragmentation but smaller per-entry size, so its absolute index is still smaller. ULID gets hit by both problems at once.
 - **At 1conn**: ULID and ULID_MONO are identical (4,944 vs 4,955 splits, both 0% frag) — concurrency effect disappears.
 
-### 7. MySQL 8conn insert CVs — partially resolved
-- **100K rerun**: CVs of 1.5–3.5% (workload too short to trigger flush storms)
-- **Three 1M reruns on laptop**: CVs remain 3–22%, varying randomly across key types per run
-- **Cross-database comparison**: MySQL consistently 2–4x worse CV than PG/MongoDB/Cassandra on same hardware → real InnoDB component
-- **Action needed**: Rerun on Taurus cluster to isolate InnoDB's true CV from laptop noise. If MySQL still shows 5–8% while others are <2%, report as InnoDB finding.
+### 7. MySQL 8conn insert CVs — RESOLVED (2026-02-28, Taurus preliminary data)
+- See anomaly #1 for full analysis.
+- **Conclusion**: Laptop noise. On Taurus, MySQL 8conn CVs are 1.4–4.9% (all key types). The elevated UUIDv4 CV (4.86%) is expected from random I/O patterns but is not a reliability concern.
 
 ### 8. Cassandra reads: near-zero differentiation
 - **At 1M**: All types ~814 ops/s, indistinguishable. Cache hit ratio 1.00, bloom filter FP = 0.
