@@ -659,6 +659,27 @@ function deriveValidOptions(key, visible) {
     });
   }
 
+  // Scale tab: only show option values that have data at 2+ different scales,
+  // otherwise the line chart has <=1 point and is meaningless.
+  if (activeTab === 'scale' && (key === 'connections' || key === 'database')) {
+    opts = opts.filter(function (optVal) {
+      var scales = {};
+      allEntries.forEach(function (e) {
+        if (String(e[key]) !== String(optVal)) return;
+        // Check all other visible filters except the one we're evaluating
+        var match = true;
+        visible.forEach(function (k) {
+          if (k === key) return;
+          if (filterState[k] != null && String(e[k]) !== String(filterState[k])) {
+            match = false;
+          }
+        });
+        if (match) scales[e.scale] = true;
+      });
+      return Object.keys(scales).length >= 2;
+    });
+  }
+
   // Sort
   opts.sort(function (a, b) {
     return sortComparator(key, a, b);
