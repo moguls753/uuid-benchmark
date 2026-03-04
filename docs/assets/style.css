@@ -777,13 +777,17 @@ a:hover { color: var(--text); }
 .annotation-progress {
   font-size: 11px;
   color: var(--text-faint);
-  margin-left: 4px;
+  padding: 4px 8px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  line-height: 1;
 }
 
 .annotation-nav {
   margin-left: auto;
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 0;
 }
 
 .annotation-prev,
@@ -792,12 +796,31 @@ a:hover { color: var(--text); }
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
-  padding: 2px 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  transition: background 0.15s, color 0.15s;
+}
+
+.annotation-prev {
+  border-radius: 3px 0 0 3px;
+  border-right: none;
+}
+
+.annotation-next {
+  border-radius: 0 3px 3px 0;
 }
 
 .annotation-prev:hover,
 .annotation-next:hover {
   color: var(--text);
+  background: var(--bg-off);
+}
+
+.annotation-prev:disabled,
+.annotation-next:disabled {
+  color: var(--text-faint);
+  cursor: default;
+  background: transparent;
 }
 
 .annotation-finding {
