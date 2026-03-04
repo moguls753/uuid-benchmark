@@ -334,11 +334,6 @@ a:hover { color: var(--text); }
   margin-bottom: 8px;
 }
 
-.kpi-chart-wrap {
-  height: 36px;
-  width: 100px;
-}
-
 /* Database cards */
 .db-section {
   padding: 20px 0;

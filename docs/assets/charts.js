@@ -348,28 +348,3 @@ export function buildScaleChart(entries, metric) {
   };
 }
 
-// --- Mini bar chart for KPI cards (3 tiny bars) ---
-export function buildMiniBarChart(values, colors) {
-  return {
-    type: 'bar',
-    data: {
-      labels: values.map((_, i) => i),
-      datasets: [{
-        data: values.map(v => v ?? 0),
-        backgroundColor: colors || ['#cccccc', '#cccccc', '#cccccc'],
-        borderWidth: 0,
-        barPercentage: 0.8,
-      }],
-    },
-    options: {
-      responsive: false,
-      maintainAspectRatio: false,
-      animation: false,
-      plugins: { legend: { display: false }, tooltip: { enabled: false } },
-      scales: {
-        x: { display: false },
-        y: { display: false, beginAtZero: true },
-      },
-    },
-  };
-}
