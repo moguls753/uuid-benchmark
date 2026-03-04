@@ -6,7 +6,7 @@
 import {
   KEY_TYPE_COLORS, KEY_TYPE_ORDER, KEY_TYPE_SHORT, KEY_TYPE_LABELS,
   DATABASE_COLORS, DATABASE_ORDER, DATABASE_LABELS,
-  EXPLORER_PANELS, PANEL_CONFIG, METRIC_INFO, VIEW_FILTERS,
+  EXPLORER_PANELS, PANEL_CONFIG, METRIC_GROUPS, METRIC_INFO, VIEW_FILTERS,
   formatKeyTypeName, formatDatabaseName,
 } from './constants.js';
 import {
@@ -23,6 +23,7 @@ import {
 // --- State ---
 let activeMode = 'cross-uuid';
 let chartInstances = [null, null, null, null];
+let panelMetricOverrides = [null, null, null, null];
 let mobileShowAll = false;
 let skipAnnotationUpdate = false;
 
@@ -48,6 +49,7 @@ export function initExplorer(initialFilters, initialMode) {
   bindSubTabs();
   bindFilterEvents();
   bindPanelExpand();
+  bindPanelMetricSelects();
   bindAnnotationNav();
   bindMobileToggle();
   initFindingNavigation(activeMode);
@@ -88,6 +90,7 @@ function bindSubTabs() {
       if (mode === activeMode) return;
       activeMode = mode;
       closeChartModal();
+      panelMetricOverrides = [null, null, null, null];
       mobileShowAll = false;
 
       updateSubTabUI();
@@ -115,6 +118,7 @@ function bindFilterEvents() {
     if (!el) return;
     el.addEventListener('change', () => {
       filterState[key] = coerceFilterValue(key, el.value);
+      if (key === 'database') panelMetricOverrides = [null, null, null, null];
       cascadeFilters(key, activeMode, dom.filters);
       syncToCurrentFilters(activeMode);
       renderExplorer();
@@ -217,6 +221,44 @@ function bindPanelExpand() {
   });
 }
 
+// --- Panel metric selects ---
+function populatePanelSelects() {
+  dom.panels.forEach((panel, i) => {
+    const select = panel.querySelector('.panel-metric-select');
+    if (!select) return;
+    const currentVal = select.value;
+    select.innerHTML = '';
+    METRIC_GROUPS.forEach(group => {
+      const optgroup = document.createElement('optgroup');
+      optgroup.label = group.label;
+      group.metrics.forEach(key => {
+        if (!PANEL_CONFIG[key]) return;
+        const opt = document.createElement('option');
+        opt.value = key;
+        opt.textContent = PANEL_CONFIG[key].label;
+        optgroup.appendChild(opt);
+      });
+      select.appendChild(optgroup);
+    });
+    // Restore current selection
+    if (currentVal) select.value = currentVal;
+  });
+}
+
+function bindPanelMetricSelects() {
+  dom.panels.forEach((panel, i) => {
+    const select = panel.querySelector('.panel-metric-select');
+    if (!select) return;
+    select.addEventListener('change', () => {
+      const defaults = getDefaultPanelMetrics();
+      panelMetricOverrides[i] = select.value === defaults[i] ? null : select.value;
+      // Destroy and re-render just this panel
+      if (chartInstances[i]) { chartInstances[i].destroy(); chartInstances[i] = null; }
+      renderPanel(i, select.value);
+    });
+  });
+}
+
 // --- Annotation navigation ---
 function bindAnnotationNav() {
   const prevBtn = document.querySelector('#view-explorer .annotation-prev');
@@ -290,6 +332,7 @@ function updateMobileVisibility() {
 function renderExplorer() {
   destroyCharts();
   closeChartModal();
+  populatePanelSelects();
 
   const metrics = getPanelMetrics();
   let hasData = false;
@@ -314,27 +357,39 @@ function renderExplorer() {
   }
 }
 
-function getPanelMetrics() {
+const BTREE_METRICS = ['page_splits', 'fragmentation', 'avg_leaf_density'];
+const LSM_METRICS = ['sstable_count', 'bloom_filter_fp'];
+
+function getMetricNAReason(metric) {
+  const db = filterState.database;
+  if (db === 'cassandra' && BTREE_METRICS.includes(metric)) return 'B-tree only';
+  if (db !== 'cassandra' && LSM_METRICS.includes(metric)) return 'Cassandra only';
+  return 'N/A';
+}
+
+function getDefaultPanelMetrics() {
   const db = filterState.database;
   if (activeMode === 'cross-uuid' && db === 'cassandra') return EXPLORER_PANELS.cassandra;
   if (activeMode === 'scale') {
-    // For scale, check the selected database (if in cross-uuid/scale modes)
-    const scaleDb = filterState.database;
-    if (scaleDb === 'cassandra') return EXPLORER_PANELS.cassandra;
+    if (filterState.database === 'cassandra') return EXPLORER_PANELS.cassandra;
   }
   return EXPLORER_PANELS.default;
+}
+
+function getPanelMetrics() {
+  const defaults = getDefaultPanelMetrics();
+  return defaults.map((def, i) => panelMetricOverrides[i] || def);
 }
 
 function renderPanel(index, metric) {
   const panel = dom.panels[index];
   if (!panel) return false;
 
-  const label = panel.querySelector('.panel-label');
+  const select = panel.querySelector('.panel-metric-select');
   const unit = panel.querySelector('.panel-unit');
-  const canvas = panel.querySelector('canvas');
   const config = PANEL_CONFIG[metric];
 
-  if (label) label.textContent = config ? config.label : metric.toUpperCase();
+  if (select) select.value = metric;
   if (unit) unit.textContent = config ? config.unit : '';
 
   let chartConfig = null;
@@ -369,9 +424,10 @@ function renderPanel(index, metric) {
       });
       return true;
     } else {
-      // Show N/A state
+      // Show N/A state with context
       panel.classList.add('panel-empty');
-      chartContainer.innerHTML = '<div class="panel-na"><span class="panel-na-dash">&mdash;</span>N/A</div>';
+      const reason = getMetricNAReason(metric);
+      chartContainer.innerHTML = '<div class="panel-na"><span class="panel-na-dash">&mdash;</span>' + reason + '</div>';
       return false;
     }
   }
