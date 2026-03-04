@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UUID Benchmark</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7" defer></script>
   <script type="module" src="assets/app.js"></script>
@@ -56,28 +59,28 @@
           <div class="kpi-label">INSERT PENALTY</div>
           <div class="kpi-hero">&minus;13.6% to &minus;30%</div>
           <div class="kpi-context">UUIDv4 vs sequential</div>
-          <div class="kpi-chart-wrap"><canvas class="kpi-chart" width="80" height="30"></canvas></div>
+          <div class="kpi-chart-wrap"><canvas class="kpi-chart" width="100" height="36"></canvas></div>
         </div>
         <div class="kpi-card" data-finding="structural" tabindex="0" role="button" aria-label="View structural damage details">
           <div class="kpi-icon">&#9678;</div>
           <div class="kpi-label">STRUCTURAL DAMAGE</div>
           <div class="kpi-hero">50%</div>
-          <div class="kpi-context">leaf fragmentation, PG B-tree</div>
-          <div class="kpi-chart-wrap"><canvas class="kpi-chart" width="80" height="30"></canvas></div>
+          <div class="kpi-context">UUIDv4 leaf fragmentation, PostgreSQL</div>
+          <div class="kpi-chart-wrap"><canvas class="kpi-chart" width="100" height="36"></canvas></div>
         </div>
         <div class="kpi-card" data-finding="scale" tabindex="0" role="button" aria-label="View scale effect details">
           <div class="kpi-icon">&#9678;</div>
           <div class="kpi-label">SCALE EFFECT</div>
           <div class="kpi-hero">&minus;73%</div>
-          <div class="kpi-context">UUIDv4 at 10M, MySQL</div>
-          <div class="kpi-chart-wrap"><canvas class="kpi-chart" width="80" height="30"></canvas></div>
+          <div class="kpi-context">UUIDv4 throughput at 10M, MySQL</div>
+          <div class="kpi-chart-wrap"><canvas class="kpi-chart" width="100" height="36"></canvas></div>
         </div>
         <div class="kpi-card" data-finding="engine" tabindex="0" role="button" aria-label="View best balance details">
           <div class="kpi-icon">&#9678;</div>
           <div class="kpi-label">BEST BALANCE</div>
           <div class="kpi-hero">UUIDv7</div>
           <div class="kpi-context">across all databases</div>
-          <div class="kpi-chart-wrap"><canvas class="kpi-chart" width="80" height="30"></canvas></div>
+          <div class="kpi-chart-wrap"><canvas class="kpi-chart" width="100" height="36"></canvas></div>
         </div>
       </div>
     </section>

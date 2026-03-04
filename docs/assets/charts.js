@@ -1,6 +1,6 @@
 // ==========================================================================
 //  UUID Benchmark Dashboard — Chart.js Builders
-//  Monochrome terminal aesthetic: Courier New, #111 text, #ccc grid.
+//  Monochrome terminal aesthetic: JetBrains Mono, #111 text, #ccc grid.
 // ==========================================================================
 
 import {
@@ -9,7 +9,7 @@ import {
   formatKeyTypeName, formatDatabaseName, formatNumber, METRIC_LABELS,
 } from './constants.js';
 
-const CHART_FONT = '"Courier New", Courier, monospace';
+const CHART_FONT = '"JetBrains Mono", "Courier New", Courier, monospace';
 const CHART_ANIMATION = { duration: 300 };
 const CHART_GRID_STYLE = { color: 'rgba(0, 0, 0, 0.06)' };
 const CHART_BORDER_STYLE = { color: '#333333', display: true };
@@ -21,8 +21,8 @@ const TOOLTIP_CONFIG = {
   titleColor: '#111111',
   bodyColor: '#444444',
   cornerRadius: 0,
-  titleFont: { family: CHART_FONT, size: 11, weight: '700' },
-  bodyFont: { family: CHART_FONT, size: 10 },
+  titleFont: { family: CHART_FONT, size: 12, weight: '700' },
+  bodyFont: { family: CHART_FONT, size: 11 },
   padding: 8,
 };
 
@@ -70,7 +70,7 @@ function xScale() {
     grid: { display: false },
     border: CHART_BORDER_STYLE,
     ticks: {
-      font: { size: 10, family: CHART_FONT },
+      font: { size: 11, family: CHART_FONT },
       color: '#888888',
       maxRotation: 45,
       autoSkip: false,
@@ -85,7 +85,7 @@ function yScale(beginAtZero = true) {
     border: CHART_BORDER_STYLE,
     ticks: {
       maxTicksLimit: 6,
-      font: { size: 10, family: CHART_FONT },
+      font: { size: 11, family: CHART_FONT },
       color: '#888888',
     },
   };
@@ -338,7 +338,7 @@ export function buildScaleChart(entries, metric) {
           title: {
             display: true,
             text: 'DATASET SCALE',
-            font: { size: 10, weight: '700', family: CHART_FONT },
+            font: { size: 11, weight: '700', family: CHART_FONT },
             color: '#888888',
           },
         },
