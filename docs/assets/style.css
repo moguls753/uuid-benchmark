@@ -346,13 +346,14 @@ a:hover { color: var(--text); }
 
 .kpi-spark-labels {
   display: flex;
-  justify-content: space-between;
-  padding: 0 2px;
+  justify-content: space-around;
+  margin-top: 2px;
 }
 
 .kpi-spark-labels span {
   font-size: 8px;
   color: var(--text-faint);
+  text-align: center;
   letter-spacing: 0.5px;
 }
 
@@ -1011,7 +1012,123 @@ a:hover { color: var(--text); }
   }
 }
 
-/* --- 10. Reduced Motion -------------------------------------------------- */
+/* --- 10. Responsive: Large Display (1800px+) ----------------------------- */
+
+@media (min-width: 1800px) {
+  body {
+    font-size: 13px;
+  }
+
+  select {
+    font-size: 13px;
+  }
+
+  .site-brand {
+    font-size: 13px;
+  }
+
+  .site-subtitle {
+    font-size: 12px;
+  }
+
+  .nav-tab {
+    font-size: 12px;
+  }
+
+  .section-label {
+    font-size: 15px;
+  }
+
+  .kpi-hero {
+    font-size: 36px;
+  }
+
+  .kpi-label {
+    font-size: 12px;
+  }
+
+  .kpi-context {
+    font-size: 12px;
+  }
+
+  .kpi-spark-labels span {
+    font-size: 9px;
+  }
+
+  .db-name {
+    font-size: 13px;
+  }
+
+  .db-arch, .db-tool {
+    font-size: 12px;
+  }
+
+  .db-explore {
+    font-size: 12px;
+  }
+
+  .legend-strip {
+    font-size: 12px;
+  }
+
+  .explorer-methodology {
+    font-size: 12px;
+  }
+
+  .filter-group label {
+    font-size: 12px;
+  }
+
+  .explorer-tab {
+    font-size: 12px;
+  }
+
+  .panel-label {
+    font-size: 12px;
+  }
+
+  .panel-unit {
+    font-size: 12px;
+  }
+
+  .chart-panel .panel-chart {
+    height: 300px;
+  }
+
+  .annotation-finding {
+    font-size: 14px;
+  }
+
+  .annotation-explanation {
+    font-size: 13px;
+  }
+
+  .data-table {
+    font-size: 13px;
+  }
+
+  .data-table th {
+    font-size: 12px;
+  }
+
+  .methodology-line {
+    font-size: 12px;
+  }
+
+  .methodology-toggle {
+    font-size: 12px;
+  }
+
+  .methodology-detail {
+    font-size: 13px;
+  }
+
+  .methodology-detail h3 {
+    font-size: 12px;
+  }
+}
+
+/* --- 11. Reduced Motion -------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
