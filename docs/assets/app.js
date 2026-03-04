@@ -18,6 +18,28 @@ const KEY_TYPE_COLORS = {
   ULID_MONOTONIC: '#a855f7',
 };
 
+/** Dash patterns per key type for line charts (academic style differentiation) */
+const KEY_TYPE_DASH = {
+  SEQUENTIAL:     [],              // solid
+  OBJECTID:       [2, 3],          // dotted
+  UUIDV1:         [8, 4],          // dashed
+  UUIDV4:         [8, 4, 2, 4],   // dash-dot
+  UUIDV7:         [12, 4],        // long dash
+  ULID:           [4, 4],          // short dash
+  ULID_MONOTONIC: [8, 4, 2, 4, 2, 4], // dash-dot-dot
+};
+
+/** Point styles per key type for line charts */
+const KEY_TYPE_POINT_STYLE = {
+  SEQUENTIAL:     'circle',
+  OBJECTID:       'triangle',
+  UUIDV1:         'rect',
+  UUIDV4:         'rectRot',
+  UUIDV7:         'star',
+  ULID:           'crossRot',
+  ULID_MONOTONIC: 'cross',
+};
+
 const DATABASE_COLORS = {
   postgres:  '#336791',
   mysql:     '#00758f',
@@ -1270,9 +1292,11 @@ function renderScale(entries) {
       data: data,
       borderColor: color,
       backgroundColor: color,
-      borderWidth: 2,
-      pointRadius: 4,
-      pointHoverRadius: 6,
+      borderWidth: 2.5,
+      borderDash: KEY_TYPE_DASH[kt] || [],
+      pointRadius: 5,
+      pointHoverRadius: 8,
+      pointStyle: KEY_TYPE_POINT_STYLE[kt] || 'circle',
       pointBackgroundColor: color,
       pointBorderColor: '#fff',
       pointBorderWidth: 1.5,
@@ -1319,7 +1343,6 @@ function renderScale(entries) {
           position: 'bottom',
           labels: {
             usePointStyle: true,
-            pointStyle: 'circle',
             padding: 16,
             font: { size: 11, family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
             color: '#1c1917',
@@ -1369,6 +1392,7 @@ function renderScale(entries) {
             color: '#78716c',
           },
           ticks: {
+            maxTicksLimit: 8,
             font: { size: 10, family: '"JetBrains Mono", "SF Mono", "Consolas", monospace' },
             color: '#78716c',
           },

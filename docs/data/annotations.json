@@ -57,7 +57,7 @@
       "explanation": "The ULID read penalty is a PostgreSQL-specific artifact of the pgx_ulid extension's varlena storage format: each B-tree comparison dereferences a varlena pointer and detoasts the value, accumulating approximately 20 comparisons per point lookup. The ULID p50 read latency is 46 \u00b5s versus 42 \u00b5s for UUIDv4 and 39 \u00b5s for SEQUENTIAL. The larger ULID index (38.7 MB vs. 21.5 MB) additionally depresses the cache hit ratio to 0.88 vs. 0.96."
     },
     "postgres|read_performance|1m|1|cache_hit_ratio": {
-      "finding": "ULID and ULID-Monotonic depress the buffer pool hit ratio to 0.88 compared to 0.96 for SEQUENTIAL; UUIDv4 is intermediate at approximately 0.93.",
+      "finding": "ULID and ULID-Monotonic depress the buffer pool hit ratio to 0.88 compared to 0.96 for SEQUENTIAL; UUIDv4 is intermediate at 0.89.",
       "explanation": "The larger ULID index (38.7 MB vs. 21.5 MB for SEQUENTIAL) requires more buffer pool pages per lookup, reducing effective cache utilization. UUIDv4's 38.1 MB index similarly consumes more cache than the compact sequential baseline, though its fixed-width uuid storage avoids the per-comparison varlena overhead."
     },
     "mysql|read_performance|1m|1|throughput": {
@@ -65,7 +65,7 @@
       "explanation": "At 1M records the working set fits within InnoDB's 4 GB buffer pool, so all reads are served from cache. Structural differences between key types exert no measurable influence on throughput when the buffer pool fully covers the dataset."
     },
     "mongodb|read_performance|1m|1|throughput": {
-      "finding": "All UUID types fall within 98.2\u2013100.2% of the sequential baseline (17,159 ops/sec). ObjectID records 102.9%, marginally above the baseline and within expected measurement noise.",
+      "finding": "All UUID types fall within 98.2\u2013100.5% of the sequential baseline (17,159 ops/sec). ObjectID records 102.9%, marginally above the baseline and within expected measurement noise.",
       "explanation": "At 1M records the working set fits within WiredTiger's cache (~4 GB), so all reads are served from memory. Cache residency suppresses any structural differences between key types."
     },
     "cassandra|read_performance|1m|1|throughput": {
