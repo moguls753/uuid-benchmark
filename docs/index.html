@@ -41,13 +41,44 @@
         <button class="methodology-toggle" aria-expanded="false" aria-controls="methodology-detail">&#9656; Details</button>
       </p>
       <div id="methodology-detail" class="methodology-detail" hidden>
-        <h3>Measurement Tools</h3>
-        <p><strong>PostgreSQL:</strong> pgbench (built-in benchmarking tool) running inside the container via Unix socket. Latency percentiles from pgbench <code>--log</code>.</p>
-        <p><strong>MySQL, MongoDB, Cassandra:</strong> Custom Go workload binary (<code>cmd/workload/main.go</code>), compiled statically, copied into each container, executed via <code>docker exec</code>. Measures per-operation latency and calculates percentiles.</p>
-        <h3>I/O Measurement</h3>
-        <p>All databases use Linux cgroup v2 kernel accounting (<code>io.stat</code>) for container-isolated I/O metrics. Zero overhead &mdash; kernel-level, no sampling.</p>
-        <h3>Isolation</h3>
-        <p>Each UUID type runs in a fresh Docker container with clean volumes. No state carries over between key types. Containers: 4 CPUs, 8 GB memory.</p>
+        <div class="method-grid">
+          <div class="method-cell">
+            <h3>Experimental Design</h3>
+            <dl class="method-dl">
+              <div><dt>Matrix</dt><dd>6 key types &times; 4 databases &times; 5 scenarios</dd></div>
+              <div><dt>Scale tiers</dt><dd>100K &middot; 1M &middot; 10M records</dd></div>
+              <div><dt>Payload</dt><dd>1 KB binary (matches YCSB default)</dd></div>
+              <div><dt>Key storage</dt><dd>Native 16-byte binary in all databases</dd></div>
+            </dl>
+          </div>
+          <div class="method-cell">
+            <h3>Statistical Rigor</h3>
+            <dl class="method-dl">
+              <div><dt>Runs</dt><dd>5 per configuration, median reported</dd></div>
+              <div><dt>Stability</dt><dd>CV &lt; 2% (single-conn), &lt; 5% (concurrent)</dd></div>
+              <div><dt>Hypothesis</dt><dd>Mann-Whitney U test (&alpha; = 0.05) vs baseline</dd></div>
+              <div><dt>Validation</dt><dd>Cross-checked against YCSB (go-ycsb)</dd></div>
+            </dl>
+          </div>
+          <div class="method-cell">
+            <h3>Isolation &amp; Tuning</h3>
+            <dl class="method-dl">
+              <div><dt>Containers</dt><dd>Fresh per key type &mdash; 4 CPUs, 8 GB RAM</dd></div>
+              <div><dt>PostgreSQL</dt><dd><code>checkpoint_timeout=1h</code>, <code>max_wal_size=10GB</code></dd></div>
+              <div><dt>MySQL</dt><dd><code>buffer_pool=4G</code>, <code>flush_method=O_DIRECT</code></dd></div>
+              <div><dt>Mongo / Cass.</dt><dd>WiredTiger ~4 GB cache / JVM heap 4G, STCS</dd></div>
+            </dl>
+          </div>
+          <div class="method-cell">
+            <h3>Metric Collection</h3>
+            <dl class="method-dl">
+              <div><dt>Workloads</dt><dd>Execute inside containers (zero network overhead)</dd></div>
+              <div><dt>I/O</dt><dd>cgroup v2 kernel accounting &mdash; per-container, zero overhead</dd></div>
+              <div><dt>Structural</dt><dd>WAL page splits (PG), innodb_metrics (MY), WiredTiger reconciliation (MO), nodetool tablestats (CA)</dd></div>
+              <div><dt>Cache</dt><dd>Buffer pool / WiredTiger cache / key cache hit ratios</dd></div>
+            </dl>
+          </div>
+        </div>
       </div>
     </section>
 

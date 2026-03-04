@@ -221,6 +221,36 @@ function bindPanelExpand() {
   });
 }
 
+// --- Auto-size select to fit selected option text ---
+let _sizer = null;
+function autoSizeSelect(select) {
+  if (!_sizer) {
+    _sizer = document.createElement('span');
+    _sizer.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;pointer-events:none';
+    document.body.appendChild(_sizer);
+  }
+  const cs = getComputedStyle(select);
+  _sizer.style.fontSize = cs.fontSize;
+  _sizer.style.fontFamily = cs.fontFamily;
+  _sizer.style.fontWeight = cs.fontWeight;
+  _sizer.style.letterSpacing = cs.letterSpacing;
+  _sizer.style.textTransform = cs.textTransform;
+  _sizer.textContent = select.options[select.selectedIndex]?.text || '';
+  select.style.width = (_sizer.offsetWidth + 16) + 'px'; // +16 for dropdown arrow
+}
+
+function resizeAllPanelSelects() {
+  dom.panels.forEach(panel => {
+    const select = panel.querySelector('.panel-metric-select');
+    if (select) autoSizeSelect(select);
+  });
+}
+let _resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(resizeAllPanelSelects, 150);
+});
+
 // --- Panel metric selects ---
 function populatePanelSelects() {
   dom.panels.forEach((panel, i) => {
@@ -389,7 +419,7 @@ function renderPanel(index, metric) {
   const unit = panel.querySelector('.panel-unit');
   const config = PANEL_CONFIG[metric];
 
-  if (select) select.value = metric;
+  if (select) { select.value = metric; autoSizeSelect(select); }
   if (unit) unit.textContent = config ? config.unit : '';
 
   let chartConfig = null;
