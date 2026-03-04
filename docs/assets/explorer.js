@@ -156,10 +156,8 @@ function bindPanelExpand() {
         btn.innerHTML = '&times;';
         btn.setAttribute('aria-label', 'Collapse panel');
       }
-      // Destroy and re-render the affected chart for new size
-      if (chartInstances[i]) { chartInstances[i].destroy(); chartInstances[i] = null; }
-      const metrics = getPanelMetrics();
-      if (metrics[i]) renderPanel(i, metrics[i]);
+      // Let Chart.js handle the resize automatically
+      if (chartInstances[i]) chartInstances[i].resize();
     });
   });
 }
