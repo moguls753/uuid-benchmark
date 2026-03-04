@@ -19,7 +19,7 @@ from datetime import datetime, timezone
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
-RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
+RESULTS_DIR = os.path.join(PROJECT_ROOT, "results", "laptop")
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "docs", "data")
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "data.json")
 
@@ -138,7 +138,9 @@ def build_data():
 
     csv_files = sorted(
         f for f in os.listdir(RESULTS_DIR)
-        if f.endswith(".csv") and not f.endswith("_raw.csv")
+        if f.endswith(".csv")
+        and not f.endswith("_raw.csv")
+        and "_batch" not in f  # Exclude non-standard batch configurations
     )
 
     if not csv_files:

@@ -30,6 +30,11 @@ go.work.sum
 # env file
 .env
 
+# Node (testing tools)
+node_modules/
+package.json
+package-lock.json
+
 # Editor/IDE
 # .idea/
 # .vscode/
