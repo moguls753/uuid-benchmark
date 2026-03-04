@@ -1,5 +1,156 @@
 {
-  "cross-uuid": {},
-  "cross-db": {},
-  "scale": {}
+  "cross-uuid": {
+    "postgres|insert_performance|1m|1|throughput": {
+      "finding": "UUIDv4 achieves 33,422 ops/sec, a 13.6% reduction relative to the sequential baseline (38,666 ops/sec); UUIDv7 recovers to 34,993 ops/sec (\u22129.5%) and ULID-Monotonic to 37,891 ops/sec (\u22122.0%).",
+      "explanation": "Random key insertion causes mid-tree B-tree page splits that produce half-filled pages, increasing I/O per insert. Time-ordered keys append to the rightmost leaf, avoiding mid-tree splits. UUIDv1's \u221230.3% penalty is attributable to the overhead of PostgreSQL's server-side uuid_generate_v1() function (~103K calls/sec vs. ~480K for gen_random_uuid()), not to key ordering."
+    },
+    "postgres|insert_performance|1m|1|page_splits": {
+      "finding": "UUIDv4 causes 4,872 page splits compared to 2,741 for the sequential baseline, a factor of 1.8\u00d7. UUIDv7 produces 3,849 splits; ULID and ULID-Monotonic exhibit 4,944\u20134,955 splits.",
+      "explanation": "Random keys cause mid-tree splits at arbitrary B-tree positions, while sequential keys produce only right-edge splits. ULID and ULID-Monotonic have elevated split counts despite time-ordered insertion because the pgx_ulid extension stores values as variable-length (varlena) data with approximately nine bytes of header and padding per entry, causing pages to fill and split more frequently. UUIDv7 serves as the comparison baseline confirming that this elevation stems from storage format rather than key ordering."
+    },
+    "postgres|insert_performance|1m|1|fragmentation": {
+      "finding": "UUIDv4 produces 49.8% leaf fragmentation; all other key types record 0.0% fragmentation.",
+      "explanation": "Random mid-tree splits scatter leaf pages across physical disk positions, producing measurable fragmentation. Time-ordered keys (UUIDv7, ULID, ULID-Monotonic) append to the rightmost leaf page, preserving physical page ordering identical to the sequential baseline."
+    },
+    "postgres|insert_performance|1m|1|avg_leaf_density": {
+      "finding": "UUIDv4 records 71.2% average leaf density; all time-ordered types and the sequential baseline record approximately 90%.",
+      "explanation": "Mid-tree page splits divide existing pages approximately in half, leaving both halves partially filled. Right-edge splits leave completed pages full, maintaining high leaf density."
+    },
+    "postgres|insert_performance|1m|1|index_size_mb": {
+      "finding": "UUIDv4's index grows to 38.1 MB, 78% larger than the sequential baseline (21.5 MB). UUIDv7 produces 30.1 MB; ULID and ULID-Monotonic reach 38.7 MB.",
+      "explanation": "Lower leaf density from random insertions wastes space across all B-tree pages, inflating the index. ULID and ULID-Monotonic have elevated index sizes despite 0% fragmentation because the pgx_ulid varlena storage format carries approximately nine bytes of overhead per entry compared to the native fixed-width uuid type."
+    },
+    "mysql|insert_performance|1m|1|throughput": {
+      "finding": "UUIDv4 reaches 26,444 ops/sec, a 30.0% penalty relative to the sequential baseline (37,758 ops/sec). ULID without monotonic extension degrades by 25.5% (28,125 ops/sec); ULID-Monotonic at 34,308 ops/sec (\u22129.1%) recovers close to the baseline.",
+      "explanation": "InnoDB's clustered B-tree stores the primary key and row data in the same structure, so random UUID insertions produce half-filled data pages as well as half-filled index pages, compounding the penalty. Non-monotonic ULID generates random values within the same millisecond, causing scattered B-tree insertions equivalent to UUIDv4. The clustered index size confirms: ULID grows to 1,835 MB, nearly matching UUIDv4 (1,804 MB), whereas ULID-Monotonic matches the sequential baseline (1,119 MB vs. 1,118 MB)."
+    },
+    "mysql|insert_performance|1m|1|index_size_mb": {
+      "finding": "UUIDv4 requires 1,804 MB and ULID 1,835 MB for the clustered index, a 61% and 64% increase respectively over the sequential baseline (1,118 MB). ULID-Monotonic matches the baseline at 1,119 MB.",
+      "explanation": "InnoDB's clustered B-tree stores row data within the primary key index; random insertions produce half-filled pages for both data and index, compounding the space overhead. Non-monotonic ULID generates random values within each millisecond, producing the same scattered insertions as UUIDv4."
+    },
+    "mongodb|insert_performance|1m|1|throughput": {
+      "finding": "UUIDv4 records a 28.5% reduction (148,450 vs. 207,622 ops/sec). Time-ordered types cluster within 9% of the sequential baseline; ObjectID achieves 95.3%.",
+      "explanation": "MongoDB's WiredTiger B-tree indexes are separate from document storage (non-clustered), so the penalty from random insertions manifests in the index structure but does not compound through data pages as in MySQL/InnoDB."
+    },
+    "cassandra|insert_performance|1m|1|throughput": {
+      "finding": "UUIDv4 incurs a 20.3% reduction (54,010 vs. 67,776 ops/sec). UUIDv7, ULID, and ULID-Monotonic all fall within 2% of the sequential baseline.",
+      "explanation": "Cassandra's LSM-tree architecture absorbs key-ordering effects through its in-memory MemTable; all writes are sequential to the MemTable regardless of key order. The residual UUIDv4 penalty reflects the cost of maintaining sorted order in the MemTable under random key insertions. The SSTable count equals three for all key types at 1M records, confirming that key ordering does not affect compaction frequency at this scale."
+    },
+    "cassandra|insert_performance|1m|1|table_size_mb": {
+      "finding": "UUIDv4 produces a 23.6% larger table footprint (74.0 vs. 59.9 MB) relative to the sequential baseline.",
+      "explanation": "Random key order produces less efficient sequential compaction in Cassandra's LSM-tree, resulting in increased space amplification despite the absence of B-tree page splits."
+    },
+    "postgres|insert_performance|1m|8|throughput": {
+      "finding": "The UUIDv4 penalty grows from 13.6% (1 connection) to 18.0% (8 connections): UUIDv4 achieves 83,133 ops/sec against a sequential baseline of 101,379 ops/sec.",
+      "explanation": "All key types benefit from connection-level parallelism, but random keys scale less efficiently because scattered writes compete for I/O resources across more B-tree positions. Time-ordered identifiers (UUIDv7: \u221216.0%; ULID-Monotonic: \u221213.3%) incur a modest additional penalty compared to the single-connection case, reflecting increased contention for WAL write slots under concurrent load."
+    },
+    "mongodb|insert_performance|1m|8|throughput": {
+      "finding": "The UUIDv4 penalty is 23.4% (331,586 vs. 432,657 ops/sec), slightly better than the 28.5% observed at 1 connection. Time-ordered types cluster within 8% of the sequential baseline.",
+      "explanation": "The WiredTiger cache absorbs much of the ordering overhead under concurrent load. UUIDv7 (\u22126.1%), ULID-Monotonic (\u22125.8%), and UUIDv1 (\u22124.4%) remain close to the sequential baseline, consistent with WiredTiger's in-memory write path handling concurrency effectively."
+    },
+    "cassandra|insert_performance|1m|8|throughput": {
+      "finding": "The UUIDv4 penalty nearly doubles under concurrency: UUIDv4 reaches only 81,131 ops/sec, a 39.9% reduction from the sequential baseline of 135,044 ops/sec, compared to 20.3% at 1 connection.",
+      "explanation": "With 8 concurrent writers, the sorted MemTable must be maintained against a much higher rate of randomly scattered key insertions; the interaction between concurrency and key disorder amplifies the cost observed at 1 connection. ULID without monotonic extension also degrades substantially (\u221211.6% vs. \u22122.0% at 1 connection), confirming that within-millisecond randomness becomes more costly under concurrent load."
+    },
+    "postgres|read_performance|1m|1|throughput": {
+      "finding": "ULID and ULID-Monotonic are the slowest at 20,828 ops/sec (\u221212.9%); UUIDv4 follows at 22,263 ops/sec (\u22126.9%); UUIDv1 reads at 94.9% and UUIDv7 at 94.4% of the sequential baseline (23,913 ops/sec).",
+      "explanation": "The ULID read penalty is a PostgreSQL-specific artifact of the pgx_ulid extension's varlena storage format: each B-tree comparison dereferences a varlena pointer and detoasts the value, accumulating approximately 20 comparisons per point lookup. The ULID p50 read latency is 46 \u00b5s versus 42 \u00b5s for UUIDv4 and 39 \u00b5s for SEQUENTIAL. The larger ULID index (38.7 MB vs. 21.5 MB) additionally depresses the cache hit ratio to 0.88 vs. 0.96."
+    },
+    "postgres|read_performance|1m|1|cache_hit_ratio": {
+      "finding": "ULID and ULID-Monotonic depress the buffer pool hit ratio to 0.88 compared to 0.96 for SEQUENTIAL; UUIDv4 is intermediate at approximately 0.93.",
+      "explanation": "The larger ULID index (38.7 MB vs. 21.5 MB for SEQUENTIAL) requires more buffer pool pages per lookup, reducing effective cache utilization. UUIDv4's 38.1 MB index similarly consumes more cache than the compact sequential baseline, though its fixed-width uuid storage avoids the per-comparison varlena overhead."
+    },
+    "mysql|read_performance|1m|1|throughput": {
+      "finding": "Read throughput differences across key types are negligible; MySQL achieves 97.0\u201399.5% of the sequential baseline (16,185 ops/sec) across all key types, with a 100% cache hit ratio throughout.",
+      "explanation": "At 1M records the working set fits within InnoDB's 4 GB buffer pool, so all reads are served from cache. Structural differences between key types exert no measurable influence on throughput when the buffer pool fully covers the dataset."
+    },
+    "mongodb|read_performance|1m|1|throughput": {
+      "finding": "All UUID types fall within 98.2\u2013100.2% of the sequential baseline (17,159 ops/sec). ObjectID records 102.9%, marginally above the baseline and within expected measurement noise.",
+      "explanation": "At 1M records the working set fits within WiredTiger's cache (~4 GB), so all reads are served from memory. Cache residency suppresses any structural differences between key types."
+    },
+    "cassandra|read_performance|1m|1|throughput": {
+      "finding": "Cassandra records 99.4\u2013100.0% of the sequential baseline across all key types, with a key cache hit ratio of 1.00 for every configuration.",
+      "explanation": "The single-partition schema places all rows in one partition; every SSTable contains the sole partition key, so every bloom filter check trivially returns \"present\" regardless of key type. With only three SSTables at 1M records, the overlap cost is negligible."
+    },
+    "postgres|update_performance|1m|1|throughput": {
+      "finding": "Update throughput is largely insensitive to key type; all key types fall within approximately 3% of the sequential baseline (3,580 ops/sec), with ULID (\u22122.9%) and ULID-Monotonic (\u22123.1%) showing the largest penalties.",
+      "explanation": "Updates require a primary-key lookup followed by an in-place modification. At 1M records with fully cached working sets, the index traversal cost is dominated by cache hits rather than by structural differences between key types, suppressing the ordering effect observed during inserts."
+    },
+    "mongodb|mixed_insert_heavy|1m|1|throughput": {
+      "finding": "MongoDB exhibits a striking reversal: SEQUENTIAL is the slowest key type at 12,449 ops/sec; all UUID types and ObjectID outperform it by 23\u201330% (UUIDv4: +23.5%, UUIDv7: +29.0%, ObjectID: +30.2%).",
+      "explanation": "Sequential inserts consistently target the rightmost WiredTiger leaf page, and interleaving read traversals with these rightmost-page inserts may cause page management contention (split or reconciliation interruptions during traversal). Random keys distribute new entries across many pages, allowing reads and inserts to proceed on different pages with reduced interference. This mechanism is not confirmed; WiredTiger internal metrics not captured in this benchmark would be required to isolate the cause."
+    },
+    "postgres|mixed_read_update|1m|1|throughput": {
+      "finding": "SEQUENTIAL is the fastest key type in the mixed read-update workload (50% reads, 50% updates). Differences across key types are small: ULID at \u22121.7% and ULID-Monotonic at \u22122.0%.",
+      "explanation": "The varlena overhead on the read component and the cache-hit-dominated update component produce a small but consistent ULID penalty, consistent with the separate read and update results."
+    },
+    "mongodb|mixed_read_update|1m|1|throughput": {
+      "finding": "MongoDB records UUIDv4 at \u22123.1% relative to the sequential baseline, a small but consistent penalty that is larger than in the pure read scenario (\u22120.3%).",
+      "explanation": "The update component amplifies the effect of UUIDv4's lower index density on repeated key lookups, since each update operation requires a primary-key lookup followed by a modification."
+    },
+    "postgres|read_performance|1m|8|throughput": {
+      "finding": "ULID remains the slowest key type at 18,898 ops/sec (\u221211.9% relative to the 8-connection sequential baseline of 21,441 ops/sec), followed by ULID-Monotonic at \u22129.2% and UUIDv4 at \u22128.4%.",
+      "explanation": "The ranking within PostgreSQL is preserved from the single-connection result. Time-ordered types without varlena overhead (UUIDv7: \u22122.4%; UUIDv1: \u22123.2%) cluster near the sequential baseline. Cassandra is unaffected by connection count at 1M records, as the 100% key cache hit ratio masks any structural differences."
+    }
+  },
+  "cross-db": {
+    "insert_performance|1m|1|throughput": {
+      "finding": "UUIDv4 incurs the largest insert throughput penalty across all four databases, ranging from \u221213.6% in PostgreSQL to \u221230.0% in MySQL. Time-ordered identifiers (UUIDv7, ULID-Monotonic) remain within approximately 11% of the sequential baseline in every database.",
+      "explanation": "Storage engine architecture mediates the magnitude of the effect: clustered B-tree engines (MySQL/InnoDB) exhibit the largest penalties because random insertions fragment both the index and the data pages, heap-organized stores (PostgreSQL) show intermediate effects limited to the separate B-tree index, and LSM-tree engines (Cassandra) show the smallest penalty as the MemTable absorbs random key ordering."
+    },
+    "insert_performance|1m|8|throughput": {
+      "finding": "The UUIDv4 insert penalty grows under concurrency in PostgreSQL (\u221213.6% \u2192 \u221218.0%) and Cassandra (\u221220.3% \u2192 \u221239.9%), but remains stable in MongoDB (\u221228.5% \u2192 \u221223.4%). MySQL 8-connection results show elevated measurement noise (CV 8.7\u201319.0%) and are not cited numerically.",
+      "explanation": "In Cassandra, 8 concurrent writers maintain the sorted MemTable against a much higher rate of random insertions, amplifying the key-disorder cost. In PostgreSQL, random keys scale less efficiently under parallelism because scattered writes compete for I/O across more B-tree positions. MongoDB's WiredTiger cache absorbs much of the ordering overhead under concurrent load."
+    },
+    "read_performance|1m|1|throughput": {
+      "finding": "PostgreSQL is the only system where key type meaningfully affects read throughput at 1M records; ULID and ULID-Monotonic incur 12.9% penalties, UUIDv4 follows at 6.9%. In MySQL, MongoDB, and Cassandra, all differences fall within 3% of the baseline.",
+      "explanation": "At 1M records the working set fits within each system's buffer pool. When all reads are served from cache, structural differences between key types exert no measurable influence on throughput. The PostgreSQL ULID read penalty is a storage-format artifact of the pgx_ulid extension's varlena implementation, not a property of ULID's key-ordering scheme."
+    },
+    "update_performance|1m|1|throughput": {
+      "finding": "Update throughput is largely insensitive to key type in all four database systems at 1M records; all key types remain within approximately 3% of their respective sequential baselines.",
+      "explanation": "Updates require a primary-key lookup followed by an in-place modification. At 1M records with fully cached working sets, the index traversal cost is dominated by cache hits rather than by structural differences between key types, suppressing the ordering effect observed during inserts."
+    },
+    "insert_performance|1m|1|page_splits": {
+      "finding": "PostgreSQL's UUIDv4 causes 4,872 page splits (1.8\u00d7 the sequential baseline of 2,741). MongoDB tracks WiredTiger leaf page multi-block writes as a structural analog. Cassandra's LSM-tree architecture does not produce page splits.",
+      "explanation": "Each database exposes page-split information through a different mechanism: PostgreSQL counts Btree/SPLIT_L and Btree/SPLIT_R records in the WAL, MySQL maintains an index_page_splits counter, and MongoDB counts leaf page multi-block writes from WiredTiger reconciliation statistics. These metrics measure page divisions during writes to persistent storage but are not directly interchangeable across databases."
+    }
+  },
+  "scale": {
+    "postgres|insert_performance|1|throughput": {
+      "finding": "UUIDv4's penalty relative to the sequential baseline grows from 12.2% at 100K to 13.6% at 1M and 20.9% at 10M. The sequential baseline itself drops from 38,829 ops/sec (100K) to 30,059 ops/sec (10M).",
+      "explanation": "As the working set outgrows buffer pool capacity, structural degradation from random key ordering becomes increasingly costly. Page splits scale linearly for time-ordered types (SEQUENTIAL: 273 at 100K, 2,741 at 1M, 27,418 at 10M) while UUIDv4 produces 49,180 splits at 10M with leaf fragmentation fixed at approximately 49.8% across all three tiers."
+    },
+    "mysql|insert_performance|1|throughput": {
+      "finding": "MySQL shows the most severe degradation: UUIDv4 achieves only 8,328 ops/sec at 10M, a 73.0% reduction from the sequential baseline of 30,854 ops/sec, compared to 30.0% at 1M and 14.5% at 100K.",
+      "explanation": "InnoDB's clustered B-tree stores both the primary key and row data in the same structure; random UUID insertions produce half-filled data pages in addition to half-filled index pages, compounding the space and I/O cost at scale. Time-ordered identifiers remain close to the sequential baseline at all tiers (UUIDv7: \u22123.1% at 10M; ULID-Monotonic: \u22122.7%)."
+    },
+    "mongodb|insert_performance|1|throughput": {
+      "finding": "MongoDB's UUIDv4 penalty grows from 18.2% at 100K to 28.5% at 1M and 41.2% at 10M (116,454 vs. 197,970 ops/sec). The sequential baseline remains comparatively stable across tiers (217,113 to 197,970 ops/sec, an 8.8% decline).",
+      "explanation": "WiredTiger's in-memory write path absorbs much of the scaling cost for sequential keys, while random insertions increasingly stress the B-tree index as it outgrows the cache."
+    },
+    "cassandra|insert_performance|1|throughput": {
+      "finding": "UUIDv4's penalty grows modestly from 15.5% to 20.3% to 22.5%, while the sequential baseline increases with scale (49,420 to 73,887 ops/sec).",
+      "explanation": "Larger, sustained write streams allow the MemTable and compaction pipeline to operate more efficiently in Cassandra's LSM-tree architecture. Key ordering affects the MemTable sorting cost but does not negate the throughput gains from larger write volumes."
+    },
+    "postgres|insert_performance|1|page_splits": {
+      "finding": "Page splits scale linearly for time-ordered types (SEQUENTIAL: 273 at 100K, 2,741 at 1M, 27,418 at 10M, a factor of 10 at each step). UUIDv4 produces 49,180 splits at 10M. UUIDv1 diverges sharply at 10M with 65,277 splits, exceeding even UUIDv4.",
+      "explanation": "The UUIDv1 anomaly at 10M is caused by the RFC 4122 byte layout: the least-significant 32 bits of the 60-bit timestamp (time_low) occupy bytes 0\u20133, and PostgreSQL's B-tree sorts by raw byte order. time_low wraps approximately every 429 seconds; the 10M benchmark runs for approximately 435 seconds, crossing the wrap boundary. After the wrap, newly generated UUIDs sort below previously inserted values, triggering mid-tree splits identical in effect to random key insertion."
+    },
+    "postgres|insert_performance|1|fragmentation": {
+      "finding": "UUIDv4's leaf fragmentation remains fixed at approximately 49.8% across all three scale tiers (100K, 1M, 10M), while all other key types record 0%.",
+      "explanation": "The fragmentation ratio is scale-invariant because random insertion distributes the same structural inefficiency regardless of dataset size; the absolute cost grows proportionally but the relative fragmentation remains constant."
+    },
+    "postgres|insert_performance|1|index_size_mb": {
+      "finding": "UUIDv1 diverges sharply at 10M with a 510 MB index, exceeding even UUIDv4 (49,180 splits). UUIDv4 and ULID metrics scale proportionally across all three tiers.",
+      "explanation": "The UUIDv1 index size anomaly at 10M results from the RFC 4122 time_low byte-order wrap: after approximately 429 seconds, newly generated UUIDv1 values sort below previously inserted values, triggering mid-tree splits and reducing leaf density. This degradation is specific to PostgreSQL's server-side uuid_generate_v1(); in MySQL, MongoDB, and Cassandra, where UUIDs are generated client-side with monotonically increasing timestamps, UUIDv1 behaves as time-ordered at all scales."
+    },
+    "postgres|read_performance|1|throughput": {
+      "finding": "At 10M records, total read throughput collapses from 23,913 ops/sec (1M) to 6,277 ops/sec. The ordering relationship inverts: UUIDv4 reads at 6,596 ops/sec (+5.1% above the sequential baseline), while ULID and ULID-Monotonic are the slowest at 5,952\u20135,961 ops/sec (\u22125.0% to \u22125.2%).",
+      "explanation": "In the cache-miss regime at 10M, every lookup requires a disk access and structural differences between key types become secondary to disk seek patterns. The ULID varlena overhead persists as the dominant cost since it adds CPU comparison time on each cache miss. UUIDv4's marginal advantage is consistent with its smaller tree height relative to index size compared to SEQUENTIAL."
+    },
+    "cassandra|read_performance|1|throughput": {
+      "finding": "Read throughput is indistinguishable across key types at 100K and 1M, but a small, statistically consistent separation appears at 10M: UUIDv4 reads at 789 ops/sec, a 2.7% reduction from the sequential baseline of 810 ops/sec; UUIDv7, ULID, and ULID-Monotonic remain at 812\u2013813 ops/sec.",
+      "explanation": "This is the SSTable key-range overlap effect: UUIDv4 keys span the full UUID space in each SSTable, so every read must check multiple SSTables; time-ordered keys produce non-overlapping key ranges after compaction, reducing the number of SSTables that must be consulted. At 1M records with three SSTables the overlap cost is negligible; at 10M with four SSTables the cost becomes visible."
+    }
+  }
 }
