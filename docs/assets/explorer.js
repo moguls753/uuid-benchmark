@@ -23,7 +23,6 @@ import {
 // --- State ---
 let activeMode = 'cross-uuid';
 let chartInstances = [null, null, null, null];
-let expandedPanel = -1;
 let mobileShowAll = false;
 let skipAnnotationUpdate = false;
 
@@ -88,7 +87,7 @@ function bindSubTabs() {
       const mode = btn.dataset.mode;
       if (mode === activeMode) return;
       activeMode = mode;
-      expandedPanel = -1;
+      closeChartModal();
       mobileShowAll = false;
 
       updateSubTabUI();
@@ -133,32 +132,88 @@ function updateFilterVisibility() {
   });
 }
 
-// --- Panel expand/collapse ---
+// --- Chart modal ---
+let modalChart = null;
+let modalOverlay = null;
+
+function openChartModal(panelIndex) {
+  if (!modalOverlay) modalOverlay = document.getElementById('chart-modal');
+  if (!modalOverlay) return;
+
+  const panel = dom.panels[panelIndex];
+  if (!panel) return;
+
+  const metrics = getPanelMetrics();
+  const metric = metrics[panelIndex];
+  if (!metric) return;
+
+  const config = PANEL_CONFIG[metric];
+  const title = modalOverlay.querySelector('.chart-modal-title');
+  const unit = modalOverlay.querySelector('.chart-modal-unit');
+  if (title) title.textContent = config ? config.label : metric.toUpperCase();
+  if (unit) unit.textContent = config ? config.unit : '';
+
+  // Build chart config for modal
+  let chartConfig = null;
+  if (activeMode === 'cross-uuid') {
+    const entries = getEntriesForMetric('cross-uuid', metric);
+    chartConfig = entries.length > 0 ? buildCrossUUIDChart(entries, metric) : null;
+  } else if (activeMode === 'cross-db') {
+    const savedMetric = filterState.metric;
+    filterState.metric = metric;
+    chartConfig = buildCrossDBChart(allEntries, filterState, metric);
+    filterState.metric = savedMetric;
+  } else if (activeMode === 'scale') {
+    const entries = getEntriesForMetric('scale', metric);
+    chartConfig = entries.length > 0 ? buildScaleChart(entries, metric) : null;
+  }
+
+  if (!chartConfig) return;
+
+  // Disable entrance animation for modal chart
+  chartConfig.options = chartConfig.options || {};
+  chartConfig.options.animation = false;
+
+  // Destroy previous modal chart
+  if (modalChart) { modalChart.destroy(); modalChart = null; }
+
+  const canvas = modalOverlay.querySelector('.chart-modal-body canvas');
+  if (canvas) {
+    modalChart = new Chart(canvas, {
+      ...chartConfig,
+      plugins: [errorBarPlugin],
+    });
+  }
+
+  modalOverlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeChartModal() {
+  if (!modalOverlay) return;
+  modalOverlay.classList.remove('active');
+  document.body.style.overflow = '';
+  if (modalChart) { modalChart.destroy(); modalChart = null; }
+}
+
 function bindPanelExpand() {
   dom.panels.forEach((panel, i) => {
     const btn = panel.querySelector('.panel-expand');
     if (!btn) return;
-    btn.addEventListener('click', () => {
-      if (expandedPanel === i) {
-        expandedPanel = -1;
-        panel.classList.remove('expanded');
-        btn.innerHTML = '&#10530;';
-        btn.setAttribute('aria-label', 'Expand panel');
-      } else {
-        // Collapse previous
-        dom.panels.forEach((p, j) => {
-          p.classList.remove('expanded');
-          const b = p.querySelector('.panel-expand');
-          if (b) { b.innerHTML = '&#10530;'; b.setAttribute('aria-label', 'Expand panel'); }
-        });
-        expandedPanel = i;
-        panel.classList.add('expanded');
-        btn.innerHTML = '&times;';
-        btn.setAttribute('aria-label', 'Collapse panel');
-      }
-      // Let Chart.js handle the resize automatically
-      if (chartInstances[i]) chartInstances[i].resize();
+    btn.addEventListener('click', () => openChartModal(i));
+  });
+
+  // Close modal: backdrop click, close button, Escape key
+  const overlay = document.getElementById('chart-modal');
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeChartModal();
     });
+    const closeBtn = overlay.querySelector('.chart-modal-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeChartModal);
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeChartModal();
   });
 }
 
@@ -234,7 +289,7 @@ function updateMobileVisibility() {
 // --- Main render ---
 function renderExplorer() {
   destroyCharts();
-  expandedPanel = -1;
+  closeChartModal();
 
   const metrics = getPanelMetrics();
   let hasData = false;
@@ -242,13 +297,6 @@ function renderExplorer() {
   metrics.forEach((metric, i) => {
     const ok = renderPanel(i, metric);
     if (ok) hasData = true;
-  });
-
-  // Reset panel expand UI
-  dom.panels.forEach(p => {
-    p.classList.remove('expanded');
-    const btn = p.querySelector('.panel-expand');
-    if (btn) { btn.innerHTML = '&#10530;'; btn.setAttribute('aria-label', 'Expand panel'); }
   });
 
   updateLegend();

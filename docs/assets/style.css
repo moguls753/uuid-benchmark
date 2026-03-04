@@ -571,13 +571,93 @@ a:hover { color: var(--text); }
   height: 100% !important;
 }
 
-/* Panel expand state */
-.chart-panel.expanded {
-  grid-column: 1 / -1;
+/* --- Chart Modal Overlay -------------------------------------------------- */
+
+.chart-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 200ms ease;
 }
 
-.chart-panel.expanded .panel-chart {
-  height: 360px;
+.chart-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.chart-modal {
+  width: min(92vw, 1360px);
+  height: min(78vh, 720px);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.96);
+  transition: transform 200ms ease;
+}
+
+.chart-modal-overlay.active .chart-modal {
+  transform: scale(1);
+}
+
+.chart-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.chart-modal-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.chart-modal-unit {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.chart-modal-close {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.chart-modal-close:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.chart-modal-body {
+  flex: 1;
+  padding: 16px;
+  position: relative;
+  min-height: 0;
+}
+
+.chart-modal-body canvas {
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* Panel empty / N/A state */
@@ -891,10 +971,6 @@ a:hover { color: var(--text); }
 
   .chart-panel .panel-chart {
     height: 270px;
-  }
-
-  .chart-panel.expanded .panel-chart {
-    height: 400px;
   }
 
   .show-all-metrics {
