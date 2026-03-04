@@ -300,7 +300,7 @@ function applyFindingFilters(filters) {
     dom.annotationSection.hidden = false;
     if (dom.annotationProgress) {
       dom.annotationProgress.textContent = progress.total > 0
-        ? `(${progress.current} / ${progress.total})`
+        ? `${progress.current} / ${progress.total}`
         : '';
     }
   }
@@ -516,7 +516,7 @@ function updateAnnotation() {
 
     if (dom.annotationProgress) {
       dom.annotationProgress.textContent = progress.total > 0
-        ? `(${progress.current} / ${progress.total})`
+        ? `${progress.current} / ${progress.total}`
         : '';
     }
   } else {
@@ -535,7 +535,7 @@ function updateAnnotation() {
 
         const p = getFindingProgress();
         if (dom.annotationProgress) {
-          dom.annotationProgress.textContent = p.total > 0 ? `(${p.current} / ${p.total})` : '';
+          dom.annotationProgress.textContent = p.total > 0 ? `${p.current} / ${p.total}` : '';
         }
         break;
       }
@@ -549,7 +549,7 @@ function updateAnnotation() {
 
       if (dom.annotationProgress) {
         dom.annotationProgress.textContent = progress.total > 0
-          ? `(${progress.current} / ${progress.total})`
+          ? `${progress.current} / ${progress.total}`
           : '';
       }
     }

@@ -439,13 +439,6 @@ a:hover { color: var(--text); }
 
 /* --- 5. Explorer View ---------------------------------------------------- */
 
-.explorer-methodology {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
 /* Filter bar */
 .filter-bar {
   display: flex;
@@ -565,8 +558,8 @@ a:hover { color: var(--text); }
   cursor: pointer;
   padding: 0;
   padding-right: 14px;
-  width: fit-content;
   flex-shrink: 0;
+  field-sizing: content;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -774,20 +767,13 @@ a:hover { color: var(--text); }
   color: var(--text-muted);
 }
 
-.annotation-progress {
-  font-size: 11px;
-  color: var(--text-faint);
-  padding: 4px 8px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  line-height: 1;
-}
-
 .annotation-nav {
   margin-left: auto;
   display: flex;
-  align-items: center;
-  gap: 0;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
 }
 
 .annotation-prev,
@@ -797,17 +783,8 @@ a:hover { color: var(--text); }
   text-transform: uppercase;
   letter-spacing: 1px;
   padding: 4px 10px;
-  border: 1px solid var(--border);
   transition: background 0.15s, color 0.15s;
-}
-
-.annotation-prev {
-  border-radius: 3px 0 0 3px;
-  border-right: none;
-}
-
-.annotation-next {
-  border-radius: 0 3px 3px 0;
+  line-height: 1;
 }
 
 .annotation-prev:hover,
@@ -821,6 +798,17 @@ a:hover { color: var(--text); }
   color: var(--text-faint);
   cursor: default;
   background: transparent;
+}
+
+.annotation-progress {
+  font-size: 11px;
+  color: var(--text-faint);
+  padding: 4px 8px;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  line-height: 1;
 }
 
 .annotation-finding {
@@ -1113,10 +1101,6 @@ a:hover { color: var(--text); }
   }
 
   .legend-strip {
-    font-size: 12px;
-  }
-
-  .explorer-methodology {
     font-size: 12px;
   }
 
