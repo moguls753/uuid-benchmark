@@ -49,6 +49,84 @@ const METRIC_LABELS = {
   bloom_filter_fp:    'Bloom Filter False Positives',
 };
 
+/** Metric definitions and measurement notes for info popovers */
+const METRIC_INFO = {
+  throughput: {
+    definition: 'Operations completed per second during the workload phase. Higher is better.',
+    measurement: 'PostgreSQL: pgbench TPS. MySQL/MongoDB/Cassandra: custom Go workload binary. All tools run inside the container (localhost, zero network overhead).',
+  },
+  p50_latency_us: {
+    definition: 'Median latency \u2014 50% of operations completed within this time. The typical user experience.',
+    measurement: 'All databases: per-operation timing with percentile calculation. Reported in microseconds (\u00b5s). Lower is better.',
+  },
+  p95_latency_us: {
+    definition: '95th percentile latency \u2014 95% of operations completed within this time. Only 1 in 20 was slower.',
+    measurement: 'Same methodology as P50. Captures tail latency that affects user-perceived performance.',
+  },
+  p99_latency_us: {
+    definition: '99th percentile latency \u2014 99% of operations completed within this time. Only 1 in 100 was slower.',
+    measurement: 'Same methodology as P50. Critical for SLA compliance. Can spike dramatically under random I/O from UUIDv4.',
+  },
+  page_splits: {
+    definition: 'Number of B-tree leaf page splits during the workload. More splits = more random I/O and wasted space.',
+    measurement: 'PostgreSQL: WAL inspection (exact count). MySQL: innodb_metrics counter (exact delta). MongoDB: WiredTiger in-memory page split counter. Comparable across B-tree databases.',
+    comparability: 'B-tree databases only. Cassandra uses LSM-tree (compaction instead of splits).',
+  },
+  fragmentation: {
+    definition: 'Index fragmentation percentage. Higher means more wasted space or scattered pages.',
+    measurement: 'PostgreSQL: physical leaf page ordering (pgstatindex). MySQL: B-tree overhead ratio (internal/total pages). MongoDB: free storage / total storage ratio.',
+    comparability: 'Different definitions per database \u2014 compare trends within one database, not absolute values across databases. PostgreSQL measures physical page ordering; MySQL measures B-tree structural overhead; MongoDB measures free space ratio.',
+  },
+  cache_hit_ratio: {
+    definition: 'Fraction of page requests served from memory (0.0\u20131.0). Higher means less disk I/O.',
+    measurement: 'PostgreSQL: pg_stat_database (blks_hit / total). MySQL: performance_schema buffer pool stats. MongoDB: WiredTiger cache pages requested vs read. Cassandra: key cache hit rate.',
+  },
+  index_hit_ratio: {
+    definition: 'Fraction of index page requests served from memory. Indicates whether the index B-tree fits in RAM.',
+    measurement: 'PostgreSQL: pg_statio_user_tables (idx_blks_hit / total). Similar concept across databases.',
+  },
+  avg_leaf_density: {
+    definition: 'Average percentage of each B-tree leaf page that contains actual data (0\u2013100%). Low density = wasted space from page splits.',
+    measurement: 'PostgreSQL: pgstatindex (exact). MySQL: not exposed, estimated at 90%. MongoDB: leaf page count from indexDetails.',
+    comparability: 'Only directly measurable in PostgreSQL. Other databases use approximations.',
+  },
+  table_size_mb: {
+    definition: 'On-disk size of the table data in megabytes.',
+    measurement: 'PostgreSQL: pg_table_size() (exact). MySQL: data_length from information_schema (after ANALYZE TABLE). MongoDB: collStats storageSize. Cassandra: nodetool tablestats. Comparable across databases.',
+  },
+  index_size_mb: {
+    definition: 'On-disk size of the index structure in megabytes.',
+    measurement: 'PostgreSQL: pg_indexes_size() (separate B-tree). MySQL: data_length includes clustered PK (InnoDB stores data in the PK B-tree). MongoDB: collStats totalIndexSize.',
+    comparability: 'MySQL\'s clustered index means PK "index size" includes row data. Not directly comparable with PostgreSQL\'s separate heap + index architecture.',
+  },
+  read_iops: {
+    definition: 'Read I/O operations per second during the workload, measured at the container level.',
+    measurement: 'All databases: Linux cgroup v2 io.stat (kernel accounting). Container-isolated, zero overhead. Identical method across all databases.',
+  },
+  write_iops: {
+    definition: 'Write I/O operations per second during the workload, measured at the container level.',
+    measurement: 'All databases: Linux cgroup v2 io.stat. Identical method across all databases.',
+  },
+  read_throughput_mb: {
+    definition: 'Read data throughput in MB/s during the workload.',
+    measurement: 'All databases: Linux cgroup v2 io.stat. Identical method across all databases.',
+  },
+  write_throughput_mb: {
+    definition: 'Write data throughput in MB/s during the workload.',
+    measurement: 'All databases: Linux cgroup v2 io.stat. Identical method across all databases.',
+  },
+  sstable_count: {
+    definition: 'Number of SSTables on disk after the workload. More SSTables = more read amplification.',
+    measurement: 'Cassandra only: nodetool tablestats. LSM-tree concept \u2014 no equivalent in B-tree databases.',
+    comparability: 'Cassandra only. B-tree databases do not have SSTables.',
+  },
+  bloom_filter_fp: {
+    definition: 'Bloom filter false positive count. Random keys may cause more false positives, increasing unnecessary disk reads.',
+    measurement: 'Cassandra only: nodetool tablestats.',
+    comparability: 'Cassandra only.',
+  },
+};
+
 const DATABASE_LABELS = {
   postgres:  'PostgreSQL',
   mysql:     'MySQL',
@@ -98,6 +176,7 @@ function formatDatabaseName(db) {
 
 let allEntries = [];
 let metadata = {};
+let annotations = {};
 
 /** Which tab is active: 'cross-uuid' | 'cross-db' | 'scale' | 'raw-data' */
 let activeTab = 'cross-uuid';
@@ -142,6 +221,22 @@ function cacheDom() {
     connections: document.getElementById('filter-connections'),
     metric:      document.getElementById('filter-metric'),
   };
+
+  dom.metricInfoBtn      = document.querySelector('.metric-info-btn');
+  dom.metricInfoPopover  = document.querySelector('.metric-info-popover');
+  dom.popoverDefinition  = document.querySelector('.popover-definition');
+  dom.popoverMeasurement = document.querySelector('.popover-measurement');
+  dom.popoverClose       = document.querySelector('.popover-close');
+
+  dom.methodologyToggle = document.querySelector('.methodology-toggle');
+  dom.methodologyDetail = document.getElementById('methodology-detail');
+
+  dom.comparabilityWarning = document.querySelector('.comparability-warning');
+  dom.comparabilityText    = document.querySelector('.comparability-text');
+
+  dom.chartAnnotation       = document.querySelector('.chart-annotation');
+  dom.annotationFinding     = document.querySelector('.annotation-finding');
+  dom.annotationExplanation = document.querySelector('.annotation-explanation');
 }
 
 /* --------------------------------------------------------------------------
@@ -152,21 +247,27 @@ document.addEventListener('DOMContentLoaded', function () {
   cacheDom();
   bindTabEvents();
   bindFilterEvents();
+  bindMetricInfoPopover();
+  bindMethodologyToggle();
 
-  fetch('data/data.json')
-    .then(function (res) {
+  Promise.all([
+    fetch('data/data.json').then(function (res) {
       if (!res.ok) throw new Error('Failed to load data.json: ' + res.status);
       return res.json();
-    })
-    .then(function (data) {
-      allEntries = data.entries || [];
-      metadata   = data.metadata || {};
-      initUI();
-    })
-    .catch(function (err) {
-      console.error(err);
-      showNoData(true);
-    });
+    }),
+    fetch('data/annotations.json').then(function (res) {
+      if (!res.ok) return {};
+      return res.json();
+    }).catch(function () { return {}; }),
+  ]).then(function (results) {
+    allEntries = results[0].entries || [];
+    metadata   = results[0].metadata || {};
+    annotations = results[1] || {};
+    initUI();
+  }).catch(function (err) {
+    console.error(err);
+    showNoData(true);
+  });
 });
 
 /* --------------------------------------------------------------------------
@@ -241,10 +342,141 @@ function bindFilterEvents() {
   Object.keys(dom.filters).forEach(function (key) {
     dom.filters[key].addEventListener('change', function () {
       filterState[key] = coerceFilterValue(key, dom.filters[key].value);
+      if (dom.metricInfoPopover) dom.metricInfoPopover.hidden = true;
       cascadeFilters(key);
       renderCurrentView();
     });
   });
+}
+
+/* --------------------------------------------------------------------------
+   Metric info popover
+   -------------------------------------------------------------------------- */
+
+function bindMetricInfoPopover() {
+  if (!dom.metricInfoBtn) return;
+
+  dom.metricInfoBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var metric = filterState.metric;
+    var info = metric && METRIC_INFO[metric];
+
+    if (!info) {
+      dom.metricInfoPopover.hidden = true;
+      return;
+    }
+
+    dom.popoverDefinition.textContent = info.definition;
+    var measureText = info.measurement;
+    if (info.comparability) measureText += '\n\n' + info.comparability;
+    dom.popoverMeasurement.textContent = measureText;
+    dom.metricInfoPopover.hidden = !dom.metricInfoPopover.hidden;
+  });
+
+  dom.popoverClose.addEventListener('click', function () {
+    dom.metricInfoPopover.hidden = true;
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!dom.metricInfoPopover.hidden
+        && !dom.metricInfoPopover.contains(e.target)
+        && e.target !== dom.metricInfoBtn) {
+      dom.metricInfoPopover.hidden = true;
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !dom.metricInfoPopover.hidden) {
+      dom.metricInfoPopover.hidden = true;
+    }
+  });
+}
+
+/* --------------------------------------------------------------------------
+   Methodology banner toggle
+   -------------------------------------------------------------------------- */
+
+function bindMethodologyToggle() {
+  if (!dom.methodologyToggle || !dom.methodologyDetail) return;
+
+  dom.methodologyToggle.addEventListener('click', function () {
+    var expanded = dom.methodologyDetail.hidden;
+    dom.methodologyDetail.hidden = !expanded;
+    dom.methodologyToggle.setAttribute('aria-expanded', String(expanded));
+    dom.methodologyToggle.textContent = expanded ? 'Hide' : 'Methodology';
+  });
+}
+
+/* --------------------------------------------------------------------------
+   Comparability warnings
+   -------------------------------------------------------------------------- */
+
+function updateComparabilityWarning() {
+  if (!dom.comparabilityWarning) return;
+
+  var metric = filterState.metric;
+  var info = metric && METRIC_INFO[metric];
+
+  // Show warning only on chart tabs when the metric has a comparability note
+  if (info && info.comparability && activeTab !== 'raw-data') {
+    dom.comparabilityText.textContent = info.comparability;
+    dom.comparabilityWarning.hidden = false;
+  } else {
+    dom.comparabilityWarning.hidden = true;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Chart annotation rendering
+   -------------------------------------------------------------------------- */
+
+function buildAnnotationKey() {
+  var keyOrder;
+  if (activeTab === 'cross-uuid') {
+    keyOrder = ['database', 'scenario', 'scale', 'connections', 'metric'];
+  } else if (activeTab === 'cross-db') {
+    keyOrder = ['scenario', 'scale', 'connections', 'metric'];
+  } else if (activeTab === 'scale') {
+    keyOrder = ['database', 'scenario', 'connections', 'metric'];
+  } else {
+    return null;
+  }
+
+  var parts = [];
+  keyOrder.forEach(function (k) {
+    if (filterState[k] != null) {
+      parts.push(String(filterState[k]));
+    }
+  });
+
+  return parts.join('|');
+}
+
+function updateAnnotation() {
+  if (!dom.chartAnnotation) return;
+
+  if (activeTab === 'raw-data') {
+    dom.chartAnnotation.hidden = true;
+    return;
+  }
+
+  var tabAnnotations = annotations[activeTab];
+  if (!tabAnnotations) {
+    dom.chartAnnotation.hidden = true;
+    return;
+  }
+
+  var key = buildAnnotationKey();
+  var entry = key && tabAnnotations[key];
+
+  if (entry && entry.finding) {
+    dom.annotationFinding.textContent = entry.finding;
+    dom.annotationExplanation.textContent = entry.explanation || '';
+    dom.annotationExplanation.hidden = !entry.explanation;
+    dom.chartAnnotation.hidden = false;
+  } else {
+    dom.chartAnnotation.hidden = true;
+  }
 }
 
 /**
@@ -663,10 +895,13 @@ function renderCurrentView() {
     dom.tablePanel.hidden = true;
   }
 
+  updateComparabilityWarning();
+
   // Cross-DB Impact queries allEntries directly (no per-entry filtering)
   if (activeTab === 'cross-db') {
     showNoData(false);
     renderCrossDB();
+    updateAnnotation();
     return;
   }
 
@@ -690,6 +925,8 @@ function renderCurrentView() {
       renderRawData(entries);
       break;
   }
+
+  updateAnnotation();
 }
 
 /* ==========================================================================
@@ -753,7 +990,7 @@ function renderCrossUUID(entries) {
         title: {
           display: true,
           text: buildChartTitle({ keyType: false }),
-          font: { size: 14, weight: '600', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
+          font: { size: 14, weight: '600', family: '"Crimson Pro", Georgia, serif' },
           color: '#1c1917',
           padding: { bottom: 16 },
         },
@@ -914,7 +1151,7 @@ function renderCrossDB(/* entries arg unused — we query allEntries directly */
           display: true,
           text: buildChartTitle({ database: false, keyType: false })
             + ' \u2014 % vs Sequential',
-          font: { size: 14, weight: '600', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
+          font: { size: 14, weight: '600', family: '"Crimson Pro", Georgia, serif' },
           color: '#1c1917',
           padding: { bottom: 16 },
         },
@@ -1073,7 +1310,7 @@ function renderScale(entries) {
         title: {
           display: true,
           text: buildChartTitle({ scale: false, keyType: false }),
-          font: { size: 14, weight: '600', family: '"DM Sans", "Helvetica Neue", Arial, sans-serif' },
+          font: { size: 14, weight: '600', family: '"Crimson Pro", Georgia, serif' },
           color: '#1c1917',
           padding: { bottom: 16 },
         },
@@ -1241,6 +1478,27 @@ function renderRawData(entries) {
     return (Number(va) - Number(vb)) * dir;
   });
 
+  // Compute best/worst median per metric for conditional formatting
+  var LOWER_IS_BETTER = ['p50_latency_us', 'p95_latency_us', 'p99_latency_us',
+    'fragmentation', 'page_splits', 'sstable_count', 'bloom_filter_fp'];
+
+  var metricBestWorst = {};
+  sorted.forEach(function (e) {
+    if (e.median == null) return;
+    if (!metricBestWorst[e.metric]) {
+      metricBestWorst[e.metric] = { best: e.median, worst: e.median };
+    }
+    var mw = metricBestWorst[e.metric];
+    var lowerBetter = LOWER_IS_BETTER.indexOf(e.metric) >= 0;
+    if (lowerBetter) {
+      if (e.median < mw.best) mw.best = e.median;
+      if (e.median > mw.worst) mw.worst = e.median;
+    } else {
+      if (e.median > mw.best) mw.best = e.median;
+      if (e.median < mw.worst) mw.worst = e.median;
+    }
+  });
+
   // Build rows
   tbody.innerHTML = '';
   sorted.forEach(function (e) {
@@ -1259,6 +1517,14 @@ function renderRawData(entries) {
         td.textContent = val != null ? formatNumber(val) + '%' : '\u2014';
       } else {
         td.textContent = formatNumber(val);
+      }
+
+      if (col.key === 'median' && e.median != null && metricBestWorst[e.metric]) {
+        var mw = metricBestWorst[e.metric];
+        if (mw.best !== mw.worst) {
+          if (e.median === mw.best) td.classList.add('cell-best');
+          if (e.median === mw.worst) td.classList.add('cell-worst');
+        }
       }
 
       tr.appendChild(td);

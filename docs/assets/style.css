@@ -42,6 +42,14 @@
   --touch-target:   44px;
   --radius:         3px;
   --max-width:      1120px;
+
+  --color-header-bg:     #f5f0e8;
+  --color-warning-bg:    #fefce8;
+  --color-warning-border:#facc15;
+  --color-warning-text:  #854d0e;
+  --color-best:          #f0fdf4;
+  --color-worst:         #fef2f2;
+  --color-annotation-border: #d6d3cd;
 }
 
 /* --- Reset & base -------------------------------------------------------- */
@@ -72,7 +80,7 @@ body {
 /* --- Header -------------------------------------------------------------- */
 .site-header {
   padding: 1.5rem 1rem 1rem;
-  background: var(--color-surface);
+  background: var(--color-header-bg);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -92,6 +100,95 @@ body {
   color: var(--color-text-muted);
   margin-top: 0.25rem;
   letter-spacing: 0.005em;
+}
+
+/* --- Methodology banner -------------------------------------------------- */
+.methodology-banner {
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border-light);
+  padding: 0.5rem 1rem;
+}
+
+.methodology-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+}
+
+.methodology-item {
+  font-variant: small-caps;
+  text-transform: lowercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+.methodology-sep {
+  margin: 0 0.5rem;
+  color: var(--color-text-light);
+}
+
+.methodology-toggle {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-bottom: 1px dashed var(--color-text-light);
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.75rem;
+  transition: color 0.15s ease;
+}
+
+.methodology-toggle:hover {
+  color: var(--color-text);
+}
+
+.methodology-detail[hidden] {
+  display: none;
+}
+
+.methodology-detail-inner {
+  padding: 0.75rem 0 0.5rem;
+  border-top: 1px solid var(--color-border-light);
+  margin-top: 0.5rem;
+}
+
+.methodology-detail-inner h3 {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin-top: 0.625rem;
+  margin-bottom: 0.25rem;
+}
+
+.methodology-detail-inner h3:first-child {
+  margin-top: 0;
+}
+
+.methodology-detail-inner p {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  margin-bottom: 0.375rem;
+}
+
+.methodology-detail-inner code {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  background: rgba(28, 25, 23, 0.05);
+  padding: 0.1em 0.3em;
+  border-radius: 2px;
 }
 
 /* --- Tab bar ------------------------------------------------------------- */
@@ -135,6 +232,7 @@ body {
 .tab-btn.active {
   color: var(--color-text);
   border-bottom-color: var(--color-text);
+  background: rgba(28, 25, 23, 0.04);
 }
 
 /* --- Main content -------------------------------------------------------- */
@@ -207,11 +305,157 @@ body {
   padding: 1.25rem 1rem;
   min-height: 400px;
   position: relative;
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.06), 0 1px 2px rgba(28, 25, 23, 0.04);
 }
 
 .chart-container canvas {
   width: 100%;
   height: 100%;
+}
+
+/* --- Chart annotation ---------------------------------------------------- */
+.chart-annotation {
+  border-top: 1px solid var(--color-border-light);
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-left: 2px solid var(--color-annotation-border);
+  padding-left: 0.75rem;
+}
+
+.chart-annotation[hidden] {
+  display: none;
+}
+
+.annotation-finding {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.45;
+  margin-bottom: 0.25rem;
+}
+
+.annotation-explanation {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+/* --- Comparability warning ----------------------------------------------- */
+.comparability-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.comparability-warning[hidden] {
+  display: none;
+}
+
+.comparability-icon {
+  font-size: 0.875rem;
+  color: var(--color-warning-text);
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.comparability-text {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--color-warning-text);
+  margin: 0;
+}
+
+/* --- Metric info popover ------------------------------------------------- */
+.metric-info-btn {
+  font-size: 0.6875rem;
+  background: none;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  padding: 0 0.15rem;
+  vertical-align: middle;
+  transition: color 0.15s ease;
+}
+
+.metric-info-btn:hover {
+  color: var(--color-text);
+}
+
+.filter-group[data-filter="metric"] {
+  position: relative;
+}
+
+.metric-info-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 10;
+  width: 320px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 0.875rem 1rem;
+  box-shadow: 0 4px 12px rgba(28, 25, 23, 0.12);
+}
+
+.metric-info-popover[hidden] {
+  display: none;
+}
+
+.popover-arrow {
+  position: absolute;
+  top: -6px;
+  left: 1rem;
+  width: 10px;
+  height: 10px;
+  background: var(--color-surface);
+  border-left: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
+  transform: rotate(45deg);
+}
+
+.popover-definition {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+}
+
+.popover-measurement {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+  white-space: pre-line;
+}
+
+.popover-close {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.5rem;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  color: var(--color-text-light);
+  cursor: pointer;
+  padding: 0.125rem 0.25rem;
+  line-height: 1;
+}
+
+.popover-close:hover {
+  color: var(--color-text);
 }
 
 /* --- Table container ----------------------------------------------------- */
@@ -321,6 +565,20 @@ body {
   background: #f0eeea;
 }
 
+/* Conditional formatting — best/worst per metric */
+.data-table td.cell-best {
+  background: var(--color-best);
+}
+
+.data-table td.cell-worst {
+  background: var(--color-worst);
+}
+
+.data-table tbody tr:hover td.cell-best,
+.data-table tbody tr:hover td.cell-worst {
+  background: #f0eeea;
+}
+
 /* --- No data message ----------------------------------------------------- */
 .no-data {
   display: flex;
@@ -368,7 +626,7 @@ body {
   }
 
   .site-title {
-    font-size: 1.875rem;
+    font-size: 2rem;
   }
 
   .site-subtitle {
@@ -411,13 +669,26 @@ body {
 
   /* Chart */
   .chart-container {
-    padding: 1.75rem 1.5rem;
+    padding: 2rem 1.75rem;
     min-height: 480px;
   }
 
   .data-table th,
   .data-table td {
     padding: 0.65rem 1rem;
+  }
+
+  .methodology-banner {
+    padding: 0.5rem 2rem;
+  }
+
+  .methodology-summary {
+    gap: 0;
+  }
+
+  .chart-annotation {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
   }
 
   .site-footer {

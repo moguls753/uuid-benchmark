@@ -17,6 +17,30 @@
     <p class="site-subtitle">Cross-database performance comparison of identifier strategies</p>
   </header>
 
+  <div class="methodology-banner">
+    <p class="methodology-summary">
+      <span class="methodology-item">5 runs per configuration</span>
+      <span class="methodology-sep" aria-hidden="true">&middot;</span>
+      <span class="methodology-item">Median values shown</span>
+      <span class="methodology-sep" aria-hidden="true">&middot;</span>
+      <span class="methodology-item">Error bars = &plusmn;1 stddev</span>
+      <span class="methodology-sep" aria-hidden="true">&middot;</span>
+      <span class="methodology-item">Fresh container per UUID type</span>
+      <button class="methodology-toggle" aria-expanded="false" aria-controls="methodology-detail">Methodology</button>
+    </p>
+    <div id="methodology-detail" class="methodology-detail" hidden>
+      <div class="methodology-detail-inner">
+        <h3>Measurement Tools</h3>
+        <p><strong>PostgreSQL:</strong> pgbench (built-in benchmarking tool) running inside the container via Unix socket. Latency percentiles from pgbench <code>--log</code>.</p>
+        <p><strong>MySQL, MongoDB, Cassandra:</strong> Custom Go workload binary (<code>cmd/workload/main.go</code>), compiled statically, copied into each container, executed via <code>docker exec</code>. Measures per-operation latency and calculates percentiles.</p>
+        <h3>I/O Measurement</h3>
+        <p>All databases use Linux cgroup v2 kernel accounting (<code>io.stat</code>) for container-isolated I/O metrics. Zero overhead — kernel-level, no sampling.</p>
+        <h3>Isolation</h3>
+        <p>Each UUID type runs in a fresh Docker container with clean volumes. No state carries over between key types. Containers: 4 CPUs, 8 GB memory.</p>
+      </div>
+    </div>
+  </div>
+
   <nav class="tab-bar" role="tablist" aria-label="View selection">
     <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-chart" data-tab="cross-uuid">Cross-UUID</button>
     <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-chart" data-tab="cross-db">Cross-DB Impact</button>
@@ -25,6 +49,11 @@
   </nav>
 
   <main class="main-content">
+    <div class="comparability-warning" hidden>
+      <span class="comparability-icon" aria-hidden="true">&#9432;</span>
+      <p class="comparability-text"></p>
+    </div>
+
     <section class="filter-bar" aria-label="Filters">
       <div class="filter-group" data-filter="database">
         <label for="filter-database">Database</label>
@@ -47,13 +76,23 @@
         <select id="filter-connections"></select>
       </div>
       <div class="filter-group" data-filter="metric">
-        <label for="filter-metric">Metric</label>
+        <label for="filter-metric">Metric <button class="metric-info-btn" aria-label="Metric information" type="button">&#9432;</button></label>
         <select id="filter-metric"></select>
+        <div class="metric-info-popover" hidden>
+          <div class="popover-arrow"></div>
+          <p class="popover-definition"></p>
+          <p class="popover-measurement"></p>
+          <button class="popover-close" aria-label="Close">&times;</button>
+        </div>
       </div>
     </section>
 
     <section id="panel-chart" class="chart-container" role="tabpanel">
       <canvas id="main-chart"></canvas>
+      <div class="chart-annotation" hidden>
+        <p class="annotation-finding"></p>
+        <p class="annotation-explanation"></p>
+      </div>
     </section>
 
     <section id="panel-table" class="table-container" role="tabpanel" hidden>
@@ -73,7 +112,7 @@
   </main>
 
   <footer class="site-footer">
-    <p>Data from automated benchmark runs. Each value is the median of 5 runs with stddev error bars shown.</p>
+    <p>Companion to bachelor thesis at FernUniversit&auml;t in Hagen. Data from automated benchmark runs &mdash; each value is the median of 5 runs.</p>
   </footer>
 </body>
 </html>
