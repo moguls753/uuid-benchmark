@@ -173,7 +173,10 @@ a:hover { color: var(--text); }
 }
 
 .nav-tab.active::before {
-  content: '\25B8';
+  content: '';
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
   margin-right: 6px;
 }
 
@@ -239,11 +242,15 @@ a:hover { color: var(--text); }
 }
 
 .methodology-toggle::before {
-  content: '\25B8';
+  content: '';
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
+  transition: transform 0.15s;
 }
 
 .methodology-toggle[aria-expanded="true"]::before {
-  content: '\25BE';
+  transform: rotate(90deg);
 }
 
 .methodology-toggle:hover {
@@ -458,7 +465,10 @@ a:hover { color: var(--text); }
 }
 
 .db-explore::before {
-  content: '\25B8';
+  content: '';
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
 }
 
 .db-explore:hover {
@@ -787,7 +797,10 @@ a:hover { color: var(--text); }
 }
 
 .show-all-metrics::after {
-  content: '\25B8';
+  content: '';
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
 }
 
 .show-all-metrics:hover {
@@ -853,11 +866,17 @@ a:hover { color: var(--text); }
 }
 
 .annotation-prev::before {
-  content: '\25C2';
+  content: '';
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-right: 5px solid currentColor;
 }
 
 .annotation-next::after {
-  content: '\25B8';
+  content: '';
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 5px solid currentColor;
 }
 
 .annotation-prev:hover,
