@@ -565,6 +565,8 @@ a:hover { color: var(--text); }
   cursor: pointer;
   padding: 0;
   padding-right: 14px;
+  width: fit-content;
+  flex-shrink: 0;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
