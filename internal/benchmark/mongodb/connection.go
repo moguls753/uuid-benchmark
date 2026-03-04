@@ -12,7 +12,7 @@ import (
 
 const (
 	dbHost     = "localhost"
-	dbPort     = "27017"
+	dbPort     = "27018"
 	dbUser     = "benchmark"
 	dbPassword = "benchmark123"
 	dbName     = "uuid_benchmark"

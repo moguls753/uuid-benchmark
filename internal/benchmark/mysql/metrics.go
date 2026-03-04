@@ -105,13 +105,18 @@ func (m *MySQLBenchmarker) measureIndexFragmentation() (benchmark.IndexFragmenta
 	// Only PostgreSQL's pgstatindex() provides this metric.
 	stats.AvgLeafDensity = -1 // N/A — not exposed by InnoDB
 
-	// Calculate internal (non-leaf) pages as a measure of B-tree depth/overhead
-	// More internal pages relative to leaf pages indicates deeper tree / more overhead
+	// Allocation overhead: (totalPages - leafPages) / totalPages * 100
+	// innodb_index_stats 'size' = total allocated pages in the index segment, including
+	// leaf pages, internal B-tree nodes, AND allocated-but-unused pages within extents
+	// (InnoDB allocates in 1MB extents = 64 pages). Internal nodes alone account for
+	// ~0.1% (branching factor ~800), so values above ~1% reflect extent-level allocation
+	// inefficiency — typically caused by page splits from random inserts.
+	// NOTE: This is NOT equivalent to PostgreSQL's leaf_fragmentation (physical page
+	// ordering). InnoDB does not expose that metric. Use index_size_mb differences
+	// between key types as the primary indicator of fragmentation impact.
 	if totalPages > 0 && leafPages > 0 {
-		internalPages := totalPages - leafPages
-		// "Fragmentation" here means B-tree overhead: internal pages as % of total
-		// A perfectly flat tree would have ~0%, deeper trees have more overhead
-		stats.FragmentationPercent = float64(internalPages) / float64(totalPages) * 100
+		nonLeafPages := totalPages - leafPages
+		stats.FragmentationPercent = float64(nonLeafPages) / float64(totalPages) * 100
 	}
 
 	stats.EmptyPages = -1 // N/A — InnoDB doesn't expose this
