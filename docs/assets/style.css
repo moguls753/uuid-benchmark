@@ -331,7 +331,29 @@ a:hover { color: var(--text); }
 .kpi-context {
   font-size: 11px;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+}
+
+.kpi-spark {
+  width: 100px;
+}
+
+.kpi-spark canvas {
+  display: block;
+  height: 36px;
+  width: 100px;
+}
+
+.kpi-spark-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.kpi-spark-labels span {
+  font-size: 8px;
+  color: var(--text-faint);
+  letter-spacing: 0.5px;
 }
 
 /* Database cards */
