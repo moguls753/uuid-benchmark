@@ -174,10 +174,14 @@ a:hover { color: var(--text); }
 
 .nav-tab.active::before {
   content: '';
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
   border-left: 5px solid currentColor;
   margin-right: 6px;
+  flex-shrink: 0;
 }
 
 /* Footer */
@@ -243,9 +247,12 @@ a:hover { color: var(--text); }
 
 .methodology-toggle::before {
   content: '';
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  width: 0;
+  height: 0;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
   border-left: 5px solid currentColor;
+  flex-shrink: 0;
   transition: transform 0.15s;
 }
 
@@ -466,9 +473,12 @@ a:hover { color: var(--text); }
 
 .db-explore::before {
   content: '';
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  width: 0;
+  height: 0;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
   border-left: 5px solid currentColor;
+  flex-shrink: 0;
 }
 
 .db-explore:hover {
@@ -798,9 +808,12 @@ a:hover { color: var(--text); }
 
 .show-all-metrics::after {
   content: '';
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  width: 0;
+  height: 0;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
   border-left: 5px solid currentColor;
+  flex-shrink: 0;
 }
 
 .show-all-metrics:hover {
@@ -867,16 +880,22 @@ a:hover { color: var(--text); }
 
 .annotation-prev::before {
   content: '';
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  width: 0;
+  height: 0;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
   border-right: 5px solid currentColor;
+  flex-shrink: 0;
 }
 
 .annotation-next::after {
   content: '';
-  border-top: 4px solid transparent;
-  border-bottom: 4px solid transparent;
+  width: 0;
+  height: 0;
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
   border-left: 5px solid currentColor;
+  flex-shrink: 0;
 }
 
 .annotation-prev:hover,
