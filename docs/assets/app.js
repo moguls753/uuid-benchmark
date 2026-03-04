@@ -589,8 +589,13 @@ function fillSelect(key, opts) {
     select.value = String(prev);
     filterState[key] = prev;
   } else if (opts.length > 0) {
-    select.value = String(opts[0]);
-    filterState[key] = opts[0];
+    // For metrics, prefer 'throughput' as the default over alphabetical first
+    var defaultVal = opts[0];
+    if (key === 'metric' && opts.indexOf('throughput') >= 0) {
+      defaultVal = 'throughput';
+    }
+    select.value = String(defaultVal);
+    filterState[key] = defaultVal;
   } else {
     filterState[key] = null;
   }
