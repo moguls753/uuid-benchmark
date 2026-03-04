@@ -40,9 +40,8 @@ function switchView(view, initialFilters, initialMode) {
     const isActive = btn.dataset.view === view;
     btn.classList.toggle('active', isActive);
     btn.setAttribute('aria-selected', String(isActive));
-    // Update ▸ marker
     const label = btn.dataset.view.toUpperCase().replace('-', ' ');
-    btn.textContent = isActive ? '\u25B8 ' + label : label;
+    btn.textContent = label;
   });
 
   document.querySelectorAll('.view-panel').forEach(panel => {
@@ -119,7 +118,7 @@ function parseURLHash() {
     btn.classList.toggle('active', isActive);
     btn.setAttribute('aria-selected', String(isActive));
     const label = btn.dataset.view.toUpperCase().replace('-', ' ');
-    btn.textContent = isActive ? '\u25B8 ' + label : label;
+    btn.textContent = label;
   });
 
   document.querySelectorAll('.view-panel').forEach(panel => {

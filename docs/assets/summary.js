@@ -114,7 +114,7 @@ function getScalePenalty(database, scenario, connections, metric, keyType) {
       e.keyType === 'SEQUENTIAL' && e.scale === scale
     );
     if (entry && baseline && baseline.median !== 0) {
-      return Math.abs(((entry.median - baseline.median) / baseline.median) * 100);
+      return (entry.median / baseline.median) * 100;
     }
     return null;
   });
@@ -159,25 +159,33 @@ function bindKPICards() {
       const finding = card.dataset.finding;
       const filters = {};
 
+      let mode;
       switch (finding) {
         case 'insert':
+          // -> cross-uuid: postgres|insert_performance|1m|1|throughput
           filters.database = 'postgres';
           filters.scenario = 'insert_performance';
           filters.scale = '1m';
           filters.connections = 1;
           break;
         case 'structural':
+          // -> cross-uuid: postgres|insert_performance|1m|1|fragmentation
           filters.database = 'postgres';
           filters.scenario = 'insert_performance';
           filters.scale = '1m';
           filters.connections = 1;
+          filters.panelMetrics = ['fragmentation', 'page_splits', 'avg_leaf_density', 'index_size_mb'];
           break;
         case 'scale':
+          // -> scale: mysql|insert_performance|1|throughput
+          mode = 'scale';
           filters.database = 'mysql';
           filters.scenario = 'insert_performance';
           filters.connections = 1;
           break;
         case 'engine':
+          // -> cross-db: insert_performance|1m|1|throughput
+          mode = 'cross-db';
           filters.scenario = 'insert_performance';
           filters.scale = '1m';
           filters.connections = 1;
@@ -185,7 +193,7 @@ function bindKPICards() {
       }
 
       if (window.navigateToExplorer) {
-        window.navigateToExplorer(filters, finding === 'scale' ? 'scale' : undefined);
+        window.navigateToExplorer(filters, mode);
       }
     };
 
@@ -203,12 +211,13 @@ function bindKPICards() {
 function bindMethodologyToggle() {
   const toggle = document.querySelector('.methodology-toggle');
   const detail = document.getElementById('methodology-detail');
-  if (!toggle || !detail) return;
+  if (!toggle || !detail || toggle._bound) return;
 
+  toggle._bound = true;
   toggle.addEventListener('click', () => {
     const expanded = detail.hidden;
     detail.hidden = !expanded;
     toggle.setAttribute('aria-expanded', String(expanded));
-    toggle.innerHTML = expanded ? '&#9666; Hide' : '&#9656; Details';
+    toggle.textContent = expanded ? 'Hide' : 'Details';
   });
 }

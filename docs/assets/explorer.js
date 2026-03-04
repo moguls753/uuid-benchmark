@@ -37,9 +37,15 @@ export function initExplorer(initialFilters, initialMode) {
     activeMode = initialMode;
   }
 
+  panelMetricOverrides = [null, null, null, null];
+
   if (initialFilters) {
     Object.keys(initialFilters).forEach(k => {
-      if (initialFilters[k] != null) filterState[k] = initialFilters[k];
+      if (k === 'panelMetrics') {
+        initialFilters[k].forEach((m, i) => { if (m) panelMetricOverrides[i] = m; });
+      } else if (initialFilters[k] != null) {
+        filterState[k] = initialFilters[k];
+      }
     });
   }
 
@@ -344,7 +350,7 @@ function bindMobileToggle() {
   dom.showAllBtn.addEventListener('click', () => {
     mobileShowAll = !mobileShowAll;
     updateMobileVisibility();
-    dom.showAllBtn.textContent = mobileShowAll ? 'SHOW FEWER METRICS \u25C2' : 'SHOW ALL METRICS \u25B8';
+    dom.showAllBtn.textContent = mobileShowAll ? 'SHOW FEWER METRICS' : 'SHOW ALL METRICS';
   });
 }
 

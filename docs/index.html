@@ -23,7 +23,7 @@
 
   <!-- MAIN NAVIGATION -->
   <nav class="main-nav" role="tablist" aria-label="View selection">
-    <button class="nav-tab active" role="tab" aria-selected="true" data-view="summary">&#9656; SUMMARY</button>
+    <button class="nav-tab active" role="tab" aria-selected="true" data-view="summary">SUMMARY</button>
     <button class="nav-tab" role="tab" aria-selected="false" data-view="explorer">EXPLORER</button>
     <button class="nav-tab" role="tab" aria-selected="false" data-view="raw-data">RAW DATA</button>
   </nav>
@@ -38,7 +38,7 @@
       <p class="methodology-line">
         5 runs per configuration &middot; Median reported &middot;
         Fresh container per UUID type &middot; 100K&ndash;10M records
-        <button class="methodology-toggle" aria-expanded="false" aria-controls="methodology-detail">&#9656; Details</button>
+        <button class="methodology-toggle" aria-expanded="false" aria-controls="methodology-detail">Details</button>
       </p>
       <div id="methodology-detail" class="methodology-detail" hidden>
         <div class="method-grid">
@@ -137,25 +137,25 @@
           <div class="db-name">POSTGRESQL</div>
           <div class="db-arch">B-tree / heap-organized</div>
           <div class="db-tool">pgbench</div>
-          <button class="db-explore" data-db="postgres">&#9656; explore</button>
+          <button class="db-explore" data-db="postgres">explore</button>
         </div>
         <div class="db-card" data-db="mysql">
           <div class="db-name">MYSQL</div>
           <div class="db-arch">Clustered B-tree (InnoDB)</div>
           <div class="db-tool">Go workload binary</div>
-          <button class="db-explore" data-db="mysql">&#9656; explore</button>
+          <button class="db-explore" data-db="mysql">explore</button>
         </div>
         <div class="db-card" data-db="mongodb">
           <div class="db-name">MONGODB</div>
           <div class="db-arch">WiredTiger B-tree index</div>
           <div class="db-tool">Go workload binary</div>
-          <button class="db-explore" data-db="mongodb">&#9656; explore</button>
+          <button class="db-explore" data-db="mongodb">explore</button>
         </div>
         <div class="db-card" data-db="cassandra">
           <div class="db-name">CASSANDRA</div>
           <div class="db-arch">LSM-tree / SSTables</div>
           <div class="db-tool">Go workload binary</div>
-          <button class="db-explore" data-db="cassandra">&#9656; explore</button>
+          <button class="db-explore" data-db="cassandra">explore</button>
         </div>
       </div>
     </section>
@@ -250,7 +250,7 @@
     </div>
 
     <!-- Mobile: show all metrics toggle -->
-    <button class="show-all-metrics" hidden>SHOW ALL METRICS &#9656;</button>
+    <button class="show-all-metrics" hidden>SHOW ALL METRICS</button>
 
     <!-- Annotation section -->
     <section class="annotation-section" aria-live="polite">
@@ -258,9 +258,9 @@
         <span class="annotation-icon">&#9678;</span>
         <span class="annotation-title">FINDING</span>
         <div class="annotation-nav">
-          <button class="annotation-prev" aria-label="Previous finding">&#9666; prev</button>
+          <button class="annotation-prev" aria-label="Previous finding">prev</button>
           <span class="annotation-progress"></span>
-          <button class="annotation-next" aria-label="Next finding">next &#9656;</button>
+          <button class="annotation-next" aria-label="Next finding">next</button>
         </div>
       </div>
       <p class="annotation-finding"></p>
