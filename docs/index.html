@@ -14,7 +14,6 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="band band--header">
     <div class="band-content site-header">
       <span class="site-brand">UUID BENCHMARK</span>
@@ -23,7 +22,6 @@
     </div>
   </header>
 
-  <!-- MAIN NAVIGATION -->
   <nav class="band band--nav" role="tablist" aria-label="View selection">
     <div class="band-content main-nav">
       <button class="nav-tab active" role="tab" aria-selected="true" data-view="summary">SUMMARY</button>
@@ -34,12 +32,8 @@
 
   <main>
 
-  <!-- ================================================================== -->
-  <!-- SUMMARY VIEW                                                       -->
-  <!-- ================================================================== -->
   <div id="view-summary" class="view-panel" role="tabpanel">
 
-    <!-- Methodology banner -->
     <section class="band band--off">
       <div class="band-content methodology-banner">
         <p class="methodology-line">
@@ -90,7 +84,6 @@
       </div>
     </section>
 
-    <!-- KPI Finding Cards -->
     <section class="band">
       <div class="band-content kpi-section">
         <h2 class="section-label">KEY FINDINGS</h2>
@@ -135,7 +128,6 @@
       </div>
     </section>
 
-    <!-- Database Overview -->
     <section class="band band--off">
       <div class="band-content db-section">
         <h2 class="section-label">DATABASES TESTED</h2>
@@ -168,7 +160,6 @@
       </div>
     </section>
 
-    <!-- UUID Types Legend -->
     <section class="band band--border-top">
       <div class="band-content legend-section">
         <h2 class="section-label">UUID TYPES TESTED</h2>
@@ -178,12 +169,8 @@
 
   </div>
 
-  <!-- ================================================================== -->
-  <!-- EXPLORER VIEW                                                      -->
-  <!-- ================================================================== -->
   <div id="view-explorer" class="view-panel" role="tabpanel" hidden>
 
-    <!-- Filter bar -->
     <section class="band band--off" aria-label="Filters">
       <div class="band-content filter-bar">
         <button class="filter-toggle" aria-expanded="false" aria-controls="filter-modal">
@@ -215,7 +202,6 @@
       </div>
     </section>
 
-    <!-- Explorer sub-tabs -->
     <div class="band band--border-bottom">
       <div class="band-content">
         <nav class="explorer-tabs" role="tablist" aria-label="Analysis mode">
@@ -226,14 +212,12 @@
       </div>
     </div>
 
-    <!-- Legend strip -->
     <div class="band band--border-bottom">
       <div class="band-content">
         <div class="legend-strip" id="explorer-legend"></div>
       </div>
     </div>
 
-    <!-- 4-panel chart grid -->
     <div class="band">
       <div class="band-content">
         <div class="chart-grid">
@@ -270,13 +254,10 @@
             <div class="panel-chart"><canvas></canvas></div>
           </div>
         </div>
-
-        <!-- Mobile: show all metrics toggle -->
         <button class="show-all-metrics" hidden>SHOW ALL METRICS</button>
       </div>
     </div>
 
-    <!-- Annotation section -->
     <section class="band band--off" aria-live="polite">
       <div class="band-content annotation-section">
         <div class="annotation-header">
@@ -293,19 +274,14 @@
       </div>
     </section>
 
-    <!-- No data state -->
     <div class="no-data" hidden>
       <p>&mdash; No data available for this filter combination &mdash;</p>
     </div>
 
   </div>
 
-  <!-- ================================================================== -->
-  <!-- RAW DATA VIEW                                                      -->
-  <!-- ================================================================== -->
   <div id="view-raw-data" class="view-panel" role="tabpanel" hidden>
 
-    <!-- Filter bar -->
     <section class="band band--off" aria-label="Filters">
       <div class="band-content filter-bar raw-filter-bar">
         <button class="filter-toggle raw-filter-toggle" aria-expanded="false" aria-controls="filter-modal">
@@ -333,7 +309,6 @@
       </div>
     </section>
 
-    <!-- Table -->
     <div class="band">
       <div class="band-content">
         <div class="table-scroll">
@@ -342,7 +317,6 @@
             <tbody></tbody>
           </table>
         </div>
-        <!-- Mobile card layout -->
         <div class="raw-data-cards" id="raw-data-cards"></div>
         <div class="table-footer">
           <span class="table-sort-info"></span>
@@ -355,7 +329,6 @@
 
   </main>
 
-  <!-- CHART MODAL -->
   <div class="chart-modal-overlay" id="chart-modal" role="dialog" aria-modal="true" aria-label="Expanded chart">
     <div class="chart-modal">
       <div class="chart-modal-header">
@@ -371,7 +344,6 @@
     </div>
   </div>
 
-  <!-- FILTER MODAL (shared bottom-sheet for Explorer + Raw Data on mobile) -->
   <div class="filter-modal-overlay" id="filter-modal" role="dialog" aria-modal="true" aria-label="Filters">
     <div class="filter-modal">
       <div class="filter-modal-header">
@@ -382,7 +354,6 @@
     </div>
   </div>
 
-  <!-- FOOTER -->
   <footer class="band band--footer">
     <div class="band-content site-footer">
       <span>UUID Benchmark &middot; 2026</span>
