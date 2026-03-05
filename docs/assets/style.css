@@ -343,7 +343,7 @@ a:hover, a:active { color: var(--text); }
 
 .method-cell {
   background: var(--bg);
-  padding: 12px 0;
+  padding: 12px 14px;
 }
 
 .method-cell h3 {
@@ -410,9 +410,6 @@ a:hover, a:active { color: var(--text); }
 .kpi-card:active {
   background: var(--bg-dark);
 }
-
-.kpi-card:nth-child(odd) { padding-left: 0; }
-.kpi-card:nth-child(even) { padding-right: 0; }
 
 .kpi-header {
   margin-bottom: 6px;
@@ -487,9 +484,6 @@ a:hover, a:active { color: var(--text); }
   padding: 16px;
   border: none;
 }
-
-.db-card:nth-child(odd) { padding-left: 0; }
-.db-card:nth-child(even) { padding-right: 0; }
 
 .db-name {
   font-family: var(--font-serif);
@@ -769,7 +763,7 @@ a:hover, a:active { color: var(--text); }
 
 .chart-panel {
   background: var(--bg);
-  padding: 14px 0;
+  padding: 14px;
   position: relative;
   min-height: 200px;
 }
@@ -1383,18 +1377,6 @@ a:hover, a:active { color: var(--text); }
     grid-template-columns: 1fr 1fr;
   }
 
-  /* Content alignment: restore inner padding for multi-column grids */
-  .kpi-card:nth-child(odd) { padding-left: 18px; }
-  .kpi-card:nth-child(even) { padding-right: 18px; }
-  .kpi-card:nth-child(4n+1) { padding-left: 0; }
-  .kpi-card:nth-child(4n) { padding-right: 0; }
-
-  .chart-panel:nth-child(odd) { padding-right: 14px; }
-  .chart-panel:nth-child(even) { padding-left: 14px; }
-
-  .method-cell:nth-child(odd) { padding-right: 14px; }
-  .method-cell:nth-child(even) { padding-left: 14px; }
-
   .chart-panel .panel-chart {
     height: 270px;
   }
@@ -1763,7 +1745,6 @@ a:hover, a:active { color: var(--text); }
     grid-template-columns: 1fr;
   }
 
-  .db-card { padding-left: 0; padding-right: 0; }
 }
 
 /* --- 14. Responsive: Small Mobile (<=400px) ------------------------------ */
