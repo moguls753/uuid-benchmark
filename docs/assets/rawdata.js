@@ -364,11 +364,15 @@ function renderRawCards(sorted, metricBestWorst) {
     groups.get(groupKey).metrics.push(e);
   });
 
+  // Build context parts that vary across cards (strip filtered dimensions)
+  const contextKeys = ['database', 'scenario', 'scale'];
+  const activeContextKeys = contextKeys.filter(k => rawFilterState[k] == null);
+
   groups.forEach(group => {
     const card = document.createElement('div');
     card.className = 'raw-card';
 
-    // Header
+    // Header — line 1: swatch + key type name
     const header = document.createElement('div');
     header.className = 'raw-card-header';
 
@@ -377,13 +381,28 @@ function renderRawCards(sorted, metricBestWorst) {
     swatch.style.background = KEY_TYPE_COLORS[group.keyType] || '#999';
     header.appendChild(swatch);
 
-    const title = document.createTextNode(
-      formatKeyTypeName(group.keyType) +
-      ' \u00b7 ' + formatDatabaseName(group.database) +
-      ' \u00b7 ' + formatScenarioName(group.scenario) +
-      ' \u00b7 ' + String(group.scale).toUpperCase()
-    );
+    const title = document.createElement('span');
+    title.className = 'raw-card-title';
+    title.textContent = formatKeyTypeName(group.keyType);
     header.appendChild(title);
+
+    // Header — line 2: unfiltered context dimensions (if any)
+    const contextParts = [];
+    activeContextKeys.forEach(k => {
+      switch (k) {
+        case 'database': contextParts.push(formatDatabaseName(group.database)); break;
+        case 'scenario': contextParts.push(formatScenarioName(group.scenario)); break;
+        case 'scale': contextParts.push(String(group.scale).toUpperCase()); break;
+      }
+    });
+
+    if (contextParts.length > 0) {
+      const context = document.createElement('span');
+      context.className = 'raw-card-context';
+      context.textContent = contextParts.join(' \u00b7 ');
+      header.appendChild(context);
+    }
+
     card.appendChild(header);
 
     // Body
