@@ -1,7 +1,8 @@
 /* ==========================================================================
-   UUID Benchmark Dashboard — Monochrome Terminal Aesthetic
-   JetBrains Mono · 1px borders · No radius · No shadows · The wireframe IS the product.
-   Only color comes from benchmark data.
+   UUID Benchmark Dashboard — Editorial Monochrome
+   IBM Plex Serif (display) + JetBrains Mono (data)
+   Full-bleed rules & background bands · FT-inspired layout structure
+   No radius · No shadows · Only color comes from benchmark data.
    ========================================================================== */
 
 /* --- 1. Custom Properties (Design Tokens) -------------------------------- */
@@ -16,6 +17,7 @@
   --text-muted:     #888888;
   --text-faint:     #bbbbbb;
 
+  --font-serif:     "IBM Plex Serif", Georgia, "Times New Roman", serif;
   --font-mono:      "JetBrains Mono", "Courier New", Courier, monospace;
   --max-width:      min(1440px, calc(100vw - 48px));
   --touch-target:   44px;
@@ -106,38 +108,74 @@ select:focus {
 a { color: var(--text-muted); text-decoration: none; }
 a:hover, a:active { color: var(--text); }
 
-/* --- 3. Page Shell ------------------------------------------------------- */
-.page-wrap {
+/* --- 3. Full-Bleed Band System ------------------------------------------- */
+/* FT-inspired: decoration (borders, backgrounds) bleeds to viewport edges.
+   Content stays constrained inside .band-content. */
+
+.band {
+  width: 100%;
+  background: var(--bg);
+}
+
+.band--off {
+  background: var(--bg-off);
+}
+
+.band--header {
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.band--nav {
+  border-bottom: 1px solid var(--border);
+}
+
+.band--footer {
+  border-top: 1px solid var(--border-strong);
+}
+
+.band--border-bottom {
+  border-bottom: 1px solid var(--border);
+}
+
+.band--border-top {
+  border-top: 1px solid var(--border);
+}
+
+.band-content {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 20px;
+  padding-left: 20px;
+  padding-right: 20px;
 }
+
+/* --- 4. Page Shell ------------------------------------------------------- */
 
 /* Header */
 .site-header {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--border);
-  max-width: var(--max-width);
-  margin: 0 auto;
+  gap: 10px;
+  padding-top: 16px;
+  padding-bottom: 16px;
 }
 
 .site-brand {
-  font-size: 12px;
+  font-family: var(--font-serif);
+  font-size: 18px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 2.5px;
+  letter-spacing: 3px;
   white-space: nowrap;
 }
 
 .site-divider {
   color: var(--border);
   font-weight: 300;
+  font-size: 18px;
 }
 
 .site-subtitle {
+  font-family: var(--font-mono);
   font-size: 11px;
   color: var(--text-muted);
   white-space: nowrap;
@@ -149,10 +187,6 @@ a:hover, a:active { color: var(--text); }
 .main-nav {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid var(--border);
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 20px;
 }
 
 .nav-tab {
@@ -195,10 +229,8 @@ a:hover, a:active { color: var(--text); }
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 12px 20px;
-  border-top: 1px solid var(--border);
-  max-width: var(--max-width);
-  margin: 0 auto;
+  padding-top: 14px;
+  padding-bottom: 14px;
   font-size: 10px;
   color: var(--text-faint);
 }
@@ -213,22 +245,15 @@ a:hover, a:active { color: var(--text); }
 }
 
 /* View panels */
-.view-panel {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
 .view-panel[hidden] {
   display: none;
 }
 
-/* --- 4. Summary View ----------------------------------------------------- */
+/* --- 5. Summary View ----------------------------------------------------- */
 
 /* Methodology banner */
 .methodology-banner {
   padding: 10px 0;
-  border-bottom: 1px solid var(--border);
   font-size: 11px;
   color: var(--text-muted);
 }
@@ -280,8 +305,9 @@ a:hover, a:active { color: var(--text); }
 }
 
 .methodology-detail h3 {
-  font-size: 11px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 12px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--text-muted);
@@ -344,14 +370,15 @@ a:hover, a:active { color: var(--text); }
   color: var(--text-mid);
 }
 
-/* Section labels */
+/* Section labels — editorial serif */
 .section-label {
-  font-size: 14px;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 19px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2.5px;
   color: var(--text);
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 /* KPI Cards */
@@ -399,7 +426,8 @@ a:hover, a:active { color: var(--text); }
 }
 
 .kpi-hero {
-  font-size: 26px;
+  font-family: var(--font-serif);
+  font-size: 32px;
   font-weight: 700;
   line-height: 1.1;
   margin-bottom: 4px;
@@ -438,7 +466,6 @@ a:hover, a:active { color: var(--text); }
 /* Database cards */
 .db-section {
   padding: 20px 0;
-  border-top: 1px solid var(--border);
 }
 
 .db-grid {
@@ -455,7 +482,8 @@ a:hover, a:active { color: var(--text); }
 }
 
 .db-name {
-  font-size: 12px;
+  font-family: var(--font-serif);
+  font-size: 14px;
   font-weight: 700;
   margin-bottom: 4px;
 }
@@ -502,7 +530,6 @@ a:hover, a:active { color: var(--text); }
 /* Legend section */
 .legend-section {
   padding: 16px 0 20px;
-  border-top: 1px solid var(--border);
 }
 
 .legend-strip {
@@ -529,7 +556,7 @@ a:hover, a:active { color: var(--text); }
   flex-shrink: 0;
 }
 
-/* --- 5. Explorer View ---------------------------------------------------- */
+/* --- 6. Explorer View ---------------------------------------------------- */
 
 /* Filter bar */
 .filter-bar {
@@ -537,7 +564,6 @@ a:hover, a:active { color: var(--text); }
   flex-wrap: wrap;
   gap: 14px;
   padding: 10px 0;
-  border-bottom: 1px solid var(--border);
   align-items: flex-end;
 }
 
@@ -693,7 +719,6 @@ a:hover, a:active { color: var(--text); }
 .explorer-tabs {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid var(--border);
   padding-top: 2px;
 }
 
@@ -719,11 +744,6 @@ a:hover, a:active { color: var(--text); }
 .explorer-tab.active {
   color: var(--text);
   border-bottom-color: var(--border-strong);
-}
-
-/* Explorer legend strip */
-#explorer-legend {
-  border-bottom: 1px solid var(--border);
 }
 
 /* Chart grid */
@@ -956,9 +976,7 @@ a:hover, a:active { color: var(--text); }
 
 /* Annotation section */
 .annotation-section {
-  border-top: 1px solid var(--border);
   padding: 14px 0;
-  margin-top: 0;
 }
 
 .annotation-section[hidden] {
@@ -1053,7 +1071,8 @@ a:hover, a:active { color: var(--text); }
 }
 
 .annotation-finding {
-  font-size: 13px;
+  font-family: var(--font-serif);
+  font-size: 15px;
   font-weight: 700;
   line-height: 1.5;
   margin-bottom: 4px;
@@ -1073,6 +1092,8 @@ a:hover, a:active { color: var(--text); }
 
 /* No data state */
 .no-data {
+  max-width: var(--max-width);
+  margin: 0 auto;
   padding: 40px 20px;
   text-align: center;
   font-size: 12px;
@@ -1135,7 +1156,7 @@ a:hover, a:active { color: var(--text); }
   color: var(--text);
 }
 
-/* --- 6. Raw Data View ---------------------------------------------------- */
+/* --- 7. Raw Data View ---------------------------------------------------- */
 
 .raw-filter-bar {
   margin-bottom: 0;
@@ -1313,7 +1334,7 @@ a:hover, a:active { color: var(--text); }
   color: var(--text-muted);
 }
 
-/* --- 7. Animations ------------------------------------------------------- */
+/* --- 8. Animations ------------------------------------------------------- */
 
 @keyframes fade-up {
   from {
@@ -1335,7 +1356,7 @@ a:hover, a:active { color: var(--text); }
   animation: fade-in 200ms ease both;
 }
 
-/* --- 8. Responsive: Tablet (768px+) ------------------------------------- */
+/* --- 9. Responsive: Tablet (768px+) ------------------------------------- */
 
 @media (min-width: 768px) {
   .method-grid {
@@ -1359,11 +1380,16 @@ a:hover, a:active { color: var(--text); }
   }
 }
 
-/* --- 9. Responsive: Desktop (1024px+) ----------------------------------- */
+/* --- 10. Responsive: Desktop (1024px+) ---------------------------------- */
 
 @media (min-width: 1024px) {
   .site-header {
-    padding: 16px 20px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .site-brand {
+    font-size: 20px;
   }
 
   .chart-panel .panel-chart {
@@ -1371,11 +1397,15 @@ a:hover, a:active { color: var(--text); }
   }
 
   .kpi-hero {
-    font-size: 30px;
+    font-size: 34px;
+  }
+
+  .section-label {
+    font-size: 20px;
   }
 }
 
-/* --- 10. Responsive: Large Display (1800px+) ----------------------------- */
+/* --- 11. Responsive: Large Display (1800px+) ----------------------------- */
 
 @media (min-width: 1800px) {
   body {
@@ -1387,7 +1417,7 @@ a:hover, a:active { color: var(--text); }
   }
 
   .site-brand {
-    font-size: 13px;
+    font-size: 22px;
   }
 
   .site-subtitle {
@@ -1399,11 +1429,11 @@ a:hover, a:active { color: var(--text); }
   }
 
   .section-label {
-    font-size: 15px;
+    font-size: 22px;
   }
 
   .kpi-hero {
-    font-size: 34px;
+    font-size: 38px;
   }
 
   .kpi-label {
@@ -1419,7 +1449,7 @@ a:hover, a:active { color: var(--text); }
   }
 
   .db-name {
-    font-size: 13px;
+    font-size: 15px;
   }
 
   .db-arch, .db-tool {
@@ -1455,7 +1485,7 @@ a:hover, a:active { color: var(--text); }
   }
 
   .annotation-finding {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .annotation-explanation {
@@ -1496,7 +1526,7 @@ a:hover, a:active { color: var(--text); }
   }
 }
 
-/* --- 11. Reduced Motion -------------------------------------------------- */
+/* --- 12. Reduced Motion -------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -1506,7 +1536,7 @@ a:hover, a:active { color: var(--text); }
   }
 }
 
-/* --- 12. Responsive: Mobile (<768px) — Typography & Touch Targets -------- */
+/* --- 13. Responsive: Mobile (<768px) — Typography & Touch Targets -------- */
 
 @media (max-width: 767px) {
   body {
@@ -1531,7 +1561,12 @@ a:hover, a:active { color: var(--text); }
 
   /* Section labels */
   .section-label {
-    font-size: 16px;
+    font-size: 18px;
+  }
+
+  /* KPI hero */
+  .kpi-hero {
+    font-size: 28px;
   }
 
   /* KPI context text */
@@ -1705,7 +1740,7 @@ a:hover, a:active { color: var(--text); }
   }
 }
 
-/* --- 13. Responsive: Small Mobile (<=400px) ------------------------------ */
+/* --- 14. Responsive: Small Mobile (<=400px) ------------------------------ */
 
 @media (max-width: 400px) {
   .kpi-icon {

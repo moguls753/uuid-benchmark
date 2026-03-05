@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7" defer></script>
   <script type="module" src="assets/app.js"></script>
@@ -15,253 +15,282 @@
 <body>
 
   <!-- HEADER -->
-  <header class="site-header">
-    <span class="site-brand">UUID BENCHMARK</span>
-    <span class="site-divider">|</span>
-    <span class="site-subtitle">Cross-database performance comparison of identifier strategies</span>
+  <header class="band band--header">
+    <div class="band-content site-header">
+      <span class="site-brand">UUID BENCHMARK</span>
+      <span class="site-divider">|</span>
+      <span class="site-subtitle">Cross-database performance comparison of identifier strategies</span>
+    </div>
   </header>
 
   <!-- MAIN NAVIGATION -->
-  <nav class="main-nav" role="tablist" aria-label="View selection">
-    <button class="nav-tab active" role="tab" aria-selected="true" data-view="summary">SUMMARY</button>
-    <button class="nav-tab" role="tab" aria-selected="false" data-view="explorer">EXPLORER</button>
-    <button class="nav-tab" role="tab" aria-selected="false" data-view="raw-data">RAW DATA</button>
+  <nav class="band band--nav" role="tablist" aria-label="View selection">
+    <div class="band-content main-nav">
+      <button class="nav-tab active" role="tab" aria-selected="true" data-view="summary">SUMMARY</button>
+      <button class="nav-tab" role="tab" aria-selected="false" data-view="explorer">EXPLORER</button>
+      <button class="nav-tab" role="tab" aria-selected="false" data-view="raw-data">RAW DATA</button>
+    </div>
   </nav>
+
+  <main>
 
   <!-- ================================================================== -->
   <!-- SUMMARY VIEW                                                       -->
   <!-- ================================================================== -->
-  <main id="view-summary" class="view-panel" role="tabpanel">
+  <div id="view-summary" class="view-panel" role="tabpanel">
 
     <!-- Methodology banner -->
-    <section class="methodology-banner">
-      <p class="methodology-line">
-        5 runs per configuration &middot; Median reported &middot;
-        Fresh container per UUID type &middot; 100K&ndash;10M records
-        <button class="methodology-toggle" aria-expanded="false" aria-controls="methodology-detail">Details</button>
-      </p>
-      <div id="methodology-detail" class="methodology-detail" hidden>
-        <div class="method-grid">
-          <div class="method-cell">
-            <h3>Experimental Design</h3>
-            <dl class="method-dl">
-              <div><dt>Matrix</dt><dd>6 key types &times; 4 databases &times; 5 scenarios</dd></div>
-              <div><dt>Scale tiers</dt><dd>100K &middot; 1M &middot; 10M records</dd></div>
-              <div><dt>Payload</dt><dd>1 KB binary (matches YCSB default)</dd></div>
-              <div><dt>Key storage</dt><dd>Native 16-byte binary in all databases</dd></div>
-            </dl>
-          </div>
-          <div class="method-cell">
-            <h3>Statistical Rigor</h3>
-            <dl class="method-dl">
-              <div><dt>Runs</dt><dd>5 per configuration, median reported</dd></div>
-              <div><dt>Stability</dt><dd>CV &lt; 2% (single-conn), &lt; 5% (concurrent)</dd></div>
-              <div><dt>Hypothesis</dt><dd>Mann-Whitney U test (&alpha; = 0.05) vs baseline</dd></div>
-              <div><dt>Validation</dt><dd>Cross-checked against YCSB (go-ycsb)</dd></div>
-            </dl>
-          </div>
-          <div class="method-cell">
-            <h3>Isolation &amp; Tuning</h3>
-            <dl class="method-dl">
-              <div><dt>Containers</dt><dd>Fresh per key type &mdash; 4 CPUs, 8 GB RAM</dd></div>
-              <div><dt>PostgreSQL</dt><dd><code>checkpoint_timeout=1h</code>, <code>max_wal_size=10GB</code></dd></div>
-              <div><dt>MySQL</dt><dd><code>buffer_pool=4G</code>, <code>flush_method=O_DIRECT</code></dd></div>
-              <div><dt>Mongo / Cass.</dt><dd>WiredTiger ~4 GB cache / JVM heap 4G, STCS</dd></div>
-            </dl>
-          </div>
-          <div class="method-cell">
-            <h3>Metric Collection</h3>
-            <dl class="method-dl">
-              <div><dt>Workloads</dt><dd>Execute inside containers (zero network overhead)</dd></div>
-              <div><dt>I/O</dt><dd>cgroup v2 kernel accounting &mdash; per-container, zero overhead</dd></div>
-              <div><dt>Structural</dt><dd>WAL page splits (PG), innodb_metrics (MY), WiredTiger reconciliation (MO), nodetool tablestats (CA)</dd></div>
-              <div><dt>Cache</dt><dd>Buffer pool / WiredTiger cache / key cache hit ratios</dd></div>
-            </dl>
+    <section class="band band--off">
+      <div class="band-content methodology-banner">
+        <p class="methodology-line">
+          5 runs per configuration &middot; Median reported &middot;
+          Fresh container per UUID type &middot; 100K&ndash;10M records
+          <button class="methodology-toggle" aria-expanded="false" aria-controls="methodology-detail">Details</button>
+        </p>
+        <div id="methodology-detail" class="methodology-detail" hidden>
+          <div class="method-grid">
+            <div class="method-cell">
+              <h3>Experimental Design</h3>
+              <dl class="method-dl">
+                <div><dt>Matrix</dt><dd>6 key types &times; 4 databases &times; 5 scenarios</dd></div>
+                <div><dt>Scale tiers</dt><dd>100K &middot; 1M &middot; 10M records</dd></div>
+                <div><dt>Payload</dt><dd>1 KB binary (matches YCSB default)</dd></div>
+                <div><dt>Key storage</dt><dd>Native 16-byte binary in all databases</dd></div>
+              </dl>
+            </div>
+            <div class="method-cell">
+              <h3>Statistical Rigor</h3>
+              <dl class="method-dl">
+                <div><dt>Runs</dt><dd>5 per configuration, median reported</dd></div>
+                <div><dt>Stability</dt><dd>CV &lt; 2% (single-conn), &lt; 5% (concurrent)</dd></div>
+                <div><dt>Hypothesis</dt><dd>Mann-Whitney U test (&alpha; = 0.05) vs baseline</dd></div>
+                <div><dt>Validation</dt><dd>Cross-checked against YCSB (go-ycsb)</dd></div>
+              </dl>
+            </div>
+            <div class="method-cell">
+              <h3>Isolation &amp; Tuning</h3>
+              <dl class="method-dl">
+                <div><dt>Containers</dt><dd>Fresh per key type &mdash; 4 CPUs, 8 GB RAM</dd></div>
+                <div><dt>PostgreSQL</dt><dd><code>checkpoint_timeout=1h</code>, <code>max_wal_size=10GB</code></dd></div>
+                <div><dt>MySQL</dt><dd><code>buffer_pool=4G</code>, <code>flush_method=O_DIRECT</code></dd></div>
+                <div><dt>Mongo / Cass.</dt><dd>WiredTiger ~4 GB cache / JVM heap 4G, STCS</dd></div>
+              </dl>
+            </div>
+            <div class="method-cell">
+              <h3>Metric Collection</h3>
+              <dl class="method-dl">
+                <div><dt>Workloads</dt><dd>Execute inside containers (zero network overhead)</dd></div>
+                <div><dt>I/O</dt><dd>cgroup v2 kernel accounting &mdash; per-container, zero overhead</dd></div>
+                <div><dt>Structural</dt><dd>WAL page splits (PG), innodb_metrics (MY), WiredTiger reconciliation (MO), nodetool tablestats (CA)</dd></div>
+                <div><dt>Cache</dt><dd>Buffer pool / WiredTiger cache / key cache hit ratios</dd></div>
+              </dl>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- KPI Finding Cards -->
-    <section class="kpi-section">
-      <h2 class="section-label">KEY FINDINGS</h2>
-      <div class="kpi-grid">
-        <div class="kpi-card" data-finding="insert" tabindex="0" role="button" aria-label="View insert performance details">
-          <div class="kpi-header"><span class="kpi-icon">&#9678;</span><span class="kpi-label">INSERT PENALTY</span></div>
-          <div class="kpi-hero">&minus;13.6% to &minus;30%</div>
-          <div class="kpi-context">UUIDv4 slower than sequential</div>
-          <div class="kpi-spark">
-            <canvas class="kpi-chart" width="100" height="36"></canvas>
-            <div class="kpi-spark-labels"><span>100K</span><span>1M</span><span>10M</span></div>
+    <section class="band">
+      <div class="band-content kpi-section">
+        <h2 class="section-label">KEY FINDINGS</h2>
+        <div class="kpi-grid">
+          <div class="kpi-card" data-finding="insert" tabindex="0" role="button" aria-label="View insert performance details">
+            <div class="kpi-header"><span class="kpi-icon">&#9678;</span><span class="kpi-label">INSERT PENALTY</span></div>
+            <div class="kpi-hero">&minus;13.6% to &minus;30%</div>
+            <div class="kpi-context">UUIDv4 slower than sequential</div>
+            <div class="kpi-spark">
+              <canvas class="kpi-chart" width="100" height="36"></canvas>
+              <div class="kpi-spark-labels"><span>100K</span><span>1M</span><span>10M</span></div>
+            </div>
           </div>
-        </div>
-        <div class="kpi-card" data-finding="structural" tabindex="0" role="button" aria-label="View structural damage details">
-          <div class="kpi-header"><span class="kpi-icon">&#9678;</span><span class="kpi-label">STRUCTURAL DAMAGE</span></div>
-          <div class="kpi-hero">49.8%</div>
-          <div class="kpi-context">UUIDv4 leaf fragmentation, PostgreSQL</div>
-          <div class="kpi-spark">
-            <canvas class="kpi-chart" width="100" height="36"></canvas>
-            <div class="kpi-spark-labels"><span>100K</span><span>1M</span><span>10M</span></div>
+          <div class="kpi-card" data-finding="structural" tabindex="0" role="button" aria-label="View structural damage details">
+            <div class="kpi-header"><span class="kpi-icon">&#9678;</span><span class="kpi-label">STRUCTURAL DAMAGE</span></div>
+            <div class="kpi-hero">49.8%</div>
+            <div class="kpi-context">UUIDv4 leaf fragmentation, PostgreSQL</div>
+            <div class="kpi-spark">
+              <canvas class="kpi-chart" width="100" height="36"></canvas>
+              <div class="kpi-spark-labels"><span>100K</span><span>1M</span><span>10M</span></div>
+            </div>
           </div>
-        </div>
-        <div class="kpi-card" data-finding="scale" tabindex="0" role="button" aria-label="View scale effect details">
-          <div class="kpi-header"><span class="kpi-icon">&#9678;</span><span class="kpi-label">SCALE EFFECT</span></div>
-          <div class="kpi-hero">&minus;73%</div>
-          <div class="kpi-context">UUIDv4 throughput at 10M, MySQL</div>
-          <div class="kpi-spark">
-            <canvas class="kpi-chart" width="100" height="36"></canvas>
-            <div class="kpi-spark-labels"><span>100K</span><span>1M</span><span>10M</span></div>
+          <div class="kpi-card" data-finding="scale" tabindex="0" role="button" aria-label="View scale effect details">
+            <div class="kpi-header"><span class="kpi-icon">&#9678;</span><span class="kpi-label">SCALE EFFECT</span></div>
+            <div class="kpi-hero">&minus;73%</div>
+            <div class="kpi-context">UUIDv4 throughput at 10M, MySQL</div>
+            <div class="kpi-spark">
+              <canvas class="kpi-chart" width="100" height="36"></canvas>
+              <div class="kpi-spark-labels"><span>100K</span><span>1M</span><span>10M</span></div>
+            </div>
           </div>
-        </div>
-        <div class="kpi-card" data-finding="engine" tabindex="0" role="button" aria-label="View best balance details">
-          <div class="kpi-header"><span class="kpi-icon">&#9678;</span><span class="kpi-label">BEST BALANCE</span></div>
-          <div class="kpi-hero">UUIDv7</div>
-          <div class="kpi-context">across all databases</div>
-          <div class="kpi-spark">
-            <canvas class="kpi-chart" width="100" height="36"></canvas>
-            <div class="kpi-spark-labels"><span>PG</span><span>MY</span><span>MO</span><span>CA</span></div>
+          <div class="kpi-card" data-finding="engine" tabindex="0" role="button" aria-label="View best balance details">
+            <div class="kpi-header"><span class="kpi-icon">&#9678;</span><span class="kpi-label">BEST BALANCE</span></div>
+            <div class="kpi-hero">UUIDv7</div>
+            <div class="kpi-context">across all databases</div>
+            <div class="kpi-spark">
+              <canvas class="kpi-chart" width="100" height="36"></canvas>
+              <div class="kpi-spark-labels"><span>PG</span><span>MY</span><span>MO</span><span>CA</span></div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- Database Overview -->
-    <section class="db-section">
-      <h2 class="section-label">DATABASES TESTED</h2>
-      <div class="db-grid">
-        <div class="db-card" data-db="postgres">
-          <div class="db-name">POSTGRESQL</div>
-          <div class="db-arch">B-tree / heap-organized</div>
-          <div class="db-tool">pgbench</div>
-          <button class="db-explore" data-db="postgres">explore</button>
-        </div>
-        <div class="db-card" data-db="mysql">
-          <div class="db-name">MYSQL</div>
-          <div class="db-arch">Clustered B-tree (InnoDB)</div>
-          <div class="db-tool">Go workload binary</div>
-          <button class="db-explore" data-db="mysql">explore</button>
-        </div>
-        <div class="db-card" data-db="mongodb">
-          <div class="db-name">MONGODB</div>
-          <div class="db-arch">WiredTiger B-tree index</div>
-          <div class="db-tool">Go workload binary</div>
-          <button class="db-explore" data-db="mongodb">explore</button>
-        </div>
-        <div class="db-card" data-db="cassandra">
-          <div class="db-name">CASSANDRA</div>
-          <div class="db-arch">LSM-tree / SSTables</div>
-          <div class="db-tool">Go workload binary</div>
-          <button class="db-explore" data-db="cassandra">explore</button>
+    <section class="band band--off">
+      <div class="band-content db-section">
+        <h2 class="section-label">DATABASES TESTED</h2>
+        <div class="db-grid">
+          <div class="db-card" data-db="postgres">
+            <div class="db-name">POSTGRESQL</div>
+            <div class="db-arch">B-tree / heap-organized</div>
+            <div class="db-tool">pgbench</div>
+            <button class="db-explore" data-db="postgres">explore</button>
+          </div>
+          <div class="db-card" data-db="mysql">
+            <div class="db-name">MYSQL</div>
+            <div class="db-arch">Clustered B-tree (InnoDB)</div>
+            <div class="db-tool">Go workload binary</div>
+            <button class="db-explore" data-db="mysql">explore</button>
+          </div>
+          <div class="db-card" data-db="mongodb">
+            <div class="db-name">MONGODB</div>
+            <div class="db-arch">WiredTiger B-tree index</div>
+            <div class="db-tool">Go workload binary</div>
+            <button class="db-explore" data-db="mongodb">explore</button>
+          </div>
+          <div class="db-card" data-db="cassandra">
+            <div class="db-name">CASSANDRA</div>
+            <div class="db-arch">LSM-tree / SSTables</div>
+            <div class="db-tool">Go workload binary</div>
+            <button class="db-explore" data-db="cassandra">explore</button>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- UUID Types Legend -->
-    <section class="legend-section">
-      <h2 class="section-label">UUID TYPES TESTED</h2>
-      <div class="legend-strip" id="summary-legend"></div>
+    <section class="band band--border-top">
+      <div class="band-content legend-section">
+        <h2 class="section-label">UUID TYPES TESTED</h2>
+        <div class="legend-strip" id="summary-legend"></div>
+      </div>
     </section>
 
-  </main>
+  </div>
 
   <!-- ================================================================== -->
   <!-- EXPLORER VIEW                                                      -->
   <!-- ================================================================== -->
-  <main id="view-explorer" class="view-panel" role="tabpanel" hidden>
+  <div id="view-explorer" class="view-panel" role="tabpanel" hidden>
 
     <!-- Filter bar -->
-    <section class="filter-bar" aria-label="Filters">
-      <button class="filter-toggle" aria-expanded="false" aria-controls="filter-modal">
-        <span class="filter-toggle-icon"></span>
-        <span class="filter-toggle-label">FILTERS</span>
-
-      </button>
-      <div class="filter-modal-groups">
-        <div class="filter-group" data-filter="database">
-          <label for="filter-database">DATABASE</label>
-          <select id="filter-database"></select>
-        </div>
-        <div class="filter-group" data-filter="keyType">
-          <label for="filter-keyType">KEY TYPE</label>
-          <select id="filter-keyType"></select>
-        </div>
-        <div class="filter-group" data-filter="scenario">
-          <label for="filter-scenario">SCENARIO</label>
-          <select id="filter-scenario"></select>
-        </div>
-        <div class="filter-group" data-filter="scale">
-          <label for="filter-scale">SCALE</label>
-          <select id="filter-scale"></select>
-        </div>
-        <div class="filter-group" data-filter="connections">
-          <label for="filter-connections">CONNECTIONS</label>
-          <select id="filter-connections"></select>
+    <section class="band band--off" aria-label="Filters">
+      <div class="band-content filter-bar">
+        <button class="filter-toggle" aria-expanded="false" aria-controls="filter-modal">
+          <span class="filter-toggle-icon"></span>
+          <span class="filter-toggle-label">FILTERS</span>
+        </button>
+        <div class="filter-modal-groups">
+          <div class="filter-group" data-filter="database">
+            <label for="filter-database">DATABASE</label>
+            <select id="filter-database"></select>
+          </div>
+          <div class="filter-group" data-filter="keyType">
+            <label for="filter-keyType">KEY TYPE</label>
+            <select id="filter-keyType"></select>
+          </div>
+          <div class="filter-group" data-filter="scenario">
+            <label for="filter-scenario">SCENARIO</label>
+            <select id="filter-scenario"></select>
+          </div>
+          <div class="filter-group" data-filter="scale">
+            <label for="filter-scale">SCALE</label>
+            <select id="filter-scale"></select>
+          </div>
+          <div class="filter-group" data-filter="connections">
+            <label for="filter-connections">CONNECTIONS</label>
+            <select id="filter-connections"></select>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Explorer sub-tabs -->
-    <nav class="explorer-tabs" role="tablist" aria-label="Analysis mode">
-      <button class="explorer-tab active" role="tab" aria-selected="true" data-mode="cross-uuid">CROSS-UUID</button>
-      <button class="explorer-tab" role="tab" aria-selected="false" data-mode="cross-db">CROSS-DB</button>
-      <button class="explorer-tab" role="tab" aria-selected="false" data-mode="scale">SCALE</button>
-    </nav>
-
-    <!-- Legend strip -->
-    <div class="legend-strip" id="explorer-legend"></div>
-
-    <!-- 4-panel chart grid -->
-    <div class="chart-grid">
-      <div class="chart-panel" data-panel="0">
-        <div class="panel-header">
-          <select class="panel-metric-select" aria-label="Select metric"></select>
-          <span class="panel-unit"></span>
-          <button class="panel-expand" aria-label="Expand panel">&#10530;</button>
-        </div>
-        <div class="panel-chart"><canvas></canvas></div>
-      </div>
-      <div class="chart-panel" data-panel="1">
-        <div class="panel-header">
-          <select class="panel-metric-select" aria-label="Select metric"></select>
-          <span class="panel-unit"></span>
-          <button class="panel-expand" aria-label="Expand panel">&#10530;</button>
-        </div>
-        <div class="panel-chart"><canvas></canvas></div>
-      </div>
-      <div class="chart-panel" data-panel="2">
-        <div class="panel-header">
-          <select class="panel-metric-select" aria-label="Select metric"></select>
-          <span class="panel-unit"></span>
-          <button class="panel-expand" aria-label="Expand panel">&#10530;</button>
-        </div>
-        <div class="panel-chart"><canvas></canvas></div>
-      </div>
-      <div class="chart-panel" data-panel="3">
-        <div class="panel-header">
-          <select class="panel-metric-select" aria-label="Select metric"></select>
-          <span class="panel-unit"></span>
-          <button class="panel-expand" aria-label="Expand panel">&#10530;</button>
-        </div>
-        <div class="panel-chart"><canvas></canvas></div>
+    <div class="band band--border-bottom">
+      <div class="band-content">
+        <nav class="explorer-tabs" role="tablist" aria-label="Analysis mode">
+          <button class="explorer-tab active" role="tab" aria-selected="true" data-mode="cross-uuid">CROSS-UUID</button>
+          <button class="explorer-tab" role="tab" aria-selected="false" data-mode="cross-db">CROSS-DB</button>
+          <button class="explorer-tab" role="tab" aria-selected="false" data-mode="scale">SCALE</button>
+        </nav>
       </div>
     </div>
 
-    <!-- Mobile: show all metrics toggle -->
-    <button class="show-all-metrics" hidden>SHOW ALL METRICS</button>
+    <!-- Legend strip -->
+    <div class="band band--border-bottom">
+      <div class="band-content">
+        <div class="legend-strip" id="explorer-legend"></div>
+      </div>
+    </div>
+
+    <!-- 4-panel chart grid -->
+    <div class="band">
+      <div class="band-content">
+        <div class="chart-grid">
+          <div class="chart-panel" data-panel="0">
+            <div class="panel-header">
+              <select class="panel-metric-select" aria-label="Select metric"></select>
+              <span class="panel-unit"></span>
+              <button class="panel-expand" aria-label="Expand panel">&#10530;</button>
+            </div>
+            <div class="panel-chart"><canvas></canvas></div>
+          </div>
+          <div class="chart-panel" data-panel="1">
+            <div class="panel-header">
+              <select class="panel-metric-select" aria-label="Select metric"></select>
+              <span class="panel-unit"></span>
+              <button class="panel-expand" aria-label="Expand panel">&#10530;</button>
+            </div>
+            <div class="panel-chart"><canvas></canvas></div>
+          </div>
+          <div class="chart-panel" data-panel="2">
+            <div class="panel-header">
+              <select class="panel-metric-select" aria-label="Select metric"></select>
+              <span class="panel-unit"></span>
+              <button class="panel-expand" aria-label="Expand panel">&#10530;</button>
+            </div>
+            <div class="panel-chart"><canvas></canvas></div>
+          </div>
+          <div class="chart-panel" data-panel="3">
+            <div class="panel-header">
+              <select class="panel-metric-select" aria-label="Select metric"></select>
+              <span class="panel-unit"></span>
+              <button class="panel-expand" aria-label="Expand panel">&#10530;</button>
+            </div>
+            <div class="panel-chart"><canvas></canvas></div>
+          </div>
+        </div>
+
+        <!-- Mobile: show all metrics toggle -->
+        <button class="show-all-metrics" hidden>SHOW ALL METRICS</button>
+      </div>
+    </div>
 
     <!-- Annotation section -->
-    <section class="annotation-section" aria-live="polite">
-      <div class="annotation-header">
-        <span class="annotation-icon">&#9678;</span>
-        <span class="annotation-title">FINDING</span>
-        <div class="annotation-nav">
-          <button class="annotation-prev" aria-label="Previous finding">prev</button>
-          <span class="annotation-progress"></span>
-          <button class="annotation-next" aria-label="Next finding">next</button>
+    <section class="band band--off" aria-live="polite">
+      <div class="band-content annotation-section">
+        <div class="annotation-header">
+          <span class="annotation-icon">&#9678;</span>
+          <span class="annotation-title">FINDING</span>
+          <div class="annotation-nav">
+            <button class="annotation-prev" aria-label="Previous finding">prev</button>
+            <span class="annotation-progress"></span>
+            <button class="annotation-next" aria-label="Next finding">next</button>
+          </div>
         </div>
+        <p class="annotation-finding"></p>
+        <p class="annotation-explanation"></p>
       </div>
-      <p class="annotation-finding"></p>
-      <p class="annotation-explanation"></p>
     </section>
 
     <!-- No data state -->
@@ -269,53 +298,60 @@
       <p>&mdash; No data available for this filter combination &mdash;</p>
     </div>
 
-  </main>
+  </div>
 
   <!-- ================================================================== -->
   <!-- RAW DATA VIEW                                                      -->
   <!-- ================================================================== -->
-  <main id="view-raw-data" class="view-panel" role="tabpanel" hidden>
+  <div id="view-raw-data" class="view-panel" role="tabpanel" hidden>
 
     <!-- Filter bar -->
-    <section class="filter-bar raw-filter-bar" aria-label="Filters">
-      <button class="filter-toggle raw-filter-toggle" aria-expanded="false" aria-controls="filter-modal">
-        <span class="filter-toggle-icon"></span>
-        <span class="filter-toggle-label">FILTERS</span>
-
-      </button>
-      <div class="filter-modal-groups">
-        <div class="filter-group" data-filter="database">
-          <label for="raw-filter-database">DATABASE</label>
-          <select id="raw-filter-database"></select>
-        </div>
-        <div class="filter-group" data-filter="scenario">
-          <label for="raw-filter-scenario">SCENARIO</label>
-          <select id="raw-filter-scenario"></select>
-        </div>
-        <div class="filter-group" data-filter="scale">
-          <label for="raw-filter-scale">SCALE</label>
-          <select id="raw-filter-scale"></select>
-        </div>
-        <div class="filter-group" data-filter="connections">
-          <label for="raw-filter-connections">CONNECTIONS</label>
-          <select id="raw-filter-connections"></select>
+    <section class="band band--off" aria-label="Filters">
+      <div class="band-content filter-bar raw-filter-bar">
+        <button class="filter-toggle raw-filter-toggle" aria-expanded="false" aria-controls="filter-modal">
+          <span class="filter-toggle-icon"></span>
+          <span class="filter-toggle-label">FILTERS</span>
+        </button>
+        <div class="filter-modal-groups">
+          <div class="filter-group" data-filter="database">
+            <label for="raw-filter-database">DATABASE</label>
+            <select id="raw-filter-database"></select>
+          </div>
+          <div class="filter-group" data-filter="scenario">
+            <label for="raw-filter-scenario">SCENARIO</label>
+            <select id="raw-filter-scenario"></select>
+          </div>
+          <div class="filter-group" data-filter="scale">
+            <label for="raw-filter-scale">SCALE</label>
+            <select id="raw-filter-scale"></select>
+          </div>
+          <div class="filter-group" data-filter="connections">
+            <label for="raw-filter-connections">CONNECTIONS</label>
+            <select id="raw-filter-connections"></select>
+          </div>
         </div>
       </div>
     </section>
 
     <!-- Table -->
-    <div class="table-scroll">
-      <table class="data-table">
-        <thead><tr></tr></thead>
-        <tbody></tbody>
-      </table>
+    <div class="band">
+      <div class="band-content">
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead><tr></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <!-- Mobile card layout -->
+        <div class="raw-data-cards" id="raw-data-cards"></div>
+        <div class="table-footer">
+          <span class="table-sort-info"></span>
+          <span class="table-count"></span>
+        </div>
+      </div>
     </div>
-    <!-- Mobile card layout -->
-    <div class="raw-data-cards" id="raw-data-cards"></div>
-    <div class="table-footer">
-      <span class="table-sort-info"></span>
-      <span class="table-count"></span>
-    </div>
+
+  </div>
 
   </main>
 
@@ -347,10 +383,12 @@
   </div>
 
   <!-- FOOTER -->
-  <footer class="site-footer">
-    <span>UUID Benchmark &middot; 2026</span>
-    <span>&middot;</span>
-    <a href="https://github.com/erackwitz/uuid-benchmark" class="footer-link">GitHub</a>
+  <footer class="band band--footer">
+    <div class="band-content site-footer">
+      <span>UUID Benchmark &middot; 2026</span>
+      <span>&middot;</span>
+      <a href="https://github.com/erackwitz/uuid-benchmark" class="footer-link">GitHub</a>
+    </div>
   </footer>
 
 </body>
