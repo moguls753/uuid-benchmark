@@ -7,7 +7,7 @@ import {
   KEY_TYPE_COLORS, KEY_TYPE_ORDER, KEY_TYPE_SHORT, KEY_TYPE_LABELS,
   DATABASE_COLORS, DATABASE_ORDER, DATABASE_LABELS,
   EXPLORER_PANELS, PANEL_CONFIG, METRIC_GROUPS, METRIC_INFO, VIEW_FILTERS,
-  formatKeyTypeName, formatDatabaseName,
+  formatKeyTypeName, formatDatabaseName, formatScenarioName,
 } from './constants.js';
 import {
   filterState, allEntries, populateFilters, cascadeFilters,
@@ -56,6 +56,7 @@ export function initExplorer(initialFilters, initialMode) {
   if (!eventsBound) {
     bindSubTabs();
     bindFilterEvents();
+    bindFilterDrawer();
     bindPanelExpand();
     bindPanelMetricSelects();
     bindAnnotationNav();
@@ -91,6 +92,9 @@ function cacheDom() {
   dom.noData = document.querySelector('#view-explorer .no-data');
   dom.chartGrid = document.querySelector('#view-explorer .chart-grid');
   dom.showAllBtn = document.querySelector('#view-explorer .show-all-metrics');
+  dom.filterToggle = document.querySelector('#view-explorer .filter-toggle');
+  dom.filterChips = document.getElementById('explorer-filter-chips');
+  dom.filterDrawer = document.getElementById('explorer-filter-drawer');
 }
 
 // --- Sub-tab switching ---
@@ -136,6 +140,40 @@ function bindFilterEvents() {
       if (window.updateURLHash) window.updateURLHash();
     });
   });
+}
+
+// --- Filter drawer toggle ---
+function bindFilterDrawer() {
+  if (!dom.filterToggle || !dom.filterDrawer) return;
+  dom.filterToggle.addEventListener('click', () => {
+    const isOpen = dom.filterDrawer.classList.toggle('open');
+    dom.filterToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+}
+
+function updateFilterChips() {
+  if (!dom.filterChips) return;
+  const visible = VIEW_FILTERS[activeMode] || [];
+  const parts = [];
+
+  visible.forEach(key => {
+    const val = filterState[key];
+    if (val == null) return;
+    switch (key) {
+      case 'database': parts.push(formatDatabaseName(val)); break;
+      case 'keyType': parts.push(formatKeyTypeName(val)); break;
+      case 'scenario': parts.push(formatScenarioName(val)); break;
+      case 'scale': parts.push(String(val).toUpperCase()); break;
+      case 'connections': parts.push(val + ' conn'); break;
+    }
+  });
+
+  dom.filterChips.textContent = parts.join(' \u00b7 ');
+
+  const countEl = dom.filterToggle?.querySelector('.filter-toggle-count');
+  if (countEl) {
+    countEl.textContent = parts.length > 0 ? '(' + parts.length + ')' : '';
+  }
 }
 
 // --- Filter visibility per mode ---
@@ -387,6 +425,7 @@ function renderExplorer() {
   updateComparabilityWarning();
   updateAnnotationTitle();
   updateAnnotation();
+  updateFilterChips();
 
   if (dom.noData) dom.noData.hidden = hasData;
   if (dom.chartGrid) dom.chartGrid.style.display = hasData ? '' : 'none';

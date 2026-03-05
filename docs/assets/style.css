@@ -20,6 +20,16 @@
   --max-width:      min(1440px, calc(100vw - 48px));
   --touch-target:   44px;
 
+  /* Spacing scale (4px increments) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+
   /* Key type colors */
   --key-sequential:      #78716c;
   --key-objectid:        #a16207;
@@ -98,7 +108,7 @@ select:focus {
 }
 
 a { color: var(--text-muted); text-decoration: none; }
-a:hover { color: var(--text); }
+a:hover, a:active { color: var(--text); }
 
 /* --- 3. Page Shell ------------------------------------------------------- */
 .page-wrap {
@@ -163,7 +173,8 @@ a:hover { color: var(--text); }
   align-items: center;
 }
 
-.nav-tab:hover {
+.nav-tab:hover,
+.nav-tab:active {
   color: var(--text-mid);
 }
 
@@ -200,7 +211,8 @@ a:hover { color: var(--text); }
   color: var(--text-faint);
 }
 
-.footer-link:hover {
+.footer-link:hover,
+.footer-link:active {
   color: var(--text-muted);
 }
 
@@ -259,7 +271,8 @@ a:hover { color: var(--text); }
   transform: rotate(90deg);
 }
 
-.methodology-toggle:hover {
+.methodology-toggle:hover,
+.methodology-toggle:active {
   color: var(--text);
 }
 
@@ -366,7 +379,8 @@ a:hover { color: var(--text); }
   transition: background 0.15s;
 }
 
-.kpi-card:hover {
+.kpi-card:hover,
+.kpi-card:active {
   background: var(--bg-dark);
 }
 
@@ -484,7 +498,8 @@ a:hover { color: var(--text); }
   flex-shrink: 0;
 }
 
-.db-explore:hover {
+.db-explore:hover,
+.db-explore:active {
   color: var(--text);
 }
 
@@ -548,6 +563,65 @@ a:hover { color: var(--text); }
   color: var(--text-muted);
 }
 
+/* Filter toggle (mobile only) */
+.filter-toggle {
+  display: none;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: var(--sp-3) 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.filter-toggle-icon {
+  display: inline-block;
+  width: 4px;
+  height: 6px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 6'%3E%3Cpath d='M0 0L4 3L0 6Z'/%3E%3C/svg%3E") no-repeat center / contain;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 6'%3E%3Cpath d='M0 0L4 3L0 6Z'/%3E%3C/svg%3E") no-repeat center / contain;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.filter-toggle[aria-expanded="true"] .filter-toggle-icon {
+  transform: rotate(90deg);
+}
+
+.filter-toggle:hover,
+.filter-toggle:active {
+  color: var(--text);
+}
+
+.filter-toggle-count {
+  font-weight: 500;
+  color: var(--text-faint);
+}
+
+/* Filter chips (mobile only) */
+.filter-chips {
+  display: none;
+  font-size: 13px;
+  color: var(--text-muted);
+  padding: var(--sp-2) 0;
+  line-height: 1.5;
+}
+
+.filter-chips:empty {
+  display: none !important;
+}
+
+/* Filter drawer wrapper */
+.filter-drawer {
+  display: contents;
+}
+
 /* Explorer sub-tabs */
 .explorer-tabs {
   display: flex;
@@ -570,7 +644,8 @@ a:hover { color: var(--text); }
   align-items: center;
 }
 
-.explorer-tab:hover {
+.explorer-tab:hover,
+.explorer-tab:active {
   color: var(--text-mid);
 }
 
@@ -648,7 +723,8 @@ a:hover { color: var(--text); }
   background-position: right 0 center;
 }
 
-.panel-metric-select:hover {
+.panel-metric-select:hover,
+.panel-metric-select:active {
   color: var(--text-mid);
 }
 
@@ -670,7 +746,8 @@ a:hover { color: var(--text); }
   line-height: 1;
 }
 
-.panel-expand:hover {
+.panel-expand:hover,
+.panel-expand:active {
   color: var(--text-muted);
 }
 
@@ -756,7 +833,8 @@ a:hover { color: var(--text); }
   transition: color 120ms ease, border-color 120ms ease;
 }
 
-.chart-modal-close:hover {
+.chart-modal-close:hover,
+.chart-modal-close:active {
   color: var(--text);
   border-color: var(--border-strong);
 }
@@ -819,7 +897,8 @@ a:hover { color: var(--text); }
   flex-shrink: 0;
 }
 
-.show-all-metrics:hover {
+.show-all-metrics:hover,
+.show-all-metrics:active {
   color: var(--text);
   background: var(--bg-off);
 }
@@ -864,7 +943,6 @@ a:hover { color: var(--text); }
   display: flex;
   align-items: stretch;
   border: 1px solid var(--border);
-  border-radius: 3px;
   overflow: hidden;
 }
 
@@ -902,7 +980,9 @@ a:hover { color: var(--text); }
 }
 
 .annotation-prev:hover,
-.annotation-next:hover {
+.annotation-prev:active,
+.annotation-next:hover,
+.annotation-next:active {
   color: var(--text);
   background: var(--bg-off);
 }
@@ -991,6 +1071,11 @@ a:hover { color: var(--text); }
   padding: 2px;
 }
 
+.popover-close:hover,
+.popover-close:active {
+  color: var(--text);
+}
+
 .metric-info-btn {
   font-size: 12px;
   color: var(--text-muted);
@@ -998,7 +1083,8 @@ a:hover { color: var(--text); }
   vertical-align: middle;
 }
 
-.metric-info-btn:hover {
+.metric-info-btn:hover,
+.metric-info-btn:active {
   color: var(--text);
 }
 
@@ -1077,7 +1163,8 @@ a:hover { color: var(--text); }
   background: var(--bg-off);
 }
 
-.data-table tbody tr:hover {
+.data-table tbody tr:hover,
+.data-table tbody tr:active {
   background: var(--bg-dark);
 }
 
@@ -1099,6 +1186,74 @@ a:hover { color: var(--text); }
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+/* --- Raw Data Card Layout (Mobile) --------------------------------------- */
+
+.raw-data-cards {
+  display: none;
+}
+
+.raw-card {
+  border: 1px solid var(--border);
+  margin-top: -1px;
+}
+
+.raw-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-off);
+  font-size: 14px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.raw-card-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.raw-card-body {
+  padding: 0;
+}
+
+.raw-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: var(--sp-2) var(--sp-4);
+  font-size: 13px;
+  min-height: var(--touch-target);
+  border-bottom: 1px solid var(--bg-dark);
+}
+
+.raw-card-row:last-child {
+  border-bottom: none;
+}
+
+.raw-card-label {
+  color: var(--text-muted);
+}
+
+.raw-card-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.raw-card-value.cell-best {
+  font-weight: 700;
+  color: var(--border-strong);
+}
+
+.raw-card-value.cell-worst {
+  color: var(--text-muted);
 }
 
 /* --- 7. Animations ------------------------------------------------------- */
@@ -1294,7 +1449,225 @@ a:hover { color: var(--text); }
   }
 }
 
-/* --- 11. Responsive: Small Mobile (<=400px) ------------------------------ */
+/* --- 12. Responsive: Mobile (<768px) — Typography & Touch Targets -------- */
+
+@media (max-width: 767px) {
+  body {
+    font-size: 13px;
+  }
+
+  /* Interactive UI text: 14px minimum for tappable elements */
+  .nav-tab,
+  .explorer-tab,
+  .methodology-toggle,
+  .db-explore,
+  .show-all-metrics,
+  .annotation-prev,
+  .annotation-next,
+  .filter-group label {
+    font-size: 14px;
+  }
+
+  select {
+    font-size: 14px;
+  }
+
+  /* Section labels */
+  .section-label {
+    font-size: 16px;
+  }
+
+  /* KPI context text */
+  .kpi-context {
+    font-size: 13px;
+  }
+
+  /* KPI label */
+  .kpi-label {
+    font-size: 13px;
+  }
+
+  /* Spark chart labels — minimum readable */
+  .kpi-spark-labels span {
+    font-size: 10px;
+  }
+
+  /* Legend strip */
+  .legend-strip {
+    font-size: 13px;
+  }
+
+  /* Annotation text */
+  .annotation-finding {
+    font-size: 14px;
+  }
+
+  .annotation-explanation {
+    font-size: 13px;
+  }
+
+  /* Footer */
+  .site-footer {
+    font-size: 12px;
+  }
+
+  /* Methodology detail */
+  .methodology-line {
+    font-size: 13px;
+  }
+
+  .method-dl dt,
+  .method-dl dd {
+    font-size: 13px;
+  }
+
+  /* Panel metric select */
+  .panel-metric-select {
+    font-size: 13px;
+  }
+
+  .panel-unit {
+    font-size: 13px;
+  }
+
+  /* DB card text */
+  .db-name {
+    font-size: 14px;
+  }
+
+  .db-arch,
+  .db-tool {
+    font-size: 13px;
+  }
+
+  /* Touch targets: 44px minimum height */
+  .nav-tab {
+    min-height: var(--touch-target);
+    padding: var(--sp-3) var(--sp-4);
+  }
+
+  .explorer-tab {
+    min-height: var(--touch-target);
+    padding: var(--sp-3) var(--sp-4);
+  }
+
+  .methodology-toggle {
+    min-height: var(--touch-target);
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .db-explore {
+    min-height: var(--touch-target);
+    padding: var(--sp-2) 0;
+  }
+
+  select {
+    min-height: var(--touch-target);
+    padding: var(--sp-2) var(--sp-3);
+    padding-right: var(--sp-5);
+  }
+
+  .annotation-prev,
+  .annotation-next {
+    min-height: var(--touch-target);
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .annotation-progress {
+    min-height: var(--touch-target);
+    display: flex;
+    align-items: center;
+  }
+
+  .panel-expand {
+    min-height: var(--touch-target);
+    min-width: var(--touch-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .panel-metric-select {
+    min-height: var(--touch-target);
+  }
+
+  .show-all-metrics {
+    min-height: var(--touch-target);
+  }
+
+  .chart-modal-close {
+    min-height: var(--touch-target);
+    padding: var(--sp-2) var(--sp-3);
+  }
+
+  .popover-close {
+    min-height: var(--touch-target);
+    min-width: var(--touch-target);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .kpi-card {
+    padding: var(--sp-4);
+  }
+
+  /* Filter drawer: toggle visible, drawer collapsed */
+  .filter-toggle {
+    display: flex;
+  }
+
+  .filter-chips {
+    display: block;
+  }
+
+  .filter-drawer {
+    display: none;
+    flex-direction: column;
+    gap: var(--sp-3);
+    padding: var(--sp-3) 0;
+  }
+
+  .filter-drawer.open {
+    display: flex;
+  }
+
+  .filter-drawer .filter-group {
+    width: 100%;
+  }
+
+  .filter-drawer .filter-group select {
+    width: 100%;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Raw data: cards instead of table */
+  .table-scroll {
+    display: none;
+  }
+
+  .table-footer {
+    display: none;
+  }
+
+  .raw-data-cards {
+    display: block;
+  }
+}
+
+/* --- DB grid single-column on narrow screens ----------------------------- */
+
+@media (max-width: 480px) {
+  .db-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- 13. Responsive: Small Mobile (<=400px) ------------------------------ */
 
 @media (max-width: 400px) {
   .kpi-icon {

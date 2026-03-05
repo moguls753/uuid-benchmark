@@ -4,7 +4,7 @@
 // ==========================================================================
 
 import {
-  KEY_TYPE_ORDER, LOWER_IS_BETTER,
+  KEY_TYPE_ORDER, KEY_TYPE_COLORS, LOWER_IS_BETTER,
   formatKeyTypeName, formatMetricName, formatNumber,
   formatDatabaseName, formatScenarioName,
 } from './constants.js';
@@ -34,6 +34,7 @@ export function initRawData() {
   cacheRawDom();
   populateRawFilters();
   bindRawFilters();
+  bindRawFilterDrawer();
   renderRawData();
 }
 
@@ -48,10 +49,14 @@ function cacheRawDom() {
     scale: document.getElementById('raw-filter-scale'),
     connections: document.getElementById('raw-filter-connections'),
   };
+  rawDom.filterToggle = document.querySelector('#view-raw-data .raw-filter-toggle');
+  rawDom.filterChips = document.getElementById('raw-filter-chips');
+  rawDom.filterDrawer = document.getElementById('raw-filter-drawer');
   rawDom.thead = document.querySelector('#view-raw-data .data-table thead tr');
   rawDom.tbody = document.querySelector('#view-raw-data .data-table tbody');
   rawDom.sortInfo = document.querySelector('#view-raw-data .table-sort-info');
   rawDom.count = document.querySelector('#view-raw-data .table-count');
+  rawDom.cardsContainer = document.getElementById('raw-data-cards');
 }
 
 // --- Raw filter population (with "All" option) ---
@@ -157,6 +162,32 @@ function bindRawFilters() {
       renderRawData();
     });
   });
+}
+
+function bindRawFilterDrawer() {
+  if (!rawDom.filterToggle || !rawDom.filterDrawer) return;
+  rawDom.filterToggle.addEventListener('click', () => {
+    const isOpen = rawDom.filterDrawer.classList.toggle('open');
+    rawDom.filterToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+}
+
+function updateRawFilterChips() {
+  if (!rawDom.filterChips) return;
+  const parts = [];
+
+  RAW_FILTERS.forEach(key => {
+    const val = rawFilterState[key];
+    if (val == null) return;
+    parts.push(formatRawOption(key, val));
+  });
+
+  rawDom.filterChips.textContent = parts.join(' \u00b7 ');
+
+  const countEl = rawDom.filterToggle?.querySelector('.filter-toggle-count');
+  if (countEl) {
+    countEl.textContent = parts.length > 0 ? '(' + parts.length + ')' : '';
+  }
 }
 
 // --- Get filtered entries for raw data ---
@@ -304,6 +335,9 @@ function renderRawData() {
     rawDom.tbody.appendChild(tr);
   });
 
+  // Render mobile card layout
+  renderRawCards(sorted, metricBestWorst);
+
   // Update footer
   if (rawDom.sortInfo) {
     rawDom.sortInfo.textContent = 'SORTED BY: ' +
@@ -313,4 +347,76 @@ function renderRawData() {
   if (rawDom.count) {
     rawDom.count.textContent = sorted.length + ' ENTRIES';
   }
+  updateRawFilterChips();
+}
+
+function renderRawCards(sorted, metricBestWorst) {
+  if (!rawDom.cardsContainer) return;
+  rawDom.cardsContainer.innerHTML = '';
+
+  // Group entries by keyType + database + scenario + scale
+  const groups = new Map();
+  sorted.forEach(e => {
+    const groupKey = e.keyType + '|' + e.database + '|' + e.scenario + '|' + e.scale;
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, { keyType: e.keyType, database: e.database, scenario: e.scenario, scale: e.scale, metrics: [] });
+    }
+    groups.get(groupKey).metrics.push(e);
+  });
+
+  groups.forEach(group => {
+    const card = document.createElement('div');
+    card.className = 'raw-card';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'raw-card-header';
+
+    const swatch = document.createElement('span');
+    swatch.className = 'raw-card-swatch';
+    swatch.style.background = KEY_TYPE_COLORS[group.keyType] || '#999';
+    header.appendChild(swatch);
+
+    const title = document.createTextNode(
+      formatKeyTypeName(group.keyType) +
+      ' \u00b7 ' + formatDatabaseName(group.database) +
+      ' \u00b7 ' + formatScenarioName(group.scenario) +
+      ' \u00b7 ' + String(group.scale).toUpperCase()
+    );
+    header.appendChild(title);
+    card.appendChild(header);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'raw-card-body';
+
+    group.metrics.forEach(e => {
+      const row = document.createElement('div');
+      row.className = 'raw-card-row';
+
+      const label = document.createElement('span');
+      label.className = 'raw-card-label';
+      label.textContent = formatMetricName(e.metric);
+      row.appendChild(label);
+
+      const value = document.createElement('span');
+      value.className = 'raw-card-value';
+      value.textContent = formatNumber(e.median);
+
+      // Conditional formatting
+      if (e.median != null && metricBestWorst[e.metric]) {
+        const mw = metricBestWorst[e.metric];
+        if (mw.best !== mw.worst) {
+          if (e.median === mw.best) value.classList.add('cell-best');
+          if (e.median === mw.worst) value.classList.add('cell-worst');
+        }
+      }
+
+      row.appendChild(value);
+      body.appendChild(row);
+    });
+
+    card.appendChild(body);
+    rawDom.cardsContainer.appendChild(card);
+  });
 }

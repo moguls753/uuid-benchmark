@@ -171,25 +171,33 @@
 
     <!-- Filter bar -->
     <section class="filter-bar" aria-label="Filters">
-      <div class="filter-group" data-filter="database">
-        <label for="filter-database">DATABASE</label>
-        <select id="filter-database"></select>
-      </div>
-      <div class="filter-group" data-filter="keyType">
-        <label for="filter-keyType">KEY TYPE</label>
-        <select id="filter-keyType"></select>
-      </div>
-      <div class="filter-group" data-filter="scenario">
-        <label for="filter-scenario">SCENARIO</label>
-        <select id="filter-scenario"></select>
-      </div>
-      <div class="filter-group" data-filter="scale">
-        <label for="filter-scale">SCALE</label>
-        <select id="filter-scale"></select>
-      </div>
-      <div class="filter-group" data-filter="connections">
-        <label for="filter-connections">CONNECTIONS</label>
-        <select id="filter-connections"></select>
+      <button class="filter-toggle" aria-expanded="false" aria-controls="explorer-filter-drawer">
+        <span class="filter-toggle-icon"></span>
+        <span class="filter-toggle-label">FILTERS</span>
+        <span class="filter-toggle-count"></span>
+      </button>
+      <div class="filter-chips" id="explorer-filter-chips"></div>
+      <div class="filter-drawer" id="explorer-filter-drawer">
+        <div class="filter-group" data-filter="database">
+          <label for="filter-database">DATABASE</label>
+          <select id="filter-database"></select>
+        </div>
+        <div class="filter-group" data-filter="keyType">
+          <label for="filter-keyType">KEY TYPE</label>
+          <select id="filter-keyType"></select>
+        </div>
+        <div class="filter-group" data-filter="scenario">
+          <label for="filter-scenario">SCENARIO</label>
+          <select id="filter-scenario"></select>
+        </div>
+        <div class="filter-group" data-filter="scale">
+          <label for="filter-scale">SCALE</label>
+          <select id="filter-scale"></select>
+        </div>
+        <div class="filter-group" data-filter="connections">
+          <label for="filter-connections">CONNECTIONS</label>
+          <select id="filter-connections"></select>
+        </div>
       </div>
     </section>
 
@@ -277,21 +285,29 @@
 
     <!-- Filter bar -->
     <section class="filter-bar raw-filter-bar" aria-label="Filters">
-      <div class="filter-group" data-filter="database">
-        <label for="raw-filter-database">DATABASE</label>
-        <select id="raw-filter-database"></select>
-      </div>
-      <div class="filter-group" data-filter="scenario">
-        <label for="raw-filter-scenario">SCENARIO</label>
-        <select id="raw-filter-scenario"></select>
-      </div>
-      <div class="filter-group" data-filter="scale">
-        <label for="raw-filter-scale">SCALE</label>
-        <select id="raw-filter-scale"></select>
-      </div>
-      <div class="filter-group" data-filter="connections">
-        <label for="raw-filter-connections">CONNECTIONS</label>
-        <select id="raw-filter-connections"></select>
+      <button class="filter-toggle raw-filter-toggle" aria-expanded="false" aria-controls="raw-filter-drawer">
+        <span class="filter-toggle-icon"></span>
+        <span class="filter-toggle-label">FILTERS</span>
+        <span class="filter-toggle-count"></span>
+      </button>
+      <div class="filter-chips" id="raw-filter-chips"></div>
+      <div class="filter-drawer" id="raw-filter-drawer">
+        <div class="filter-group" data-filter="database">
+          <label for="raw-filter-database">DATABASE</label>
+          <select id="raw-filter-database"></select>
+        </div>
+        <div class="filter-group" data-filter="scenario">
+          <label for="raw-filter-scenario">SCENARIO</label>
+          <select id="raw-filter-scenario"></select>
+        </div>
+        <div class="filter-group" data-filter="scale">
+          <label for="raw-filter-scale">SCALE</label>
+          <select id="raw-filter-scale"></select>
+        </div>
+        <div class="filter-group" data-filter="connections">
+          <label for="raw-filter-connections">CONNECTIONS</label>
+          <select id="raw-filter-connections"></select>
+        </div>
       </div>
     </section>
 
@@ -302,6 +318,8 @@
         <tbody></tbody>
       </table>
     </div>
+    <!-- Mobile card layout -->
+    <div class="raw-data-cards" id="raw-data-cards"></div>
     <div class="table-footer">
       <span class="table-sort-info"></span>
       <span class="table-count"></span>
