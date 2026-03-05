@@ -20,7 +20,6 @@
   --font-serif:     "IBM Plex Serif", Georgia, "Times New Roman", serif;
   --font-mono:      "JetBrains Mono", "Courier New", Courier, monospace;
   --max-width:      min(1440px, calc(100vw - 48px));
-  --content-pad:    20px;       /* The ONE left/right indent — everything aligns to this */
   --touch-target:   44px;
 
   /* Spacing scale (4px increments) */
@@ -146,8 +145,6 @@ a:hover, a:active { color: var(--text); }
 .band-content {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding-left: var(--content-pad);
-  padding-right: var(--content-pad);
 }
 
 /* --- 4. Page Shell ------------------------------------------------------- */
