@@ -7,12 +7,14 @@ import { loadData, filterState } from './data.js';
 import { initSummary, destroySummary } from './summary.js';
 import { initExplorer, destroyExplorer, getActiveMode } from './explorer.js';
 import { initRawData, destroyRawData } from './rawdata.js';
+import { bindFilterModalClose } from './filterModal.js';
 
 let activeView = 'summary';
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
     await loadData();
+    bindFilterModalClose();
     parseURLHash();
     initActiveView();
     bindMainNav();

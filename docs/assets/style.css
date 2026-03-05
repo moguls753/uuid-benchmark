@@ -617,9 +617,98 @@ a:hover, a:active { color: var(--text); }
   display: none !important;
 }
 
-/* Filter drawer wrapper */
-.filter-drawer {
+/* Filter groups wrapper (desktop: flows inline; mobile: moved into modal) */
+.filter-modal-groups {
   display: contents;
+}
+
+/* --- Filter Bottom-Sheet Modal ------------------------------------------- */
+
+.filter-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1010;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 200ms ease;
+}
+
+.filter-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.filter-modal {
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  background: var(--bg);
+  border-top: 1px solid var(--border-strong);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 250ms ease;
+}
+
+.filter-modal-overlay.active .filter-modal {
+  transform: translateY(0);
+}
+
+.filter-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-5);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.filter-modal-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.filter-modal-close {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: color 120ms ease, border-color 120ms ease;
+}
+
+.filter-modal-close:hover,
+.filter-modal-close:active {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.filter-modal-body {
+  padding: var(--sp-5);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.filter-modal-body .filter-group {
+  width: 100%;
+}
+
+.filter-modal-body .filter-group select {
+  width: 100%;
 }
 
 /* Explorer sub-tabs */
@@ -1612,7 +1701,7 @@ a:hover, a:active { color: var(--text); }
     padding: var(--sp-4);
   }
 
-  /* Filter drawer: toggle visible, drawer collapsed */
+  /* Filter modal: toggle + chips visible, inline groups hidden */
   .filter-toggle {
     display: flex;
   }
@@ -1621,23 +1710,8 @@ a:hover, a:active { color: var(--text); }
     display: block;
   }
 
-  .filter-drawer {
+  .filter-modal-groups {
     display: none;
-    flex-direction: column;
-    gap: var(--sp-3);
-    padding: var(--sp-3) 0;
-  }
-
-  .filter-drawer.open {
-    display: flex;
-  }
-
-  .filter-drawer .filter-group {
-    width: 100%;
-  }
-
-  .filter-drawer .filter-group select {
-    width: 100%;
   }
 
   .filter-bar {

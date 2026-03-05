@@ -9,6 +9,7 @@ import {
   formatDatabaseName, formatScenarioName,
 } from './constants.js';
 import { allEntries, coerceFilterValue, matchesPartial } from './data.js';
+import { openFilterModal, closeFilterModal } from './filterModal.js';
 
 const TABLE_COLUMNS = [
   { key: 'keyType',  label: 'Key Type',  numeric: false },
@@ -34,12 +35,12 @@ export function initRawData() {
   cacheRawDom();
   populateRawFilters();
   bindRawFilters();
-  bindRawFilterDrawer();
+  bindRawFilterModalToggle();
   renderRawData();
 }
 
 export function destroyRawData() {
-  // Clean up is minimal — just DOM
+  closeFilterModal();
 }
 
 function cacheRawDom() {
@@ -51,7 +52,7 @@ function cacheRawDom() {
   };
   rawDom.filterToggle = document.querySelector('#view-raw-data .raw-filter-toggle');
   rawDom.filterChips = document.getElementById('raw-filter-chips');
-  rawDom.filterDrawer = document.getElementById('raw-filter-drawer');
+  rawDom.filterModalGroups = document.querySelector('#view-raw-data .filter-modal-groups');
   rawDom.thead = document.querySelector('#view-raw-data .data-table thead tr');
   rawDom.tbody = document.querySelector('#view-raw-data .data-table tbody');
   rawDom.sortInfo = document.querySelector('#view-raw-data .table-sort-info');
@@ -164,11 +165,10 @@ function bindRawFilters() {
   });
 }
 
-function bindRawFilterDrawer() {
-  if (!rawDom.filterToggle || !rawDom.filterDrawer) return;
+function bindRawFilterModalToggle() {
+  if (!rawDom.filterToggle || !rawDom.filterModalGroups) return;
   rawDom.filterToggle.addEventListener('click', () => {
-    const isOpen = rawDom.filterDrawer.classList.toggle('open');
-    rawDom.filterToggle.setAttribute('aria-expanded', String(isOpen));
+    openFilterModal(rawDom.filterModalGroups);
   });
 }
 

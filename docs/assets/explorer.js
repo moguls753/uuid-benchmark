@@ -19,6 +19,7 @@ import {
   getFindingProgress, getAnnotation, getCurrentFinding,
   syncToCurrentFilters,
 } from './annotations.js';
+import { openFilterModal, closeFilterModal } from './filterModal.js';
 
 // --- State ---
 let activeMode = 'cross-uuid';
@@ -56,7 +57,7 @@ export function initExplorer(initialFilters, initialMode) {
   if (!eventsBound) {
     bindSubTabs();
     bindFilterEvents();
-    bindFilterDrawer();
+    bindFilterModalToggle();
     bindPanelExpand();
     bindPanelMetricSelects();
     bindAnnotationNav();
@@ -68,6 +69,7 @@ export function initExplorer(initialFilters, initialMode) {
 }
 
 export function destroyExplorer() {
+  closeFilterModal();
   destroyCharts();
 }
 
@@ -94,7 +96,7 @@ function cacheDom() {
   dom.showAllBtn = document.querySelector('#view-explorer .show-all-metrics');
   dom.filterToggle = document.querySelector('#view-explorer .filter-toggle');
   dom.filterChips = document.getElementById('explorer-filter-chips');
-  dom.filterDrawer = document.getElementById('explorer-filter-drawer');
+  dom.filterModalGroups = document.querySelector('#view-explorer .filter-modal-groups');
 }
 
 // --- Sub-tab switching ---
@@ -142,12 +144,11 @@ function bindFilterEvents() {
   });
 }
 
-// --- Filter drawer toggle ---
-function bindFilterDrawer() {
-  if (!dom.filterToggle || !dom.filterDrawer) return;
+// --- Filter modal toggle (mobile — opens shared bottom-sheet) ---
+function bindFilterModalToggle() {
+  if (!dom.filterToggle || !dom.filterModalGroups) return;
   dom.filterToggle.addEventListener('click', () => {
-    const isOpen = dom.filterDrawer.classList.toggle('open');
-    dom.filterToggle.setAttribute('aria-expanded', String(isOpen));
+    openFilterModal(dom.filterModalGroups);
   });
 }
 
@@ -266,7 +267,9 @@ function bindPanelExpand() {
     if (closeBtn) closeBtn.addEventListener('click', closeChartModal);
   }
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeChartModal();
+    if (e.key === 'Escape' && modalOverlay && modalOverlay.classList.contains('active')) {
+      closeChartModal();
+    }
   });
 }
 
