@@ -26,6 +26,7 @@ let chartInstances = [null, null, null, null];
 let panelMetricOverrides = [null, null, null, null];
 let mobileShowAll = false;
 let skipAnnotationUpdate = false;
+let eventsBound = false;
 
 // --- DOM refs ---
 let dom = {};
@@ -52,12 +53,15 @@ export function initExplorer(initialFilters, initialMode) {
   updateSubTabUI();
   updateFilterVisibility();
   populateFilters(activeMode, dom.filters);
-  bindSubTabs();
-  bindFilterEvents();
-  bindPanelExpand();
-  bindPanelMetricSelects();
-  bindAnnotationNav();
-  bindMobileToggle();
+  if (!eventsBound) {
+    bindSubTabs();
+    bindFilterEvents();
+    bindPanelExpand();
+    bindPanelMetricSelects();
+    bindAnnotationNav();
+    bindMobileToggle();
+    eventsBound = true;
+  }
   initFindingNavigation(activeMode);
   renderExplorer();
 }
@@ -80,6 +84,7 @@ function cacheDom() {
   dom.comparabilityWarning = document.querySelector('#view-explorer .comparability-warning');
   dom.comparabilityText = document.querySelector('#view-explorer .comparability-text');
   dom.annotationSection = document.querySelector('#view-explorer .annotation-section');
+  dom.annotationTitle = document.querySelector('#view-explorer .annotation-title');
   dom.annotationFinding = document.querySelector('#view-explorer .annotation-finding');
   dom.annotationExplanation = document.querySelector('#view-explorer .annotation-explanation');
   dom.annotationProgress = document.querySelector('#view-explorer .annotation-progress');
@@ -380,6 +385,7 @@ function renderExplorer() {
 
   updateLegend();
   updateComparabilityWarning();
+  updateAnnotationTitle();
   updateAnnotation();
 
   if (dom.noData) dom.noData.hidden = hasData;
@@ -527,6 +533,19 @@ function updateComparabilityWarning() {
     dom.comparabilityWarning.hidden = false;
   } else {
     dom.comparabilityWarning.hidden = true;
+  }
+}
+
+// --- Annotation title per mode ---
+const MODE_FINDING_LABELS = {
+  'cross-uuid': 'KEY TYPE FINDING',
+  'cross-db': 'CROSS-DATABASE FINDING',
+  'scale': 'SCALING FINDING',
+};
+
+function updateAnnotationTitle() {
+  if (dom.annotationTitle) {
+    dom.annotationTitle.textContent = MODE_FINDING_LABELS[activeMode] || 'FINDING';
   }
 }
 

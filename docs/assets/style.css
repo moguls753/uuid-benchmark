@@ -358,6 +358,8 @@ a:hover { color: var(--text); }
 }
 
 .kpi-card {
+  display: flex;
+  flex-direction: column;
   background: var(--bg-off);
   padding: 18px;
   cursor: pointer;
@@ -368,10 +370,13 @@ a:hover { color: var(--text); }
   background: var(--bg-dark);
 }
 
+.kpi-header {
+  margin-bottom: 6px;
+}
+
 .kpi-icon {
   font-size: 12px;
   color: var(--text-muted);
-  display: inline;
   margin-right: 4px;
 }
 
@@ -381,8 +386,6 @@ a:hover { color: var(--text); }
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--text-muted);
-  margin-bottom: 6px;
-  display: inline;
 }
 
 .kpi-hero {
@@ -400,6 +403,7 @@ a:hover { color: var(--text); }
 
 .kpi-spark {
   width: 100px;
+  margin-top: auto;
 }
 
 .kpi-spark canvas {
