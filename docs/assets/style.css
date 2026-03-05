@@ -45,10 +45,6 @@
   --db-mongodb:    #116149;
   --db-cassandra:  #1287B1;
 
-  /* Warning (only exception to monochrome) */
-  --warning-bg:     #fefce8;
-  --warning-border: #facc15;
-  --warning-text:   #854d0e;
 }
 
 /* --- 2. Reset & Base ----------------------------------------------------- */
@@ -728,26 +724,6 @@ a:hover, a:active { color: var(--text); }
 /* Explorer legend strip */
 #explorer-legend {
   border-bottom: 1px solid var(--border);
-}
-
-/* Comparability warning */
-.comparability-warning {
-  display: flex;
-  gap: 8px;
-  padding: 8px 10px;
-  background: var(--warning-bg);
-  border-left: 3px solid var(--warning-border);
-  font-size: 11px;
-  color: var(--warning-text);
-  margin: 8px 0;
-}
-
-.comparability-warning[hidden] {
-  display: none;
-}
-
-.comparability-icon {
-  flex-shrink: 0;
 }
 
 /* Chart grid */

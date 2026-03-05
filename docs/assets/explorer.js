@@ -84,8 +84,6 @@ function cacheDom() {
   };
   dom.panels = document.querySelectorAll('#view-explorer .chart-panel');
   dom.legend = document.getElementById('explorer-legend');
-  dom.comparabilityWarning = document.querySelector('#view-explorer .comparability-warning');
-  dom.comparabilityText = document.querySelector('#view-explorer .comparability-text');
   dom.annotationSection = document.querySelector('#view-explorer .annotation-section');
   dom.annotationTitle = document.querySelector('#view-explorer .annotation-title');
   dom.annotationFinding = document.querySelector('#view-explorer .annotation-finding');
@@ -400,7 +398,6 @@ function renderExplorer() {
   });
 
   updateLegend();
-  updateComparabilityWarning();
   updateAnnotationTitle();
   updateAnnotation();
   if (dom.noData) dom.noData.hidden = hasData;
@@ -521,33 +518,6 @@ function updateLegend() {
       item.appendChild(document.createTextNode(KEY_TYPE_SHORT[kt] || kt));
       dom.legend.appendChild(item);
     });
-  }
-}
-
-// --- Comparability warning ---
-function updateComparabilityWarning() {
-  if (!dom.comparabilityWarning) return;
-
-  if (activeMode !== 'cross-db') {
-    dom.comparabilityWarning.hidden = true;
-    return;
-  }
-
-  // Check if any panel metrics have comparability notes
-  const metrics = getPanelMetrics();
-  const warnings = [];
-  metrics.forEach(metric => {
-    const info = METRIC_INFO[metric];
-    if (info && info.comparability) {
-      warnings.push(info.comparability);
-    }
-  });
-
-  if (warnings.length > 0) {
-    dom.comparabilityText.textContent = warnings[0];
-    dom.comparabilityWarning.hidden = false;
-  } else {
-    dom.comparabilityWarning.hidden = true;
   }
 }
 
