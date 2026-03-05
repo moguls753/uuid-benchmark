@@ -16,6 +16,9 @@ export function openFilterModal(sourceGroups) {
   const body = document.getElementById('filter-modal-body');
   if (!overlay || !body || !sourceGroups) return;
 
+  // Guard against double-open (stacked listeners, fast taps)
+  if (overlay.classList.contains('active')) return;
+
   // Move filter groups into the modal body
   body.innerHTML = '';
   const groups = sourceGroups.querySelectorAll('.filter-group');

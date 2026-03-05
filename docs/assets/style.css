@@ -599,24 +599,6 @@ a:hover, a:active { color: var(--text); }
   color: var(--text);
 }
 
-.filter-toggle-count {
-  font-weight: 500;
-  color: var(--text-faint);
-}
-
-/* Filter chips (mobile only) */
-.filter-chips {
-  display: none;
-  font-size: 13px;
-  color: var(--text-muted);
-  padding: var(--sp-2) 0;
-  line-height: 1.5;
-}
-
-.filter-chips:empty {
-  display: none !important;
-}
-
 /* Filter groups wrapper (desktop: flows inline; mobile: moved into modal) */
 .filter-modal-groups {
   display: contents;
@@ -1714,10 +1696,6 @@ a:hover, a:active { color: var(--text); }
   /* Filter modal: toggle + chips visible, inline groups hidden */
   .filter-toggle {
     display: flex;
-  }
-
-  .filter-chips {
-    display: block;
   }
 
   .filter-modal-groups {

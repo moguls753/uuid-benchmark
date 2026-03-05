@@ -30,12 +30,16 @@ const RAW_FILTERS = ['database', 'scenario', 'scale', 'connections'];
 let tableSortState = { column: 'keyType', direction: 'asc' };
 let rawFilterState = { database: null, scenario: null, scale: null, connections: null };
 let rawDom = {};
+let eventsBound = false;
 
 export function initRawData() {
   cacheRawDom();
   populateRawFilters();
-  bindRawFilters();
-  bindRawFilterModalToggle();
+  if (!eventsBound) {
+    bindRawFilters();
+    bindRawFilterModalToggle();
+    eventsBound = true;
+  }
   renderRawData();
 }
 
@@ -51,7 +55,6 @@ function cacheRawDom() {
     connections: document.getElementById('raw-filter-connections'),
   };
   rawDom.filterToggle = document.querySelector('#view-raw-data .raw-filter-toggle');
-  rawDom.filterChips = document.getElementById('raw-filter-chips');
   rawDom.filterModalGroups = document.querySelector('#view-raw-data .filter-modal-groups');
   rawDom.thead = document.querySelector('#view-raw-data .data-table thead tr');
   rawDom.tbody = document.querySelector('#view-raw-data .data-table tbody');
@@ -170,24 +173,6 @@ function bindRawFilterModalToggle() {
   rawDom.filterToggle.addEventListener('click', () => {
     openFilterModal(rawDom.filterModalGroups);
   });
-}
-
-function updateRawFilterChips() {
-  if (!rawDom.filterChips) return;
-  const parts = [];
-
-  RAW_FILTERS.forEach(key => {
-    const val = rawFilterState[key];
-    if (val == null) return;
-    parts.push(formatRawOption(key, val));
-  });
-
-  rawDom.filterChips.textContent = parts.join(' \u00b7 ');
-
-  const countEl = rawDom.filterToggle?.querySelector('.filter-toggle-count');
-  if (countEl) {
-    countEl.textContent = parts.length > 0 ? '(' + parts.length + ')' : '';
-  }
 }
 
 // --- Get filtered entries for raw data ---
@@ -347,7 +332,6 @@ function renderRawData() {
   if (rawDom.count) {
     rawDom.count.textContent = sorted.length + ' ENTRIES';
   }
-  updateRawFilterChips();
 }
 
 function renderRawCards(sorted, metricBestWorst) {
