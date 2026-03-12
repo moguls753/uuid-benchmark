@@ -66,9 +66,24 @@ KEY_TYPE_COLORS = {
     "ULID":           "#59a14f",
     "ULID_MONOTONIC": "#edc948",
 }
+KEY_TYPE_LINESTYLES = {
+    "UUIDV1":         "-",
+    "UUIDV4":         "-",
+    "UUIDV7":         "--",
+    "ULID":           ":",
+    "ULID_MONOTONIC": "-.",
+}
+KEY_TYPE_MARKERS = {
+    "UUIDV1":         "o",
+    "UUIDV4":         "s",
+    "UUIDV7":         "^",
+    "ULID":           "D",
+    "ULID_MONOTONIC": "v",
+}
 
 FIGURE_SIZE = (7, 4)
 FIGURE_SIZE_WIDE = (9, 4)
+FIGURE_SIZE_SCALE = (4, 3.5)  # Taller panels for better readability
 
 # ---------------------------------------------------------------------------
 # Metrics that get normalized to SEQUENTIAL = 100%
@@ -172,7 +187,7 @@ def _extract_keyed_data(df_group):
 # ---------------------------------------------------------------------------
 
 def plot_bars(df_group: pd.DataFrame, scenario: str, metric: str,
-              output_dir: str) -> str:
+              output_dir: str, figsize=None) -> str:
     """Regular bar chart for one (scenario, metric) pair."""
     present_keys, medians, stddevs = _extract_keyed_data(df_group)
     if not present_keys:
@@ -182,7 +197,7 @@ def plot_bars(df_group: pd.DataFrame, scenario: str, metric: str,
     labels = [KEY_TYPE_LABELS.get(k, k) for k in present_keys]
     colors = [KEY_TYPE_COLORS.get(k, "#999999") for k in present_keys]
 
-    fig, ax = plt.subplots(figsize=FIGURE_SIZE)
+    fig, ax = plt.subplots(figsize=figsize or FIGURE_SIZE)
     x = range(len(present_keys))
     ax.bar(x, med_vals, width=0.6,
            color=colors, edgecolor="white", linewidth=0.5)
@@ -209,7 +224,7 @@ def plot_bars(df_group: pd.DataFrame, scenario: str, metric: str,
 
 
 def plot_normalized_bars(df_group: pd.DataFrame, scenario: str, metric: str,
-                         output_dir: str) -> str:
+                         output_dir: str, figsize=None) -> str:
     """Normalized bar chart where SEQUENTIAL = 100%."""
     present_keys, medians, stddevs = _extract_keyed_data(df_group)
     if not present_keys:
@@ -217,7 +232,7 @@ def plot_normalized_bars(df_group: pd.DataFrame, scenario: str, metric: str,
 
     # Need SEQUENTIAL as baseline
     if "SEQUENTIAL" not in medians or medians["SEQUENTIAL"] == 0:
-        return plot_bars(df_group, scenario, metric, output_dir)
+        return plot_bars(df_group, scenario, metric, output_dir, figsize=figsize)
 
     baseline = medians["SEQUENTIAL"]
 
@@ -230,7 +245,7 @@ def plot_normalized_bars(df_group: pd.DataFrame, scenario: str, metric: str,
     labels = [KEY_TYPE_LABELS.get(k, k) for k in plot_keys]
     colors = [KEY_TYPE_COLORS.get(k, "#999999") for k in plot_keys]
 
-    fig, ax = plt.subplots(figsize=FIGURE_SIZE)
+    fig, ax = plt.subplots(figsize=figsize or FIGURE_SIZE)
     x = range(len(plot_keys))
     ax.bar(x, norm_vals, width=0.6,
            color=colors, edgecolor="white", linewidth=0.5)
@@ -257,11 +272,11 @@ def plot_normalized_bars(df_group: pd.DataFrame, scenario: str, metric: str,
     return filepath
 
 
-def plot_single_db(df, scenario, metric, output_dir):
+def plot_single_db(df, scenario, metric, output_dir, figsize=None):
     """Dispatch to normalized or regular bars based on metric."""
     if metric in NORMALIZED_METRICS:
-        return plot_normalized_bars(df, scenario, metric, output_dir)
-    return plot_bars(df, scenario, metric, output_dir)
+        return plot_normalized_bars(df, scenario, metric, output_dir, figsize=figsize)
+    return plot_bars(df, scenario, metric, output_dir, figsize=figsize)
 
 
 # ---------------------------------------------------------------------------
@@ -435,6 +450,24 @@ def _format_record_count(n: int) -> str:
     return str(n)
 
 
+def plot_scale_legend(output_dir: str) -> str:
+    """Standalone legend PDF for scale figures — include once per figure group in LaTeX."""
+    fig, ax = plt.subplots(figsize=(6, 0.8))
+    ax.axis("off")
+    for kt in [k for k in KEY_TYPE_ORDER if k != "SEQUENTIAL"]:
+        ax.plot([], [], marker=KEY_TYPE_MARKERS.get(kt, "o"), markersize=5, linewidth=1.5,
+                linestyle=KEY_TYPE_LINESTYLES.get(kt, "-"),
+                color=KEY_TYPE_COLORS.get(kt, "#999999"),
+                label=KEY_TYPE_LABELS.get(kt, kt))
+    ax.plot([], [], color="#4e79a7", linestyle="--", linewidth=1.0,
+            alpha=0.7, label="Sequential baseline")
+    ax.legend(loc="center", ncol=3, bbox_to_anchor=(0.5, 0.5), framealpha=0.9,
+              prop={"size": 10})
+    filepath = os.path.join(output_dir, "scale_legend.pdf")
+    _save(fig, filepath)
+    return filepath
+
+
 def plot_scale_lines(df: pd.DataFrame, scenario: str, metric: str,
                      output_dir: str) -> str:
     """Line chart: X = record count, Y = normalized performance, one line per key type."""
@@ -460,7 +493,7 @@ def plot_scale_lines(df: pd.DataFrame, scenario: str, metric: str,
     if not has_baseline:
         return ""  # Can't normalize without SEQUENTIAL at every scale
 
-    fig, ax = plt.subplots(figsize=FIGURE_SIZE)
+    fig, ax = plt.subplots(figsize=FIGURE_SIZE_SCALE)
 
     for kt in plot_keys:
         y_vals = []
@@ -472,7 +505,8 @@ def plot_scale_lines(df: pd.DataFrame, scenario: str, metric: str,
             else:
                 y_vals.append(kt_row.iloc[0]["Median"] / baseline_row.iloc[0]["Median"] * 100)
         ax.plot(range(len(record_counts)), y_vals,
-                marker="o", markersize=5, linewidth=1.5,
+                marker=KEY_TYPE_MARKERS.get(kt, "o"), markersize=5, linewidth=1.5,
+                linestyle=KEY_TYPE_LINESTYLES.get(kt, "-"),
                 color=KEY_TYPE_COLORS.get(kt, "#999999"),
                 label=KEY_TYPE_LABELS.get(kt, kt))
 
@@ -485,7 +519,6 @@ def plot_scale_lines(df: pd.DataFrame, scenario: str, metric: str,
     ax.set_xlabel("Dataset Size (records)")
     ax.set_ylabel(NORMALIZED_YLABEL.get(metric, r"Relative (\%)"))
     ax.set_title(f"{scenario_title(scenario)} -- Scaling")
-    ax.legend(loc="best", framealpha=0.8)
     _apply_style(ax)
 
     plt.tight_layout()
@@ -543,6 +576,8 @@ def main():
                         help="Filter to one scenario (e.g., insert_performance)")
     parser.add_argument("--metric", default=None,
                         help="Filter to one metric (e.g., p99_latency_us)")
+    parser.add_argument("--panel", action="store_true",
+                        help="Use panel figure size (for 0.48\\linewidth subfloats)")
     args = parser.parse_args()
 
     if not args.csv_file and not args.cross_db and not args.scale:
@@ -572,6 +607,9 @@ def main():
             path = plot_scale_lines(scale_df, scenario, metric, args.output_dir)
             if path:
                 generated.append(path)
+        path = plot_scale_legend(args.output_dir)
+        if path:
+            generated.append(path)
 
     elif args.cross_db:
         # ----- Cross-database mode -----
@@ -616,8 +654,10 @@ def main():
                       file=sys.stderr)
                 sys.exit(1)
 
+        figsize = FIGURE_SIZE_SCALE if args.panel else None
         for (scenario, metric), group_df in df.groupby(["Scenario", "Metric"]):
-            path = plot_single_db(group_df, scenario, metric, args.output_dir)
+            path = plot_single_db(group_df, scenario, metric, args.output_dir,
+                                  figsize=figsize)
             if path:
                 generated.append(path)
 
