@@ -79,7 +79,7 @@ func WaitForReady() error {
 	connStr := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s?authSource=admin",
 		dbUser, dbPassword, dbHost, dbPort, dbName)
 
-	timeout := 60 * time.Second
+	timeout := 120 * time.Second
 	deadline := time.Now().Add(timeout)
 
 	for time.Now().Before(deadline) {

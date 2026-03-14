@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"time"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/cassandra"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/mongodb"
@@ -51,27 +52,52 @@ func composeCmd(composeFile string, args ...string) *exec.Cmd {
 	return exec.Command("docker-compose", append([]string{"-f", composeFile}, args...)...)
 }
 
+// startRetries is the number of times to retry container startup on failure.
+const startRetries = 3
+
 func Start(cfg Config) {
 	fmt.Printf("Starting fresh %s container...\n", cfg.Name)
 
-	cmd := composeCmd(cfg.ComposeFile, "up", "-d")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		log.Fatalf("Failed to start container: %v\nOutput: %s", err, string(output))
+	// Force-remove any stale container and volumes first to avoid
+	// "container name already in use" conflicts from previous crashed runs.
+	stopCmd := composeCmd(cfg.ComposeFile, "down", "-v", "--remove-orphans")
+	stopCmd.Run() // ignore errors — container may not exist
+
+	var lastErr error
+	for attempt := 1; attempt <= startRetries; attempt++ {
+		if attempt > 1 {
+			fmt.Printf("  Retry %d/%d for %s...\n", attempt, startRetries, cfg.Name)
+			// Force-remove again before retry
+			retryStop := composeCmd(cfg.ComposeFile, "down", "-v", "--remove-orphans")
+			retryStop.Run()
+			// Give Docker a moment to release resources
+			time.Sleep(5 * time.Second)
+		}
+
+		cmd := composeCmd(cfg.ComposeFile, "up", "-d")
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			lastErr = fmt.Errorf("failed to start container: %v\nOutput: %s", err, string(output))
+			continue
+		}
+
+		fmt.Printf("Waiting for %s to initialize...\n", cfg.Name)
+		if err := cfg.WaitForReady(); err != nil {
+			lastErr = fmt.Errorf("%s failed to start: %v", cfg.Name, err)
+			continue
+		}
+
+		fmt.Println("Container ready")
+		return
 	}
 
-	fmt.Printf("Waiting for %s to initialize...\n", cfg.Name)
-	if err := cfg.WaitForReady(); err != nil {
-		log.Fatalf("%s failed to start: %v", cfg.Name, err)
-	}
-
-	fmt.Println("Container ready")
+	log.Fatalf("All %d startup attempts failed for %s: %v", startRetries, cfg.Name, lastErr)
 }
 
 func Stop(composeFile string) {
 	fmt.Println("\nCleaning up container...")
 
-	cmd := composeCmd(composeFile, "down", "-v")
+	cmd := composeCmd(composeFile, "down", "-v", "--remove-orphans")
 	// Ignore errors on cleanup - container might already be stopped
 	cmd.Run()
 

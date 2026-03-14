@@ -139,7 +139,7 @@ func (m *MySQLBenchmarker) Close() error {
 
 func WaitForReady() error {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPassword, dbHost, dbPort, dbName)
-	timeout := 60 * time.Second
+	timeout := 90 * time.Second
 	deadline := time.Now().Add(timeout)
 
 	for time.Now().Before(deadline) {

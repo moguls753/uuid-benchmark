@@ -10,15 +10,23 @@ Build OK
   SKIP  /home/aaeirack/uuid-benchmark/results/postgres_100k_update-performance_1conn.csv (exists)
   SKIP  /home/aaeirack/uuid-benchmark/results/mysql_100k_insert-performance_1conn.csv (exists)
   SKIP  /home/aaeirack/uuid-benchmark/results/mysql_100k_read-performance_1conn.csv (exists)
-  RUN   mysql | update-performance | 100000 records | 100000 ops | 1 conn ... FAILED (39s) — see /home/aaeirack/uuid-benchmark/logs/mysql_100k_update-performance_1conn.log
-  RUN   mongodb | insert-performance | 100000 records | 100000 ops | 1 conn ... FAILED (28s) — see /home/aaeirack/uuid-benchmark/logs/mongodb_100k_insert-performance_1conn.log
-  RUN   mongodb | read-performance | 100000 records | 100000 ops | 1 conn ... FAILED (2s) — see /home/aaeirack/uuid-benchmark/logs/mongodb_100k_read-performance_1conn.log
-  RUN   mongodb | update-performance | 100000 records | 100000 ops | 1 conn ... FAILED (3s) — see /home/aaeirack/uuid-benchmark/logs/mongodb_100k_update-performance_1conn.log
-  RUN   cassandra | insert-performance | 100000 records | 100000 ops | 1 conn ... OK (1526s)
-  RUN   cassandra | read-performance | 100000 records | 100000 ops | 1 conn ... OK (6938s)
-  RUN   cassandra | update-performance | 100000 records | 100000 ops | 1 conn ... OK (6763s)
+  SKIP  /home/aaeirack/uuid-benchmark/results/mysql_100k_update-performance_1conn.csv (exists)
+  SKIP  /home/aaeirack/uuid-benchmark/results/mongodb_100k_insert-performance_1conn.csv (exists)
+  SKIP  /home/aaeirack/uuid-benchmark/results/mongodb_100k_read-performance_1conn.csv (exists)
+  RUN   mongodb | update-performance | 100000 records | 100000 ops | 1 conn ... OK (1734s)
+  SKIP  /home/aaeirack/uuid-benchmark/results/cassandra_100k_insert-performance_1conn.csv (exists)
+  SKIP  /home/aaeirack/uuid-benchmark/results/cassandra_100k_read-performance_1conn.csv (exists)
+  SKIP  /home/aaeirack/uuid-benchmark/results/cassandra_100k_update-performance_1conn.csv (exists)
 
 ════════════════════════════════════════════════════════════════
   TIER 1b: 1M records — all scenarios — 1 connection
 ════════════════════════════════════════════════════════════════
-  RUN   postgres | all | 1000000 records | 200000 ops | 1 conn ...
+  SKIP  /home/aaeirack/uuid-benchmark/results/postgres_1m_all_1conn.csv (exists)
+  SKIP  /home/aaeirack/uuid-benchmark/results/mysql_1m_all_1conn.csv (exists)
+  RUN   mongodb | all | 1000000 records | 200000 ops | 1 conn ... OK (16980s)
+  SKIP  /home/aaeirack/uuid-benchmark/results/cassandra_1m_all_1conn.csv (exists)
+
+════════════════════════════════════════════════════════════════
+  TIER 1c: 1M records — all scenarios — 8 connections
+════════════════════════════════════════════════════════════════
+  RUN   postgres | all | 1000000 records | 200000 ops | 8 conn ...

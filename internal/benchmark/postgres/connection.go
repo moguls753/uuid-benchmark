@@ -165,7 +165,7 @@ func (p *PostgresBenchmarker) Close() error {
 
 func WaitForReady() error {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPassword, dbName)
-	timeout := 30 * time.Second
+	timeout := 60 * time.Second
 	deadline := time.Now().Add(timeout)
 
 	for time.Now().Before(deadline) {
