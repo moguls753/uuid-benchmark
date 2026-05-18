@@ -112,6 +112,32 @@ func (c ClusterConfig) Validate() error {
 		if len(c.Hostnames) == 0 {
 			return errors.New("SSH hostnames required for remote cluster")
 		}
+		// Reject < 2 hostnames: a single-host "cluster" is almost always
+		// a misconfiguration (trailing-comma split, etc.) and silently
+		// degrades to a single-node deployment without the operator
+		// knowing. Point them at local-single explicitly.
+		if len(c.Hostnames) < 2 {
+			return errors.New("remote-cluster requires at least 2 hostnames; for a single host use -cluster-mode=local-single")
+		}
+		// Reject empty hostnames in the slice — usually a trailing or
+		// double comma in the -nodes flag. Without this guard, the
+		// downstream failure is a vague "remote.Exec: host is empty"
+		// with no positional context.
+		for i, h := range c.Hostnames {
+			if h == "" {
+				return fmt.Errorf("hostnames[%d] is empty", i)
+			}
+		}
+		// Reject duplicates — two services named "cassandra" cannot
+		// coexist on the same docker daemon, and the resulting "container
+		// name in use" failure mid-Start is opaque without this check.
+		seen := make(map[string]struct{}, len(c.Hostnames))
+		for _, h := range c.Hostnames {
+			if _, dup := seen[h]; dup {
+				return fmt.Errorf("duplicate hostname %q", h)
+			}
+			seen[h] = struct{}{}
+		}
 		if c.ReplicationFactor > len(c.Hostnames) {
 			return fmt.Errorf("replication factor %d exceeds host count %d", c.ReplicationFactor, len(c.Hostnames))
 		}

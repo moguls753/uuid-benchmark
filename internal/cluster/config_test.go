@@ -1,6 +1,9 @@
 package cluster
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestClusterConfigDefaults(t *testing.T) {
 	c := DefaultLocalSingle()
@@ -71,12 +74,91 @@ func TestClusterConfigValidate(t *testing.T) {
 		}(), true},
 		{"remote missing SSH user", func() ClusterConfig { c := validRemote; c.SSHUser = ""; return c }(), true},
 		{"remote missing hostnames", func() ClusterConfig { c := validRemote; c.Hostnames = nil; return c }(), true},
+
+		// FIX 3: new RemoteCluster-specific rejections
+		{"remote single hostname (use local-single)", func() ClusterConfig {
+			c := validRemote
+			c.Hostnames = []string{"a"}
+			c.ContactPoints = []string{"a"}
+			c.ReplicationFactor = 1
+			return c
+		}(), true},
+		{"remote empty hostname in slice", func() ClusterConfig {
+			c := validRemote
+			c.Hostnames = []string{"a", "", "c"}
+			c.ContactPoints = []string{"a", "", "c"}
+			return c
+		}(), true},
+		{"remote duplicate hostname", func() ClusterConfig {
+			c := validRemote
+			c.Hostnames = []string{"a", "a", "b"}
+			c.ContactPoints = []string{"a", "a", "b"}
+			return c
+		}(), true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.cfg.Validate()
 			if (err != nil) != tt.wantErr {
 				t.Errorf("Validate() err=%v wantErr=%v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestClusterConfigValidateErrorContext pins the FIX 3 error-message
+// contracts that the test-table above only confirms produce an error. The
+// operator parses these strings to figure out which CLI flag is wrong,
+// so the substrings here are load-bearing.
+func TestClusterConfigValidateErrorContext(t *testing.T) {
+	mk := func(mut func(c *ClusterConfig)) ClusterConfig {
+		c := ClusterConfig{
+			Mode:              ModeRemoteCluster,
+			ContactPoints:     []string{"a", "b", "c"},
+			Hostnames:         []string{"a", "b", "c"},
+			SSHUser:           "u",
+			ReplicationFactor: 3,
+			Consistency:       ConsistencyLocalQuorum,
+			Keyspace:          "uuid_benchmark",
+			NumBuckets:        1000,
+		}
+		mut(&c)
+		return c
+	}
+	cases := []struct {
+		name      string
+		cfg       ClusterConfig
+		wantParts []string
+	}{
+		{
+			"empty hostname surfaces index",
+			mk(func(c *ClusterConfig) { c.Hostnames = []string{"a", "", "c"} }),
+			[]string{"hostnames[1]", "empty"},
+		},
+		{
+			"duplicate hostname surfaces value",
+			mk(func(c *ClusterConfig) { c.Hostnames = []string{"a", "a", "b"} }),
+			[]string{`duplicate hostname "a"`},
+		},
+		{
+			"single hostname points at local-single",
+			mk(func(c *ClusterConfig) {
+				c.Hostnames = []string{"a"}
+				c.ReplicationFactor = 1
+			}),
+			[]string{"at least 2", "local-single"},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := tc.cfg.Validate()
+			if err == nil {
+				t.Fatalf("expected error, got nil")
+			}
+			for _, p := range tc.wantParts {
+				if !strings.Contains(err.Error(), p) {
+					t.Errorf("error %q missing expected substring %q", err.Error(), p)
+				}
 			}
 		})
 	}

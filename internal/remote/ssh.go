@@ -7,6 +7,7 @@ package remote
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -18,25 +19,93 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// defaultClientTimeout caps each Exec/Copy call. The ssh.ClientConfig.Timeout
+// only bounds the TCP+handshake phase; after that a stalled remote (PAM,
+// NFS, wedged docker daemon — all real failure modes on first-allocation HPC
+// nodes) would otherwise hang session.Run forever. 2 minutes is comfortably
+// above any legitimate nodetool / docker call this benchmark issues, while
+// well below the higher-level gossip / ring budgets so a single wedged call
+// surfaces as a clear timeout instead of silently wedging a whole run.
+const defaultClientTimeout = 2 * time.Minute
+
 // Client holds SSH credentials and authentication material. It does NOT
 // cache connections — each Exec call opens a fresh TCP+SSH session and
 // closes it on return. This is intentionally simple for the benchmark's
 // low-frequency use (a few exec calls per scenario, not per query).
+//
+// Timeout caps every Exec and Copy call end-to-end (dial + session
+// execution / scp). Distinct from ssh.ClientConfig.Timeout, which only
+// bounds the TCP+handshake phase. A zero value falls back to
+// defaultClientTimeout; tests can shrink it.
 type Client struct {
 	user    string
 	keyPath string // empty → falls back to ~/.ssh/id_ed25519
+	Timeout time.Duration
 }
 
 // NewClient constructs a client that will authenticate as user. If keyPath
-// is empty, the client falls back to ~/.ssh/id_ed25519 at dial time.
+// is empty, the client falls back to ~/.ssh/id_ed25519 at dial time. The
+// per-call Timeout defaults to defaultClientTimeout; callers may override
+// by mutating the returned struct's Timeout field.
 func NewClient(user, keyPath string) *Client {
-	return &Client{user: user, keyPath: keyPath}
+	return &Client{user: user, keyPath: keyPath, Timeout: defaultClientTimeout}
+}
+
+// timeout returns the effective per-call timeout, defaulting if the field
+// is zero so a Client constructed via a struct literal still gets the safety
+// net.
+func (c *Client) timeout() time.Duration {
+	if c.Timeout <= 0 {
+		return defaultClientTimeout
+	}
+	return c.Timeout
+}
+
+// sessionRunner is the slice of *ssh.Session that runSession needs. Defined
+// as an interface so runSession can be unit-tested with a fake whose Run
+// blocks indefinitely — exercising the timeout path without a real ssh
+// server.
+type sessionRunner interface {
+	Run(cmd string) error
+	Signal(sig ssh.Signal) error
+	Close() error
+}
+
+// runSession invokes sess.Run(cmd) under timeout. If timeout elapses first,
+// it best-effort signals the remote with SIGKILL and closes the session,
+// then returns a session-timeout error distinct from a connection timeout
+// so callers (and operators reading logs) can tell which phase hung.
+//
+// Note: ssh.Session.Run is a blocking call with no built-in cancellation.
+// The goroutine-plus-channel pattern is the only practical way to bound it
+// without rewriting the underlying ssh package.
+func runSession(sess sessionRunner, cmd string, timeout time.Duration) error {
+	done := make(chan error, 1)
+	go func() { done <- sess.Run(cmd) }()
+	select {
+	case err := <-done:
+		return err
+	case <-time.After(timeout):
+		// Best-effort: tell the remote shell to die and tear the session
+		// down. The goroutine above will then unblock — but we don't wait
+		// for it; the session is dead from our perspective and the
+		// goroutine is short-lived.
+		_ = sess.Signal(ssh.SIGKILL)
+		_ = sess.Close()
+		return fmt.Errorf("ssh session timed out after %s", timeout)
+	}
 }
 
 // Exec runs the given argv on the remote host and returns combined
 // stdout+stderr. Each argv element is shell-quoted (single-quotes with
 // '\'' escapes) before being space-joined, so shell metacharacters in
 // args are preserved literally rather than expanded by the remote shell.
+//
+// Bounded by the Client's Timeout (default defaultClientTimeout). The
+// timeout covers the session-Run phase only — the TCP+SSH dial is bounded
+// separately by ssh.ClientConfig.Timeout. If the session hangs, the call
+// returns a "ssh session timed out" error after roughly Timeout elapses
+// and best-effort signals SIGKILL on the remote.
 func (c *Client) Exec(host string, argv ...string) (string, error) {
 	if host == "" {
 		return "", fmt.Errorf("remote.Exec: host is empty")
@@ -65,7 +134,7 @@ func (c *Client) Exec(host string, argv ...string) (string, error) {
 	session.Stderr = &buf
 
 	full := buildShellCommand(argv)
-	if err := session.Run(full); err != nil {
+	if err := runSession(session, full, c.timeout()); err != nil {
 		// Trim the buffer on the error path for readable error logs;
 		// the success path below returns raw bytes since callers parse
 		// structured output (e.g. `nodetool status`) and care about exact
@@ -79,6 +148,12 @@ func (c *Client) Exec(host string, argv ...string) (string, error) {
 // dst on the remote host (over SSH). Authenticates using the same key
 // material as Exec; host must be a bare hostname (no ":port" suffix —
 // scp would misparse it as part of the destination path).
+//
+// Bounded by the Client's Timeout (default defaultClientTimeout) via
+// exec.CommandContext: if scp stalls (wedged network, remote disk hang)
+// the context's deadline kills the scp process and Copy returns a
+// "context deadline exceeded" error. Without this, scp has no native
+// timeout flag — a stuck transfer would hang the whole benchmark.
 //
 // scp is required on the orchestrator's PATH. This shells out rather
 // than reimplementing the SCP protocol in Go (golang.org/x/crypto/ssh
@@ -105,8 +180,13 @@ func (c *Client) Copy(host, src, dst string) error {
 		return fmt.Errorf("remote.Copy: host %q must not contain ':' (port suffix not supported by scp)", host)
 	}
 	args := buildScpArgs(c.keyPath, c.user, host, src, dst)
-	out, err := exec.Command("scp", args...).CombinedOutput()
+	ctx, cancel := context.WithTimeout(context.Background(), c.timeout())
+	defer cancel()
+	out, err := exec.CommandContext(ctx, "scp", args...).CombinedOutput()
 	if err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			return fmt.Errorf("scp %s -> %s:%s timed out after %s (output: %s)", src, host, dst, c.timeout(), strings.TrimSpace(string(out)))
+		}
 		return fmt.Errorf("scp %s -> %s:%s: %w (output: %s)", src, host, dst, err, strings.TrimSpace(string(out)))
 	}
 	return nil

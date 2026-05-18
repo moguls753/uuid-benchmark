@@ -109,7 +109,7 @@ func ResetCopyCache() {
 type ExecutorConfig struct {
 	Mode             ExecutionMode // Execution mode (default "" → ExecutionModeContainer)
 	ContainerName    string        // Container name (required for ExecutionModeContainer)
-	BinaryPath       string        // Path to workload binary on host (used in ExecutionModeNative; default "./workload", resolved relative to the orchestrator's working directory)
+	BinaryPath       string        // Path to workload binary on host (used in ExecutionModeNative). If empty, the package-level binaryPath populated by BuildBinary() is used. If neither is set, ExecutionModeNative returns an explicit error rather than guessing a default path.
 	DBType           string        // mongodb, cassandra, or mysql
 	Op               string        // insert, read, update, mixed
 	KeyType          string
@@ -198,7 +198,7 @@ func Execute(cfg ExecutorConfig) (*WorkloadResult, error) {
 			path = binaryPath // populated by BuildBinary; empty if it wasn't called
 		}
 		if path == "" {
-			path = "./workload"
+			return nil, fmt.Errorf("native mode requires BinaryPath in ExecutorConfig or a prior workload.BuildBinary() call; neither was set")
 		}
 		cmd = exec.Command(path, args...)
 	default:

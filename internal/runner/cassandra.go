@@ -104,8 +104,11 @@ func CassandraInsertPerformance(keyType string, numRecords, batchSize, connectio
 
 	// Capture cluster-wide before-snapshot. The runner owns capture timing
 	// so the snapshot pairs symmetrically with MeasureMetricsAll below.
+	// Fail loud — a partial/missing before-snapshot would silently produce
+	// zero PageSplits/BloomFilterFP deltas in the CSV with no operator-
+	// visible signal that the measurement was incomplete.
 	if err := bench.CaptureMetricsBeforeAll(backend); err != nil {
-		fmt.Printf("Warning: Could not capture metrics before insert: %v\n", err)
+		return nil, fmt.Errorf("capture metrics before insert: %w", err)
 	}
 
 	ioStatsBefore, err := iometrics.GetClusterIOStats(prep.hostsForIO, cfg.SSHUser, cfg.SSHKeyPath)
@@ -193,9 +196,9 @@ func CassandraReadPerformance(keyType string, numRecords, numReads int, cfg clus
 	result.Fragmentation = metrics.Fragmentation
 	fmt.Printf("SSTable count: %d\n", metrics.Fragmentation.LeafPages)
 
-	// Capture metrics before read phase.
+	// Capture metrics before read phase. Fail loud — see insert path.
 	if err := bench.CaptureMetricsBeforeAll(backend); err != nil {
-		fmt.Printf("Warning: Could not capture metrics before reads: %v\n", err)
+		return nil, fmt.Errorf("capture metrics before reads: %w", err)
 	}
 
 	fmt.Printf("Running %d point lookups...\n", numReads)
@@ -277,8 +280,9 @@ func CassandraUpdatePerformance(keyType string, numRecords, numUpdates, batchSiz
 	}
 	fmt.Printf("Inserted %d records\n", numRecords)
 
+	// Fail loud — see insert path.
 	if err := bench.CaptureMetricsBeforeAll(backend); err != nil {
-		fmt.Printf("Warning: Could not capture metrics before updates: %v\n", err)
+		return nil, fmt.Errorf("capture metrics before updates: %w", err)
 	}
 
 	fmt.Printf("Running %d updates...\n", numUpdates)
@@ -367,8 +371,9 @@ func runCassandraMixed(keyType string, initialDataset, totalOps, connections, in
 
 	// Capture cluster-wide before-snapshot after the dataset bootstrap so
 	// the mixed-workload deltas exclude the bootstrap's IO and compaction.
+	// Fail loud — see insert path.
 	if err := bench.CaptureMetricsBeforeAll(backend); err != nil {
-		fmt.Printf("Warning: Could not capture metrics before mixed workload: %v\n", err)
+		return nil, fmt.Errorf("capture metrics before mixed workload: %w", err)
 	}
 
 	ioStatsBefore, err := iometrics.GetClusterIOStats(prep.hostsForIO, cfg.SSHUser, cfg.SSHKeyPath)

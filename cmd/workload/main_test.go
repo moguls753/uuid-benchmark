@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"errors"
 	"slices"
 	"testing"
 
@@ -229,5 +230,137 @@ func BenchmarkBucketForIDValue(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = bucketForIDValue(key, 1000)
+	}
+}
+
+// makeFakeDataset returns a cassandraBucketQuery that simulates a dataset
+// distributed evenly across numBuckets partitions, with `rowsPerBucket`
+// rows in each bucket. ids are gocql.UUIDs with a recoverable bucket value
+// encoded in the first byte so tests can verify the resulting sample's
+// bucket distribution via bucketForIDValue.
+func makeFakeDataset(numBuckets, rowsPerBucket int) cassandraBucketQuery {
+	return func(bucket, perBucketLimit int) ([]any, error) {
+		take := perBucketLimit
+		if take > rowsPerBucket {
+			take = rowsPerBucket
+		}
+		out := make([]any, 0, take)
+		for r := 0; r < take; r++ {
+			var u gocql.UUID
+			// Encode (bucket, row) so the test can confirm bucket coverage
+			// without relying on bucketForIDValue agreeing with the synthetic
+			// scheme. We check coverage by mapping returned ids through
+			// bucketForIDValue with the same numBuckets — the *spread* (number
+			// of distinct buckets hit) is what FIX 1 asserts.
+			u[0] = byte(bucket)
+			u[1] = byte(bucket >> 8)
+			u[15] = byte(r)
+			out = append(out, u)
+		}
+		return out, nil
+	}
+}
+
+func TestFetchIDsAcrossBucketsSpreadsSample(t *testing.T) {
+	t.Parallel()
+	// FIX 1 contract: with N=1000 buckets and a populated dataset, the
+	// returned sample must hit a large fraction of distinct buckets — NOT
+	// concentrate on the first few partitions as the previous token-order
+	// LIMIT scan did. With perBucket = ceil(1000/1000) = 1, we'll fetch
+	// 1 row from each of 1000 buckets and hit ~all of them (with some
+	// FNV-1a hashing collapse, since we re-hash via bucketForIDValue to
+	// classify the returned ids).
+	const numBuckets = 1000
+	const limit = 1000
+	dataset := makeFakeDataset(numBuckets, 5) // 5 rows in each bucket
+
+	ids, err := fetchIDsAcrossBuckets(dataset, limit, numBuckets)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(ids) > limit {
+		t.Errorf("got %d ids, expected at most %d", len(ids), limit)
+	}
+	if len(ids) == 0 {
+		t.Fatalf("got 0 ids, expected ~%d", limit)
+	}
+
+	// Count distinct buckets hit when classifying the sample via
+	// bucketForIDValue (the same hash used by the workload's read path).
+	// A serial-LIMIT implementation would concentrate the sample on a
+	// few buckets; spread across ≥ 50% of buckets is the FIX 1 contract.
+	seen := make(map[int]bool, numBuckets)
+	for _, id := range ids {
+		seen[bucketForIDValue(id, numBuckets)] = true
+	}
+	const threshold = numBuckets / 2
+	if len(seen) < threshold {
+		t.Errorf("sample concentrated on %d/%d buckets (want ≥ %d) — bucket-spread regression",
+			len(seen), numBuckets, threshold)
+	}
+}
+
+func TestFetchIDsAcrossBucketsRespectsLimit(t *testing.T) {
+	t.Parallel()
+	// Pin the "no over-fetching" contract: with a dense dataset (many rows
+	// per bucket), the iteration must stop as soon as `limit` ids have been
+	// accumulated, not drain every bucket. Otherwise large numBuckets
+	// values would balloon the sample size and the read workload would
+	// process more ops than requested.
+	const numBuckets = 100
+	const limit = 250
+	dataset := makeFakeDataset(numBuckets, 100) // 100 rows per bucket = 10k total
+
+	ids, err := fetchIDsAcrossBuckets(dataset, limit, numBuckets)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(ids) > limit {
+		t.Errorf("over-fetched: got %d ids, want ≤ %d", len(ids), limit)
+	}
+	// Should also reach exactly the limit since the dataset is dense.
+	if len(ids) != limit {
+		t.Errorf("got %d ids, expected exactly %d (dense dataset)", len(ids), limit)
+	}
+}
+
+func TestFetchIDsAcrossBucketsPropagatesErrors(t *testing.T) {
+	t.Parallel()
+	// Per-bucket query errors must propagate, not be silently swallowed.
+	// Silently returning a short sample would bias the downstream workload
+	// onto whatever buckets succeeded before the failure.
+	wantErr := errors.New("bucket query exploded")
+	failingQuery := cassandraBucketQuery(func(bucket, perBucketLimit int) ([]any, error) {
+		// Fail on the 3rd bucket — after some successful ones, so the test
+		// also covers the partial-then-fail case.
+		if bucket == 2 {
+			return nil, wantErr
+		}
+		return []any{gocql.UUID{byte(bucket)}}, nil
+	})
+	_, err := fetchIDsAcrossBuckets(failingQuery, 100, 10)
+	if !errors.Is(err, wantErr) {
+		t.Errorf("expected error %v, got %v", wantErr, err)
+	}
+}
+
+func TestFetchIDsAcrossBucketsZeroLimit(t *testing.T) {
+	t.Parallel()
+	// Defensive: limit <= 0 returns no ids without invoking the query —
+	// guards against an over-zealous caller wasting RTTs on a no-op.
+	called := false
+	q := cassandraBucketQuery(func(bucket, perBucketLimit int) ([]any, error) {
+		called = true
+		return nil, nil
+	})
+	ids, err := fetchIDsAcrossBuckets(q, 0, 100)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(ids) != 0 {
+		t.Errorf("got %d ids, want 0", len(ids))
+	}
+	if called {
+		t.Error("query invoked for limit=0; want short-circuit")
 	}
 }

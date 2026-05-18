@@ -64,12 +64,29 @@ func (b *LocalClusterBackend) containerNames() []string {
 // teardown is best-effort: typically nothing is running and `down` exits
 // 0 on a clean slate; failures are logged (not fatal) so a stuck
 // container that would later collide with `up -d` remains diagnosable.
+//
+// Start is transactional: on any failure from `docker compose up -d`
+// (typically a healthcheck timeout after partial container creation),
+// it self-rolls-back by invoking Stop() best-effort before returning
+// the error. This mirrors RemoteCluster's rollback() pattern and means
+// callers do not need to remember to Stop() after a Start failure —
+// the partial cluster is already gone. Stop's own errors during
+// rollback are silenced; the original Start error is what the caller
+// sees.
 func (b *LocalClusterBackend) Start() error {
 	if out, err := exec.Command("docker", "compose", "-f", localClusterCompose, "down", "-v", "--remove-orphans").CombinedOutput(); err != nil {
 		log.Printf("LocalClusterBackend: pre-Start teardown returned error (continuing): %v; output: %s", err, strings.TrimSpace(string(out)))
 	}
 	out, err := exec.Command("docker", "compose", "-f", localClusterCompose, "up", "-d").CombinedOutput()
 	if err != nil {
+		// Self-rollback: tear the partial stack down so a retry sees a
+		// clean slate and the operator doesn't need a manual `docker
+		// compose down`. Stop errors are intentionally swallowed — the
+		// caller is already getting one error (the Start failure) and a
+		// second teardown error would obscure the root cause.
+		if stopErr := b.Stop(); stopErr != nil {
+			log.Printf("LocalClusterBackend: rollback after failed Start also failed (continuing to return original Start error): %v", stopErr)
+		}
 		return fmt.Errorf("compose up cluster: %w (output: %s)", err, out)
 	}
 	return nil

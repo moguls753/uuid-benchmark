@@ -17,6 +17,11 @@ const (
 	remoteClusterCassandraName = "UUIDBenchCluster"
 	remoteClusterDC            = "dc1"
 
+	// remoteCassandraImage is the canonical image tag, kept in lockstep
+	// with docker/docker-compose.cassandra.yml and the cluster compose
+	// file. Pulled per host before each docker run (see Start).
+	remoteCassandraImage = "cassandra:5"
+
 	// remoteContainerName is the Docker container name used on each
 	// Taurus host. Each host runs at most one Cassandra container, so a
 	// bare "cassandra" suffices — namespace collisions are impossible
@@ -24,14 +29,6 @@ const (
 	// prefixed names ("uuid-bench-cassandra", "uuid-bench-cassandra-N")
 	// because they share a single Docker daemon and need disambiguation.
 	remoteContainerName = "cassandra"
-
-	// Stagger node bringup so the seed has time to come up before its
-	// peers try to gossip with it. Empirical values; will be refined in
-	// Task 7.4 (Taurus dry-run).
-	// TODO(7.4): replace these sleeps with WaitForRing-style polling
-	// once we know the real Taurus convergence times.
-	remoteSeedBootDelay = 45 * time.Second
-	remotePeerBootDelay = 15 * time.Second
 
 	// remoteCassandraStartCmd is the container CMD applied at startup
 	// via `bash -c`. It overrides the multi-partition unlogged-batch
@@ -52,14 +49,34 @@ const (
 		"sed -i 's/^batch_size_warn_threshold:.*/batch_size_warn_threshold: 100KiB/' /etc/cassandra/cassandra.yaml && " +
 		"exec docker-entrypoint.sh cassandra -f"
 
-	// remoteReadyTimeout is the WaitForReady budget. Generous compared
-	// to local-cluster's 8 minutes because the staged-sleep bringup in
-	// Start already consumes ~75 s before WaitForReady is called and
-	// remote nodes need extra slack for VPN-traversal gossip. Net
-	// wall-clock budget (75 s + 6 min) is comparable to LocalCluster's
-	// (0 + 8 min).
+	// defaultGossipBudget is the per-node deadline for nodetool
+	// statusgossip to report "running" after a docker run. Generous
+	// because the first node to boot also has to download the image's
+	// JVM/Cassandra startup overhead from a cold disk on slower HPC
+	// hardware. Cassandra normally reaches gossip-running in ~30 s on
+	// warm caches; 5 min is plenty of margin.
+	defaultGossipBudget       = 5 * time.Minute
+	defaultGossipPollInterval = 5 * time.Second
+
+	// remoteReadyTimeout is the WaitForReady budget covering the full
+	// ring-convergence step (all nodes reporting UN in nodetool status
+	// on the seed). Each node's individual gossip-running poll already
+	// completes inside Start before WaitForReady is called, so this
+	// budget covers only the additional time the ring takes to agree on
+	// peer membership.
 	remoteReadyTimeout = 6 * time.Minute
 )
+
+// sshExecutor is the slice of the *remote.Client surface that
+// RemoteClusterBackend uses. Defined here so tests can substitute a
+// fake without needing a live SSH daemon. *remote.Client implements
+// this implicitly.
+type sshExecutor interface {
+	Exec(host string, argv ...string) (string, error)
+	Copy(host, src, dst string) error
+}
+
+var _ sshExecutor = (*remote.Client)(nil)
 
 // RemoteClusterBackend manages a Cassandra cluster across N physical
 // hosts via SSH. Each host runs a single `cassandra` Docker container,
@@ -80,7 +97,7 @@ const (
 type RemoteClusterBackend struct {
 	hostnames []string
 	user      string
-	ssh       *remote.Client
+	ssh       sshExecutor
 
 	// Resource defaults sized for Taurus hardware (32G RAM, 8+ cores per
 	// host). Override these in tests or smaller-host runs by mutating
@@ -90,6 +107,14 @@ type RemoteClusterBackend struct {
 	newGen string // CASSANDRA HEAP_NEWSIZE, e.g. "2G" — Taurus-sized default
 	cpus   string // docker run --cpus value, e.g. "8"
 	memory string // docker run --memory value, e.g. "32g"
+
+	// gossipBudget / gossipPollInterval tune the per-node
+	// "wait until nodetool statusgossip says running" poll in Start.
+	// Exposed as fields (not constants) so tests can shrink them; not
+	// exposed as CLI flags because no operator scenario has needed
+	// retuning.
+	gossipBudget       time.Duration
+	gossipPollInterval time.Duration
 }
 
 // NewRemoteCluster builds a backend from a ClusterConfig. Panics if
@@ -111,28 +136,50 @@ func NewRemoteCluster(cfg ClusterConfig) *RemoteClusterBackend {
 		panic("NewRemoteCluster: cfg.SSHUser is empty")
 	}
 	return &RemoteClusterBackend{
-		hostnames: append([]string(nil), cfg.Hostnames...),
-		user:      cfg.SSHUser,
-		ssh:       remote.NewClient(cfg.SSHUser, cfg.SSHKeyPath),
-		heap:      "8G",
-		newGen:    "2G",
-		cpus:      "8",
-		memory:    "32g",
+		hostnames:          append([]string(nil), cfg.Hostnames...),
+		user:               cfg.SSHUser,
+		ssh:                remote.NewClient(cfg.SSHUser, cfg.SSHKeyPath),
+		heap:               "8G",
+		newGen:             "2G",
+		cpus:               "8",
+		memory:             "32g",
+		gossipBudget:       defaultGossipBudget,
+		gossipPollInterval: defaultGossipPollInterval,
 	}
 }
 
-// Start brings up a fresh Cassandra container on every host, in seed-
-// first order. Each host first has any existing `cassandra` container
-// and its `cassandra-data-<host>` volume removed (best-effort: errors
-// ignored, typical case is nothing-to-remove), then a new container
-// is launched via `docker run -d` with the batch-threshold sed dance
-// applied as its CMD (see remoteCassandraStartCmd).
+// Start brings up a fresh Cassandra container on every host, in
+// seed-first order. For each host the sequence is:
 //
-// Between launches the function sleeps remoteSeedBootDelay after the
-// seed and remotePeerBootDelay after each subsequent peer so gossip
-// has time to converge. These are coarse empirical values; Task 7.4
-// will replace them with active polling once Taurus convergence times
-// are measured.
+//  1. Best-effort `docker rm -f cassandra` and `docker volume rm` so
+//     stale state from a previous run cannot leak into this one.
+//  2. `docker pull cassandra:5` so an outdated or missing image on the
+//     host fails loudly here (with a clear error) instead of mid-run.
+//  3. `docker run -d` with the batch-threshold sed CMD (see
+//     remoteCassandraStartCmd) and CASSANDRA_BROADCAST_ADDRESS set to
+//     the host's hostname.
+//  4. Poll `nodetool statusgossip` over SSH every gossipPollInterval
+//     until the output contains "running", or fail with the host's
+//     last output if gossipBudget elapses. This per-node gate
+//     replaces the empirical sleep-stagger the file used to carry.
+//
+// CASSANDRA_BROADCAST_ADDRESS is the structural fix that makes
+// cross-host gossip work: without it, each container advertises its
+// Docker bridge IP (e.g. 172.17.0.2) to peers, which is unroutable
+// from other hosts and silently breaks ring formation. We set it to
+// the host's hostname (the same identifier the caller passed in
+// `-nodes`), relying on the Cassandra container's DNS to resolve it
+// to the host's externally-routable IP. On HPC clusters with shared
+// /etc/hosts or internal DNS this works out of the box. If a target
+// environment doesn't have hostname resolution inside the container,
+// the escape hatch is to resolve the hostname on the remote host
+// (e.g. via `b.ssh.Exec(host, "getent", "hosts", host)`, which uses
+// that host's resolver — the same view the container inherits) and
+// pass the resulting IP here instead. Not done now because no
+// environment we target requires it.
+//
+// On any failure for any host, the partial set of hosts that were
+// successfully started is rolled back before returning.
 func (b *RemoteClusterBackend) Start() error {
 	seed := b.hostnames[0]
 	started := make([]string, 0, len(b.hostnames))
@@ -150,6 +197,13 @@ func (b *RemoteClusterBackend) Start() error {
 		_, _ = b.ssh.Exec(host, "docker", "rm", "-f", remoteContainerName)
 		_, _ = b.ssh.Exec(host, "docker", "volume", "rm", "cassandra-data-"+host)
 
+		// Pull the image first so a missing-image failure surfaces here
+		// (with a clean error) rather than as a vague `docker run` error.
+		if out, err := b.ssh.Exec(host, "docker", "pull", remoteCassandraImage); err != nil {
+			rollback()
+			return fmt.Errorf("pull image on node %d (%s): %w (output: %s)", i, host, err, strings.TrimSpace(out))
+		}
+
 		runArgs := []string{
 			"docker", "run", "-d",
 			"--name", remoteContainerName,
@@ -157,6 +211,10 @@ func (b *RemoteClusterBackend) Start() error {
 			"-e", "CASSANDRA_CLUSTER_NAME=" + remoteClusterCassandraName,
 			"-e", "CASSANDRA_DC=" + remoteClusterDC,
 			"-e", "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch",
+			// Without this, peer-to-peer gossip uses the container's
+			// internal Docker bridge IP — unroutable cross-host. See
+			// the long comment on Start for the rationale.
+			"-e", "CASSANDRA_BROADCAST_ADDRESS=" + host,
 			"-e", "MAX_HEAP_SIZE=" + b.heap,
 			"-e", "HEAP_NEWSIZE=" + b.newGen,
 			"-p", "9042:9042",
@@ -166,7 +224,7 @@ func (b *RemoteClusterBackend) Start() error {
 			"-v", "cassandra-data-" + host + ":/var/lib/cassandra",
 			"--cpus", b.cpus,
 			"--memory", b.memory,
-			"cassandra:5",
+			remoteCassandraImage,
 			// CMD override: apply the batch-threshold sed dance, then
 			// exec the standard entrypoint. See remoteCassandraStartCmd.
 			"bash", "-c", remoteCassandraStartCmd,
@@ -176,15 +234,37 @@ func (b *RemoteClusterBackend) Start() error {
 			return fmt.Errorf("start node %d (%s): %w (output: %s)", i, host, err, strings.TrimSpace(out))
 		}
 		started = append(started, host)
-		// TODO(7.4): replace these sleeps with WaitForRing-style polling
-		// once Taurus convergence times are known.
-		if i == 0 {
-			time.Sleep(remoteSeedBootDelay)
-		} else {
-			time.Sleep(remotePeerBootDelay)
+		if err := b.waitForGossipRunning(host); err != nil {
+			rollback()
+			return fmt.Errorf("wait gossip on node %d (%s): %w", i, host, err)
 		}
 	}
 	return nil
+}
+
+// waitForGossipRunning polls `nodetool statusgossip` inside the host's
+// cassandra container until it prints "running" or gossipBudget
+// elapses. Exec errors during the boot window are normal (nodetool
+// returns non-zero before Cassandra opens its JMX port) and are
+// treated as "not ready, keep polling". On timeout the returned error
+// includes the host's last output so the operator can tell whether
+// Cassandra failed to start vs. SSH itself is unreachable.
+func (b *RemoteClusterBackend) waitForGossipRunning(host string) error {
+	deadline := time.Now().Add(b.gossipBudget)
+	var lastOut string
+	var lastErr error
+	for {
+		out, err := b.ssh.Exec(host, "docker", "exec", remoteContainerName, "nodetool", "statusgossip")
+		if err == nil && strings.Contains(out, "running") {
+			return nil
+		}
+		lastOut, lastErr = out, err
+		if time.Now().After(deadline) {
+			return fmt.Errorf("gossip did not reach 'running' within %s (last err: %v, last output: %s)",
+				b.gossipBudget, lastErr, strings.TrimSpace(lastOut))
+		}
+		time.Sleep(b.gossipPollInterval)
+	}
 }
 
 // Stop removes the cassandra container and its data volume on every

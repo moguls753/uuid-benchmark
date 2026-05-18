@@ -135,6 +135,45 @@ func main() {
 	output := flag.String("output", "", "Output CSV file for statistical results")
 	flag.Parse()
 
+	// Reject cluster-mode flags on non-Cassandra dispatch. Without this an
+	// operator who copies a `-cluster-mode=remote-cluster -nodes=...`
+	// invocation and just flips `-database=postgres` gets a silent
+	// single-container postgres run on the orchestrator and wastes hours
+	// realizing the cluster flags were ignored.
+	if !isCassandra(*database) {
+		var offending []string
+		if *clusterMode != "local-single" {
+			offending = append(offending, "-cluster-mode")
+		}
+		if *nodes != "" {
+			offending = append(offending, "-nodes")
+		}
+		if *sshUser != "" {
+			offending = append(offending, "-ssh-user")
+		}
+		if *sshKey != "" {
+			offending = append(offending, "-ssh-key")
+		}
+		if *replicationFactor != 0 {
+			offending = append(offending, "-replication-factor")
+		}
+		if *consistency != "" {
+			offending = append(offending, "-consistency")
+		}
+		if *clusterNodeCount != 3 {
+			offending = append(offending, "-cluster-nodes")
+		}
+		// -num-buckets is Cassandra-specific (only the Cassandra schema uses
+		// the bucket partition key); reject when non-default for non-Cassandra.
+		if *numBuckets != 1000 {
+			offending = append(offending, "-num-buckets")
+		}
+		if len(offending) > 0 {
+			log.Fatalf("cluster flags (%s) are only valid with -database=cassandra; got -database=%s",
+				strings.Join(offending, ", "), *database)
+		}
+	}
+
 	// Select database configuration
 	switch strings.ToLower(*database) {
 	case "postgres", "postgresql", "pg":
@@ -241,6 +280,13 @@ func runScenario[R any](
 			}
 
 			if err := currentDB.start(); err != nil {
+				// Best-effort cleanup: a partially-started compose stack
+				// would otherwise leak until the next run's pre-teardown,
+				// and for Cassandra the workload copy cache (cleared inside
+				// stop()) would point at the now-gone container.
+				if stopErr := currentDB.stop(); stopErr != nil {
+					fmt.Printf("Warning: stop after start failure: %v\n", stopErr)
+				}
 				log.Fatalf("Run %d start failed for %s: %v", i+1, keyType, err)
 			}
 
@@ -734,6 +780,16 @@ func parseHostList(s string) []string {
 		}
 	}
 	return out
+}
+
+// isCassandra reports whether the -database flag value names the Cassandra
+// runner. Mirrors the aliases accepted in the dispatch switch.
+func isCassandra(database string) bool {
+	switch strings.ToLower(database) {
+	case "cassandra", "cass":
+		return true
+	}
+	return false
 }
 
 func buildWorkloadBinary() {

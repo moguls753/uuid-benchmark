@@ -146,3 +146,30 @@ func TestExecuteEmptyModeDefaultsToContainer(t *testing.T) {
 		t.Errorf("expected container-mode error, got: %v", err)
 	}
 }
+
+// Pins the native-mode behavior when no binary path can be resolved: the
+// executor must error out explicitly rather than silently shell out to
+// "./workload" (the prior fallback), which would surface as a confusing
+// "executable file not found" from exec.Command if a future caller forgot
+// to call BuildBinary() or set BinaryPath.
+func TestExecuteNativeRequiresBinaryPath(t *testing.T) {
+	// Save and restore the package-level binaryPath so this test is
+	// independent of whether some earlier test (or future BuildBinary call)
+	// populated it.
+	saved := binaryPath
+	binaryPath = ""
+	t.Cleanup(func() { binaryPath = saved })
+
+	_, err := Execute(ExecutorConfig{
+		Mode:    ExecutionModeNative,
+		DBType:  "cassandra",
+		Op:      "insert",
+		KeyType: "uuidv4",
+	})
+	if err == nil {
+		t.Fatal("expected error: native mode with no BinaryPath and unbuilt package binary should fail explicitly")
+	}
+	if !strings.Contains(err.Error(), "native mode requires BinaryPath") {
+		t.Errorf("expected explicit native-mode error, got: %v", err)
+	}
+}

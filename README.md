@@ -48,6 +48,14 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 - `-batch-size` - Records per transaction (default: 100)
 - `-num-runs` - Number of runs per UUID type for statistical analysis (default: 1)
 - `-output` - CSV file for statistical results (multi-run mode only)
+- `-cluster-mode` - Cassandra deployment: `local-single` (default), `local-cluster`, `remote-cluster`
+- `-cluster-nodes` - Node count for `local-cluster` mode (default: 3)
+- `-nodes` - Comma-separated `host[:port]` list for `remote-cluster` mode
+- `-ssh-user` - SSH user for `remote-cluster` mode
+- `-ssh-key` - SSH private key path for `remote-cluster` mode
+- `-replication-factor` - Cassandra keyspace RF (default: 1 single-node, 3 cluster)
+- `-consistency` - gocql consistency level: `one`, `local_one`, `local_quorum`, `quorum` (default: `local_one` for `local-single`, `local_quorum` for cluster modes)
+- `-num-buckets` - Partition-key bucket count for the bucketed Cassandra schema (default: 1000)
 
 ## Scenarios
 
@@ -57,6 +65,66 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 - `mixed-insert-heavy` - 70% insert, 30% read workload
 - `mixed-read-update` - 50% read, 50% update (YCSB Workload A)
 - `all` - Runs all scenarios sequentially (comprehensive benchmark)
+
+## Multi-Node Cassandra
+
+Cassandra supports three deployment modes via `-cluster-mode`. PostgreSQL, MySQL, and MongoDB are always single-node — this section only applies to `-database=cassandra`.
+
+- `local-single` (default) — one `cassandra:5` container on the orchestrator host. Workload runs inside the container. This is the thesis baseline.
+- `local-cluster` — three `cassandra:5` containers by default on one Docker network. Only `cassandra-1` publishes 9042 to the host, so all CQL queries are routed through a single coordinator. **For code-correctness validation only — not for performance measurement.**
+- `remote-cluster` — real machines reached over SSH (e.g. an HPC allocation). Workload runs natively on the orchestrator and connects to the ring over the network. This is what produces the paper-extension measurements.
+
+See `CLAUDE.md` ("Cluster Modes (Cassandra)") for the deeper rationale on bucketed schema, replication, consistency, and per-node metric aggregation.
+
+### Invocation examples
+
+```bash
+# local-single: existing thesis methodology, no flag changes needed
+./uuid-benchmark -database=cassandra -scenario=all -num-records=1000000 -num-runs=3 -output=cassandra.csv
+
+# local-cluster: 3-container compose ring, code validation only
+./uuid-benchmark -database=cassandra -cluster-mode=local-cluster \
+    -scenario=insert-performance -num-records=10000
+
+# remote-cluster: 3 real nodes over SSH (Taurus-style)
+./uuid-benchmark -database=cassandra -cluster-mode=remote-cluster \
+    -nodes=taurus-01:9042,taurus-02:9042,taurus-03:9042 \
+    -ssh-user=$USER -ssh-key=$HOME/.ssh/id_ed25519 \
+    -scenario=all -num-records=1000000 -num-runs=3 -output=cassandra-cluster.csv
+```
+
+### Sample output (illustrative — numbers are not real measurements)
+
+```
+UUID Benchmark - Cassandra
+======================================================================
+Database:     Cassandra
+Cluster mode: remote-cluster
+Scenario:     insert-performance
+Records:      1000000
+Runs:         3 (statistical mode)
+Testing:      [SEQUENTIAL UUIDV1 UUIDV4 UUIDV7 ULID ULID_MONOTONIC]
+======================================================================
+
+COMPARISON - Insert Performance
+=====================================================================================================
+Metric              SEQUENTIAL    UUIDV1        UUIDV4        UUIDV7        ULID          ULID_MONO
+---------------------------------------------------------------------------------------------------
+Throughput          48213 rec/s   42105 rec/s   31872 rec/s   46540 rec/s   46011 rec/s   46324 rec/s
+SSTable Delta       12            14            21            13            13            13
+SSTable Count       28            31            42            29            29            29
+Index Size          18.4 MB       24.1 MB       24.6 MB       24.2 MB       24.2 MB       24.2 MB
+Space Amplification 1.08%         1.12%         1.41%         1.10%         1.10%         1.10%
+Latency p99         2.4ms         3.1ms         5.8ms         2.7ms         2.7ms         2.7ms
+Read MB/s           0.42          0.55          0.71          0.50          0.50          0.50
+Write MB/s          18.30         19.10         22.40         18.80         18.80         18.80
+```
+
+Cluster-mode runs sum counters (SSTable count, page splits, IO bytes) across all nodes and average ratios (cache hit rate, bloom filter false ratio). Per-node `nodetool` output and per-node cgroup v2 `io.stat` are collected via `docker exec` (local-cluster) or SSH (remote-cluster).
+
+### Security note
+
+SSH to remote nodes uses `ssh.InsecureIgnoreHostKey()`. This is intentional for ephemeral private-VPN clusters where host keys change per allocation (e.g. Taurus). Do not point `-cluster-mode=remote-cluster` at hosts on an untrusted network.
 
 ## How It Works
 

@@ -23,6 +23,7 @@ Focus on measuring:
 - CSV export (summary stats + raw per-run data)
 - Docker orchestration (fresh container per UUID type for isolation)
 - YCSB validation (BIGSERIAL throughput/latency matches within ~8%)
+- Multi-node Cassandra (paper extension): three deployment modes (single, local cluster, remote cluster), bucketed partition schema, cluster-wide metric aggregation, multi-node cgroup v2 I/O via SSH
 
 ## Remaining Roadmap
 
@@ -46,6 +47,15 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 # Run individual scenario
 ./uuid-benchmark -database=postgres -scenario=insert-performance -num-records=100000 -batch-size=100
 ./uuid-benchmark -database=mongodb -scenario=read-performance -num-records=1000000 -num-ops=10000
+
+# Cassandra multi-node (local 3-container cluster, code validation only)
+./uuid-benchmark -database=cassandra -cluster-mode=local-cluster -scenario=insert-performance -num-records=10000
+
+# Cassandra multi-node (remote 3-node cluster, paper measurements)
+./uuid-benchmark -database=cassandra -cluster-mode=remote-cluster \
+    -nodes=taurus-01:9042,taurus-02:9042,taurus-03:9042 \
+    -ssh-user=$USER -ssh-key=$HOME/.ssh/id_ed25519 \
+    -scenario=all -num-records=1000000 -num-runs=3 -output=cassandra-cluster.csv
 ```
 
 ### CLI Flags
@@ -60,8 +70,38 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 | `-batch-size` | `100` | Records per transaction |
 | `-num-runs` | `1` | Runs per UUID type for statistical analysis |
 | `-output` | (none) | CSV file for statistical results (multi-run mode only) |
+| `-cluster-mode` | `local-single` | Cassandra deployment: `local-single`, `local-cluster`, `remote-cluster` |
+| `-cluster-nodes` | `3` | Node count for `local-cluster` mode |
+| `-nodes` | (none) | Comma-separated `host[:port]` list for `remote-cluster` mode |
+| `-ssh-user` | (none) | SSH user for `remote-cluster` mode |
+| `-ssh-key` | (none) | SSH private key path for `remote-cluster` mode |
+| `-replication-factor` | `1` (single) / `3` (cluster) | Cassandra keyspace RF |
+| `-consistency` | `local_one` (single) / `local_quorum` (cluster) | gocql consistency: `one`, `local_one`, `local_quorum`, `quorum` |
+| `-num-buckets` | `1000` | Partition-key bucket count for the bucketed Cassandra schema |
 
 **UUID Types Tested:** Sequential integer (BIGSERIAL/AUTO_INCREMENT/bigint), UUIDv1, UUIDv4, UUIDv7, ULID (non-monotonic), ULID (monotonic)
+
+## Cluster Modes (Cassandra)
+
+The Cassandra runner supports three deployment modes via `-cluster-mode`, abstracted behind `internal/cluster/Backend`. PostgreSQL, MySQL, and MongoDB always run single-node.
+
+| Mode | Topology | Purpose |
+|------|----------|---------|
+| `local-single` | One `cassandra:5` container on the orchestrator host | Default. The existing thesis methodology. Workload binary runs inside the container. |
+| `local-cluster` | Three `cassandra:5` containers (`docker/docker-compose.cassandra-cluster.yml`) sharing one Docker network | Code-correctness validation for multi-node code paths (ring formation, multi-host metric aggregation, RF handling). **Not for performance measurement**: only `cassandra-1` publishes 9042 to the host, so gocql routes all queries through it as coordinator. |
+| `remote-cluster` | Three real machines reached over SSH (Taurus in our setup) | Used for the paper extension's actual measurements. Workload binary runs natively on the orchestrator and talks to the remote ring directly over CQL. |
+
+**Workload execution.** In `local-single` the workload binary is `docker cp`'d into the container and executed via `docker exec` (zero-network, the thesis baseline). In both cluster modes it runs natively on the orchestrator and connects over the network — there is no useful per-node container to inject it into, and measuring the cross-node path is the point of the cluster modes.
+
+**Bucketed schema (paper extension).** The DDL `PRIMARY KEY ((bucket), id)` is unchanged from the thesis, but the thesis pinned `bucket = 1` (single partition, single node owns the data — fine for a one-node test). The cluster extension spreads writes across all nodes by computing `bucket = FNV-1a(id_bytes) mod N` per row. `N` is `-num-buckets` (default 1000). Choosing N: aim for partitions in the low-MB range. With ~1 KiB rows, 1000 buckets gives a ~1 MiB partition per million records — comfortable up to ~100M records; raise N for larger datasets. The single-node mode also uses the bucketed scheme so the code path is identical; with N=1000 and a single node, all buckets land on that node and behavior is equivalent to the thesis baseline.
+
+**Replication.** `local-single` defaults to RF=1 (the keyspace lives on one node anyway). `local-cluster` and `remote-cluster` default to RF=3 with `SimpleStrategy` so every node holds every row, which is what the paper measures. `-replication-factor` overrides.
+
+**Consistency.** `-consistency` is passed through to gocql. `local_one` is the gocql default and what the paper uses; raise to `quorum` to measure the coordination cost.
+
+**Metric aggregation.** For cluster modes, per-node `nodetool` output and per-node cgroup v2 `io.stat` are collected from every node and combined: counters (SSTable count delta, bloom-filter false positives, IO bytes/ops) are summed with per-node clamp-then-sum semantics (so one node's compaction-induced counter decrease can't mask another node's workload-induced increase); ratios (cache hit rate, bloom filter false ratio) are unweighted means across nodes. See `docs/paper-notes.md` for the rationale.
+
+**Security.** SSH to remote nodes uses `ssh.InsecureIgnoreHostKey()`. This is intentional: the Taurus cluster sits on a private VPN with ephemeral host keys, so strict host-key checking would just fail on every new allocation. Do not point `remote-cluster` at hosts on an untrusted network.
 
 ## Architecture
 
@@ -116,18 +156,25 @@ internal/
 │   │   └── mixed.go                     # Mixed workloads via workload binary
 │   ├── cassandra/
 │   │   ├── cassandra.go                 # CassandraBenchmarker struct
-│   │   ├── connection.go               # DB setup, keyspace/table creation, WaitForReady
-│   │   ├── metrics.go                   # nodetool tablestats parsing, compaction metrics
+│   │   ├── connection.go               # Keyspace/table creation (bucketed schema, FNV-1a bucket)
+│   │   ├── metrics.go                   # nodetool tablestats parsing; cluster-wide aggregation
 │   │   ├── insert.go                    # Insert workload via workload binary
 │   │   ├── read.go                      # Read workload via workload binary
 │   │   ├── update.go                    # Update workload via workload binary
 │   │   └── mixed.go                     # Mixed workloads via workload binary
 │   ├── workload/
-│   │   ├── executor.go                  # Build, docker cp, docker exec workload binary
+│   │   ├── executor.go                  # ExecutionMode: container (docker cp/exec) or native (local exec)
 │   │   └── parser.go                    # Parse JSON output from workload binary
 │   └── statistics/
 │       ├── stats.go                 # Median, Mean, StdDev, CV, Calculate()
 │       └── hypothesis.go            # Mann-Whitney U test, p-values, Compare()
+├── cluster/
+│   ├── backend.go                   # Backend interface: ExecOnNode, CopyToNode, NodeAddresses, ...
+│   ├── local_single.go              # Single-container backend (thesis baseline)
+│   ├── local_cluster.go             # 3-container compose backend (code validation)
+│   └── remote_cluster.go            # SSH-driven N-machine backend (paper measurements)
+├── remote/
+│   └── client.go                    # SSH/SCP executor (golang.org/x/crypto/ssh)
 ├── container/
 │   └── container.go                 # Docker Compose lifecycle (Start/Stop, fresh per UUID type)
 ├── display/
@@ -312,7 +359,7 @@ db.bench.stats({indexDetails: true})  // btree["row-store leaf pages"]
 
 **Clustering sort order note:** Cassandra sorts `timeuuid` clustering columns by extracted timestamp, not raw byte order. This means UUIDv1 gets native time-sorted clustering in Cassandra — unlike B-tree databases (PostgreSQL, MySQL, MongoDB) where UUIDv1's swapped timestamp bytes cause poor ordering. UUIDv7/ULID/`uuid`/`blob` types are sorted by raw byte order, which preserves their inherent time-ordering (timestamp in MSB).
 
-**Schema per key type** — uses compound primary key `PRIMARY KEY ((bucket), id)` so the UUID becomes a clustering key with preserved sort ordering. The partition key `bucket` is always `1` (single partition). Cassandra's Murmur3Partitioner hashes partition keys, which would destroy UUID ordering if the UUID were the partition key. By making it a clustering key, MemTable sorting, SSTable layout, and read patterns reflect actual UUID ordering:
+**Schema per key type** — uses compound primary key `PRIMARY KEY ((bucket), id)` so the UUID becomes a clustering key with preserved sort ordering. Cassandra's Murmur3Partitioner hashes partition keys, which would destroy UUID ordering if the UUID were the partition key. By making it a clustering key, MemTable sorting, SSTable layout, and read patterns reflect actual UUID ordering:
 ```sql
 -- Example for UUIDv7
 CREATE TABLE uuid_benchmark.bench (
@@ -331,7 +378,7 @@ CREATE TABLE uuid_benchmark.bench (
 ) WITH compaction = {'class': 'SizeTieredCompactionStrategy'};
 ```
 
-All CQL queries include `bucket`: inserts pass `bucket = 1`, reads/updates/fetches use `WHERE bucket = 1 AND id = ?`.
+**Bucket value (paper extension).** The thesis pinned `bucket = 1` to keep the entire dataset on one node. The cluster extension instead computes `bucket = FNV-1a(id_bytes) mod N` per row, where `N` is `-num-buckets` (default 1000). FNV-1a was chosen because it is fast, dependency-free, and well-distributed for binary keys; any hashing that doesn't reintroduce UUID-byte ordering would do. All CQL operations carry the row's bucket: inserts pass `(bucket, id)`, reads/updates/fetches use `WHERE bucket = ? AND id = ?`. Single-node mode runs the same code path — with one node every bucket lands on that node, so behavior matches the thesis baseline.
 
 **Compaction strategy:** SizeTieredCompactionStrategy (STCS) is the Cassandra default and most commonly used. STCS groups similarly-sized SSTables for compaction, which makes the impact of random vs sorted keys more visible — random keys produce SSTables with highly overlapping key ranges, forcing more compaction work. LCS (Leveled) would sort data into non-overlapping levels, potentially masking the UUID ordering effect.
 
@@ -364,7 +411,7 @@ docker exec uuid-bench-cassandra nodetool info
 
 | B-tree Concept | Cassandra LSM-tree Equivalent | Why It Matters |
 |----------------|-------------------------------|----------------|
-| Page splits | Compaction count + bytes compacted | Random keys → more overlapping SSTables → more compaction work |
+| Page splits | SSTable count delta (per-node clamped) | Random keys → more overlapping SSTables → more compaction work |
 | Fragmentation | SSTable count + space amplification ratio | More SSTables = more scattered data |
 | Buffer pool hit ratio | Key cache hit rate | Same concept — reads served from memory vs disk |
 | Leaf density | N/A | LSM-tree doesn't have B-tree leaves |
@@ -373,7 +420,9 @@ docker exec uuid-bench-cassandra nodetool info
 
 **Key hypothesis:** With UUID as clustering key (compound primary key), LSM-tree MemTable sorting and SSTable layout reflect actual UUID byte ordering. Time-ordered keys (UUIDv7, ULID) produce sequential clustering within the partition, while random keys (UUIDv4) produce scattered ordering. LSM-tree architecture may be less sensitive to random UUIDs for writes (MemTable absorbs randomness), but read performance may still suffer due to higher SSTable count and read amplification with random keys.
 
-**Connection:** `localhost:9042`, keyspace `uuid_benchmark`, no authentication (Cassandra default)
+**Connection:** `localhost:9042`, keyspace `uuid_benchmark`, no authentication (Cassandra default). In `remote-cluster` mode the contact list comes from `-nodes`; in `local-cluster` mode only the seed (`cassandra-1`) is reachable from the host.
+
+**Cluster-mode metrics:** in `local-cluster` and `remote-cluster` modes, `nodetool tablestats` and cgroup v2 `io.stat` are collected from every node (via `docker exec` and SSH, respectively). Counters are summed, ratios averaged. PageSplits is clamped at 0 in Cassandra because LSM-tree compactions can run between snapshots and produce negative deltas — documented in `docs/paper-notes.md`.
 
 ## I/O Metrics
 

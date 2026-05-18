@@ -1,10 +1,12 @@
 package cassandra
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
 	"github.com/moguls753/uuid-benchmark/internal/cluster"
@@ -12,48 +14,82 @@ import (
 
 // CassandraMetricsSnapshot holds parsed nodetool tablestats output.
 type CassandraMetricsSnapshot struct {
-	SSTableCount         int
-	SpaceUsedLive        int64
-	SpaceUsedTotal       int64
-	MemtableSwitchCount  int64
-	BloomFilterFP        int64
-	BloomFilterFPRatio   float64
-	KeyCacheHitRate      float64
-	CompactionBytesTotal int64
+	SSTableCount        int
+	SpaceUsedLive       int64
+	SpaceUsedTotal      int64
+	MemtableSwitchCount int64
+	BloomFilterFP       int64
+	BloomFilterFPRatio  float64
+	KeyCacheHitRate     float64
 }
 
 // CaptureMetricsBeforeAll samples every node's tablestats + info via the
-// given Backend and stores the aggregated cluster-wide snapshot as
-// c.metricsBefore. Pairs with MeasureMetricsAll: the runner takes a
-// before-snapshot here and then computes deltas against the after-snapshot
-// returned by MeasureMetricsAll.
+// given Backend and stores the per-node before-snapshots on the receiver.
+// Pairs with MeasureMetricsAll, which computes per-node deltas against
+// these snapshots and clamps each one before summing — see
+// buildBenchmarkResultPerNode for why per-node clamping matters.
+//
+// Per-node calls run concurrently to bound the snapshot window. With N
+// remote nodes the previous serial implementation accumulated N RTTs of
+// drift between the first and last node's snapshot; parallelising
+// collapses that to a single RTT and makes the snapshot ~symmetric across
+// nodes. Errors from any node fail the whole capture (errors.Join surfaces
+// all failing nodes at once) — partial captures would silently produce
+// zero deltas in MeasureMetricsAll, which is exactly the foot-gun this
+// fail-loud path is designed to prevent.
 func (c *CassandraBenchmarker) CaptureMetricsBeforeAll(b cluster.Backend) error {
-	snaps := make([]*CassandraMetricsSnapshot, b.NodeCount())
-	for i := 0; i < b.NodeCount(); i++ {
-		s, err := c.captureNodeSnapshot(b, i)
-		if err != nil {
-			return err
-		}
-		snaps[i] = s
+	snaps, err := c.captureAllNodes(b)
+	if err != nil {
+		return err
 	}
-	c.metricsBefore = AggregateSnapshots(snaps)
+	c.metricsBeforeNodes = snaps
 	return nil
 }
 
-// MeasureMetricsAll samples every node again, aggregates, and assembles a
-// BenchmarkResult relative to c.metricsBefore (set by an earlier
-// CaptureMetricsBeforeAll). Returns the cluster-wide deltas and after-state.
+// MeasureMetricsAll samples every node again concurrently and assembles a
+// BenchmarkResult by computing per-node deltas against the before-snapshots
+// stored by CaptureMetricsBeforeAll, then aggregating. Per-node deltas for
+// PageSplits (SSTableCount-based) and BloomFilterFP are clamped at zero
+// before summing — this prevents one node's compaction-induced decrease
+// from cancelling another node's workload-induced increase in the cluster
+// sum, which would silently understate real ingest activity.
+//
+// Fails loudly if any node's snapshot errors (consistent with
+// CaptureMetricsBeforeAll's fail-loud contract).
 func (c *CassandraBenchmarker) MeasureMetricsAll(b cluster.Backend) (*benchmark.BenchmarkResult, error) {
-	snaps := make([]*CassandraMetricsSnapshot, b.NodeCount())
-	for i := 0; i < b.NodeCount(); i++ {
-		s, err := c.captureNodeSnapshot(b, i)
-		if err != nil {
-			return nil, err
-		}
-		snaps[i] = s
+	after, err := c.captureAllNodes(b)
+	if err != nil {
+		return nil, err
 	}
-	after := AggregateSnapshots(snaps)
-	return buildBenchmarkResult(c.metricsBefore, after), nil
+	return buildBenchmarkResultPerNode(c.metricsBeforeNodes, after), nil
+}
+
+// captureAllNodes runs captureNodeSnapshot on every node concurrently.
+// On any per-node failure all errors are joined and returned — operators
+// see every failing node at once instead of having to retry to discover
+// the second failure. Returns a fully-populated snapshot slice on success;
+// on error the slice may be partially populated and must not be used.
+func (c *CassandraBenchmarker) captureAllNodes(b cluster.Backend) ([]*CassandraMetricsSnapshot, error) {
+	n := b.NodeCount()
+	snaps := make([]*CassandraMetricsSnapshot, n)
+	errs := make([]error, n)
+
+	var wg sync.WaitGroup
+	for i := 0; i < n; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			s, err := c.captureNodeSnapshot(b, i)
+			snaps[i] = s
+			errs[i] = err
+		}(i)
+	}
+	wg.Wait()
+
+	if err := errors.Join(errs...); err != nil {
+		return snaps, err
+	}
+	return snaps, nil
 }
 
 // captureNodeSnapshot pulls a full per-node snapshot from the i-th node,
@@ -85,11 +121,10 @@ func (c *CassandraBenchmarker) captureNodeSnapshot(b cluster.Backend, i int) (*C
 
 // AggregateSnapshots sums per-node metrics into a single cluster-wide
 // snapshot. Counters (SSTableCount, SpaceUsed*, MemtableSwitchCount,
-// BloomFilterFP, CompactionBytesTotal) are summed. Ratios
-// (BloomFilterFPRatio, KeyCacheHitRate) are averaged across non-nil
-// snapshots. Nil entries in the input are skipped — callers can pass a
-// partial slice when a node's capture failed and the failure was tolerated
-// upstream.
+// BloomFilterFP) are summed. Ratios (BloomFilterFPRatio, KeyCacheHitRate)
+// are averaged across non-nil snapshots. Nil entries in the input are
+// skipped — callers can pass a partial slice when a node's capture failed
+// and the failure was tolerated upstream.
 func AggregateSnapshots(snaps []*CassandraMetricsSnapshot) *CassandraMetricsSnapshot {
 	out := &CassandraMetricsSnapshot{}
 	var fpRatioSum, keyHitSum float64
@@ -103,7 +138,6 @@ func AggregateSnapshots(snaps []*CassandraMetricsSnapshot) *CassandraMetricsSnap
 		out.SpaceUsedTotal += s.SpaceUsedTotal
 		out.MemtableSwitchCount += s.MemtableSwitchCount
 		out.BloomFilterFP += s.BloomFilterFP
-		out.CompactionBytesTotal += s.CompactionBytesTotal
 		fpRatioSum += s.BloomFilterFPRatio
 		keyHitSum += s.KeyCacheHitRate
 		n++
@@ -115,50 +149,78 @@ func AggregateSnapshots(snaps []*CassandraMetricsSnapshot) *CassandraMetricsSnap
 	return out
 }
 
-// buildBenchmarkResult assembles the BenchmarkResult from a before/after
-// pair. Extracted from the previous inline body of MeasureMetrics so the
-// single-node and multi-node paths produce identical results. before may
-// be nil (no prior snapshot taken); in that case PageSplits and
-// BloomFilterFP deltas are left at zero.
-func buildBenchmarkResult(before, after *CassandraMetricsSnapshot) *benchmark.BenchmarkResult {
+// buildBenchmarkResultPerNode assembles the BenchmarkResult from per-node
+// before/after slices. Per-node deltas for PageSplits (SSTableCount-based)
+// and BloomFilterFP are clamped at zero individually before summing — this
+// avoids the masking effect of clamping the cluster sum after aggregation,
+// where one node's compaction-induced decrease could silently cancel
+// another node's workload-induced increase.
+//
+// Aggregate (non-delta) fields like TableSize and BufferHitRatio come from
+// summing/averaging the after-snapshots. The before slice may be nil (no
+// prior snapshot taken — fail-soft fallback); in that case PageSplits and
+// BloomFilterFP deltas are left at zero. If before is non-nil it must have
+// the same length as after.
+func buildBenchmarkResultPerNode(before, after []*CassandraMetricsSnapshot) *benchmark.BenchmarkResult {
+	afterAgg := AggregateSnapshots(after)
 	result := &benchmark.BenchmarkResult{}
 
 	// Disk usage: space used live as table size.
-	result.TableSize = after.SpaceUsedLive
+	result.TableSize = afterAgg.SpaceUsedLive
 	result.IndexSize = 0 // Cassandra doesn't separate index from data in tablestats.
 
 	// Fragmentation: SSTable count and space amplification.
 	var fragStats benchmark.IndexFragmentationStats
-	if after.SpaceUsedLive > 0 {
+	if afterAgg.SpaceUsedTotal > 0 {
 		// Space amplification ratio as "fragmentation" proxy.
-		fragStats.FragmentationPercent = float64(after.SpaceUsedTotal-after.SpaceUsedLive) / float64(after.SpaceUsedTotal) * 100
+		fragStats.FragmentationPercent = float64(afterAgg.SpaceUsedTotal-afterAgg.SpaceUsedLive) / float64(afterAgg.SpaceUsedTotal) * 100
 	}
-	fragStats.LeafPages = int64(after.SSTableCount) // Repurpose LeafPages for SSTable count.
-	fragStats.AvgLeafDensity = -1                   // N/A — LSM-tree has no B-tree leaf pages.
-	fragStats.EmptyPages = -1                       // N/A — LSM-tree concept doesn't apply.
+	fragStats.LeafPages = int64(afterAgg.SSTableCount) // Repurpose LeafPages for SSTable count.
+	fragStats.AvgLeafDensity = -1                      // N/A — LSM-tree has no B-tree leaf pages.
+	fragStats.EmptyPages = -1                          // N/A — LSM-tree concept doesn't apply.
 	result.Fragmentation = fragStats
 
-	// Page splits equivalent: SSTable count delta. Clamp at zero because
-	// Cassandra's counters can legitimately decrease across compactions.
+	// Per-node delta with clamp-then-sum. Per-node clamping is load-bearing:
+	// if node A compacted (SSTableCount went down) and node B took a workload
+	// hit (SSTableCount went up), summing first and clamping last would
+	// understate B's activity. Clamping per-node first and summing reports
+	// the actual ingest pressure.
 	if before != nil {
-		delta := after.SSTableCount - before.SSTableCount
-		if delta < 0 {
-			delta = 0
-		}
-		result.PageSplits = delta
-
-		fpDelta := after.BloomFilterFP - before.BloomFilterFP
-		if fpDelta < 0 {
-			fpDelta = 0
-		}
-		result.BloomFilterFP = fpDelta
+		result.PageSplits = int(sumClampedDelta(before, after, func(s *CassandraMetricsSnapshot) int64 {
+			return int64(s.SSTableCount)
+		}))
+		result.BloomFilterFP = sumClampedDelta(before, after, func(s *CassandraMetricsSnapshot) int64 {
+			return s.BloomFilterFP
+		})
 	}
 
-	// Cache hit ratio: post-workload value (already on the snapshot).
-	result.BufferHitRatio = after.KeyCacheHitRate
+	// Cache hit ratio: cluster-wide average of after-snapshot values.
+	result.BufferHitRatio = afterAgg.KeyCacheHitRate
 	result.IndexBufferHitRatio = result.BufferHitRatio
 
 	return result
+}
+
+// sumClampedDelta computes Σ max(0, field(after[i]) - field(before[i])) over
+// every node where both snapshots exist. Length mismatches between before
+// and after are tolerated by iterating to the shorter length — defensive
+// only, the orchestrator always pairs matched-length slices.
+func sumClampedDelta(before, after []*CassandraMetricsSnapshot, field func(*CassandraMetricsSnapshot) int64) int64 {
+	n := len(before)
+	if len(after) < n {
+		n = len(after)
+	}
+	var total int64
+	for i := 0; i < n; i++ {
+		if before[i] == nil || after[i] == nil {
+			continue
+		}
+		delta := field(after[i]) - field(before[i])
+		if delta > 0 {
+			total += delta
+		}
+	}
+	return total
 }
 
 func parseTableStats(output string) (*CassandraMetricsSnapshot, error) {

@@ -2,7 +2,11 @@ package remote
 
 import (
 	"slices"
+	"strings"
 	"testing"
+	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 func TestBuildShellCommand(t *testing.T) {
@@ -63,6 +67,135 @@ func TestHasPort(t *testing.T) {
 		if got := hasPort(in); got != want {
 			t.Errorf("hasPort(%q): got %v want %v", in, got, want)
 		}
+	}
+}
+
+// fakeSession implements sessionRunner. Run blocks on `block` until
+// either the test closes it (returning nil) or Signal is called (which
+// also closes `block` so Run returns). This lets a test pin the
+// timeout path without standing up a real ssh server.
+type fakeSession struct {
+	block      chan struct{}
+	runErr     error // error returned from Run when block closes naturally
+	signalled  bool
+	closed     bool
+	signalDone chan struct{}
+}
+
+func newFakeSession() *fakeSession {
+	return &fakeSession{
+		block:      make(chan struct{}),
+		signalDone: make(chan struct{}, 1),
+	}
+}
+
+func (f *fakeSession) Run(cmd string) error {
+	<-f.block
+	return f.runErr
+}
+
+func (f *fakeSession) Signal(sig ssh.Signal) error {
+	f.signalled = true
+	// Unblock Run so the goroutine in runSession can exit cleanly.
+	// Use a non-blocking close pattern to tolerate repeat signal calls.
+	select {
+	case <-f.block:
+		// already closed
+	default:
+		close(f.block)
+	}
+	select {
+	case f.signalDone <- struct{}{}:
+	default:
+	}
+	return nil
+}
+
+func (f *fakeSession) Close() error {
+	f.closed = true
+	return nil
+}
+
+func TestRunSessionReturnsCompletedRunResult(t *testing.T) {
+	// Happy path: Run returns before timeout elapses. The returned error
+	// must be exactly what Run returned (nil here), and Signal/Close must
+	// not have been invoked by runSession.
+	sess := newFakeSession()
+	close(sess.block) // Run returns immediately
+	if err := runSession(sess, "true", time.Second); err != nil {
+		t.Fatalf("runSession: unexpected error %v", err)
+	}
+	if sess.signalled {
+		t.Error("runSession signalled on successful run")
+	}
+}
+
+func TestRunSessionTimesOutOnHungRun(t *testing.T) {
+	// Pins the FIX 1 behavior: a session whose Run hangs forever must be
+	// bounded by the timeout. The returned error must clearly identify
+	// this as a session-level timeout (not a connection timeout), and
+	// the session must be Signal'd + Close'd so resources are released.
+	sess := newFakeSession()
+	start := time.Now()
+	err := runSession(sess, "sleep forever", 50*time.Millisecond)
+	elapsed := time.Since(start)
+	if err == nil {
+		t.Fatal("runSession: expected timeout error, got nil")
+	}
+	if !strings.Contains(err.Error(), "timed out") {
+		t.Errorf("error %q should mention 'timed out'", err.Error())
+	}
+	if !strings.Contains(err.Error(), "session") {
+		t.Errorf("error %q should mention 'session' (distinguishes from connection timeout)", err.Error())
+	}
+	// Allow generous slack so a loaded CI host doesn't flake; we only
+	// care that we didn't wait orders of magnitude longer than the
+	// timeout (which would mean the timeout wasn't honored).
+	if elapsed > 2*time.Second {
+		t.Errorf("runSession took %s, expected ~50ms timeout", elapsed)
+	}
+	if !sess.signalled {
+		t.Error("runSession did not Signal on timeout")
+	}
+	if !sess.closed {
+		t.Error("runSession did not Close on timeout")
+	}
+}
+
+func TestRunSessionPropagatesRunError(t *testing.T) {
+	// Non-timeout error returned by Run must be passed through verbatim,
+	// not wrapped in a timeout error.
+	sess := newFakeSession()
+	wantErr := strings.Repeat("x", 1) // any non-nil error
+	sess.runErr = &fakeErr{msg: wantErr}
+	close(sess.block)
+	err := runSession(sess, "false", time.Second)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	if strings.Contains(err.Error(), "timed out") {
+		t.Errorf("error %q should NOT be a timeout error", err.Error())
+	}
+}
+
+type fakeErr struct{ msg string }
+
+func (e *fakeErr) Error() string { return e.msg }
+
+func TestClientTimeoutDefaultsWhenZero(t *testing.T) {
+	// A zero-valued Timeout must fall back to defaultClientTimeout so a
+	// Client constructed via a struct literal (rather than NewClient)
+	// still gets the safety net.
+	c := &Client{user: "x"}
+	if got := c.timeout(); got != defaultClientTimeout {
+		t.Errorf("timeout(): got %v want %v", got, defaultClientTimeout)
+	}
+}
+
+func TestClientTimeoutHonorsOverride(t *testing.T) {
+	c := &Client{user: "x", Timeout: 5 * time.Second}
+	if got := c.timeout(); got != 5*time.Second {
+		t.Errorf("timeout(): got %v want 5s", got)
 	}
 }
 

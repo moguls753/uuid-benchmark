@@ -1086,6 +1086,12 @@ func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int
 	}
 }
 
+// cassandraBucketQuery executes the per-bucket SELECT used by
+// fetchCassandraIDs. Extracted so the bucket-iteration logic in
+// fetchIDsAcrossBuckets is testable without a live gocql session — tests
+// pass a stub that returns synthetic per-bucket id slices.
+type cassandraBucketQuery func(bucket, perBucketLimit int) ([]any, error)
+
 const (
 	cassandraInsertQuery = "INSERT INTO bench (bucket, id, payload) VALUES (?, ?, ?)"
 	cassandraReadQuery   = "SELECT payload FROM bench WHERE bucket = ? AND id = ?"
@@ -1259,7 +1265,7 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 }
 
 func cassandraRead(session *gocql.Session, keyType string, numOps, threads, numBuckets int) (*Result, error) {
-	ids, err := fetchCassandraIDs(session, keyType, numOps)
+	ids, err := fetchCassandraIDs(session, keyType, numOps, numBuckets)
 	if err != nil {
 		return nil, fmt.Errorf("fetch ids: %w", err)
 	}
@@ -1327,7 +1333,7 @@ func cassandraRead(session *gocql.Session, keyType string, numOps, threads, numB
 }
 
 func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads, numBuckets int) (*Result, error) {
-	ids, err := fetchCassandraIDs(session, keyType, numOps)
+	ids, err := fetchCassandraIDs(session, keyType, numOps, numBuckets)
 	if err != nil {
 		return nil, fmt.Errorf("fetch ids: %w", err)
 	}
@@ -1396,7 +1402,10 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads, nu
 }
 
 func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, insertPct, readPct, updatePct, numBuckets int) (*Result, error) {
-	ids, _ := fetchCassandraIDs(session, keyType, numOps)
+	ids, err := fetchCassandraIDs(session, keyType, numOps, numBuckets)
+	if err != nil {
+		return nil, fmt.Errorf("fetch ids: %w", err)
+	}
 	var idsMu sync.RWMutex
 
 	opsPerThread := numOps / threads
@@ -1510,14 +1519,75 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 	}, nil
 }
 
-func fetchCassandraIDs(session *gocql.Session, keyType string, limit int) ([]any, error) {
-	query := "SELECT id FROM bench"
-	if limit > 0 {
-		query += fmt.Sprintf(" LIMIT %d", limit)
+// fetchCassandraIDs samples up to `limit` ids spread across all numBuckets
+// partitions via `PER PARTITION LIMIT`. The previous `SELECT id FROM bench
+// LIMIT N` form returned ids in Murmur3 token order, which concentrates the
+// sample on whatever 1-2 partitions sort first by token — at scale every
+// read/update workload ended up hitting the same few partitions, saturating
+// the key cache at 1.0 regardless of UUID type and erasing the read-
+// amplification signal the multi-node extension is designed to measure.
+//
+// Per-bucket query is structured behind cassandraBucketQuery so the
+// bucket-iteration logic is unit-testable without a live gocql session —
+// see fetchIDsAcrossBuckets.
+func fetchCassandraIDs(session *gocql.Session, keyType string, limit, numBuckets int) ([]any, error) {
+	if numBuckets <= 0 {
+		return nil, fmt.Errorf("fetchCassandraIDs: numBuckets must be >= 1, got %d", numBuckets)
 	}
+	query := func(bucket, perBucketLimit int) ([]any, error) {
+		return queryBucketIDs(session, keyType, bucket, perBucketLimit)
+	}
+	ids, err := fetchIDsAcrossBuckets(query, limit, numBuckets)
+	if err != nil {
+		return ids, err
+	}
+	if len(ids) == 0 {
+		return nil, fmt.Errorf("fetchCassandraIDs: no rows returned from bench table (limit=%d, keyType=%s, numBuckets=%d); the table appears empty, which likely means inserts did not complete", limit, keyType, numBuckets)
+	}
+	return ids, nil
+}
 
-	iter := session.Query(query).Iter()
-	var ids []any
+// fetchIDsAcrossBuckets iterates buckets 0..numBuckets-1 calling query for
+// each, accumulating up to `limit` ids total. perBucket is sized by ceil
+// division so the sample reaches `limit` even when some buckets are sparse
+// — we stop as soon as we've accumulated `limit` ids regardless of which
+// bucket we're on.
+//
+// Errors from any per-bucket query are propagated immediately (no partial
+// returns) — a transient gocql error mid-iteration would otherwise return a
+// silently-truncated sample that biases the downstream workload.
+func fetchIDsAcrossBuckets(query cassandraBucketQuery, limit, numBuckets int) ([]any, error) {
+	if limit <= 0 {
+		return nil, nil
+	}
+	perBucket := (limit + numBuckets - 1) / numBuckets
+	if perBucket < 1 {
+		perBucket = 1
+	}
+	ids := make([]any, 0, limit)
+	for b := 0; b < numBuckets && len(ids) < limit; b++ {
+		rows, err := query(b, perBucket)
+		if err != nil {
+			return ids, err
+		}
+		for _, id := range rows {
+			if len(ids) >= limit {
+				break
+			}
+			ids = append(ids, id)
+		}
+	}
+	return ids, nil
+}
+
+// queryBucketIDs runs the `SELECT id FROM bench WHERE bucket = ? PER
+// PARTITION LIMIT ?` query for a single bucket and scans the result into a
+// typed []any sized by perBucketLimit. The PER PARTITION LIMIT (rather than
+// a top-level LIMIT) is important: it caps the per-partition scan, which
+// matters because callers iterate buckets in sequence to spread the sample.
+func queryBucketIDs(session *gocql.Session, keyType string, bucket, perBucketLimit int) ([]any, error) {
+	iter := session.Query("SELECT id FROM bench WHERE bucket = ? PER PARTITION LIMIT ?", bucket, perBucketLimit).Iter()
+	ids := make([]any, 0, perBucketLimit)
 
 	switch keyType {
 	case "sequential":
@@ -1537,13 +1607,13 @@ func fetchCassandraIDs(session *gocql.Session, keyType string, limit int) ([]any
 			copy(idCopy, id)
 			ids = append(ids, idCopy)
 		}
+	default:
+		_ = iter.Close()
+		return nil, fmt.Errorf("queryBucketIDs: unknown keyType %q", keyType)
 	}
 
 	if err := iter.Close(); err != nil {
 		return ids, err
-	}
-	if len(ids) == 0 {
-		return nil, fmt.Errorf("fetchCassandraIDs: no rows returned from bench table (limit=%d, keyType=%s); the table appears empty, which likely means inserts did not complete", limit, keyType)
 	}
 	return ids, nil
 }
