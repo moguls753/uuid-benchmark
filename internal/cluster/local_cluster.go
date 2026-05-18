@@ -65,37 +65,48 @@ func (b *LocalClusterBackend) containerNames() []string {
 // 0 on a clean slate; failures are logged (not fatal) so a stuck
 // container that would later collide with `up -d` remains diagnosable.
 //
-// Start is transactional: on any failure from `docker compose up -d`
-// (typically a healthcheck timeout after partial container creation),
-// it self-rolls-back by invoking Stop() best-effort before returning
-// the error. This mirrors RemoteCluster's rollback() pattern and means
-// callers do not need to remember to Stop() after a Start failure —
-// the partial cluster is already gone. Stop's own errors during
-// rollback are silenced; the original Start error is what the caller
-// sees.
+// Compose calls go through composeCmd so the V1/V2 docker-compose
+// fallback applies (Taurus HPC nodes only have V1; the laptop has V2).
+// `compose up -d` is retried up to startRetries times with retryBackoff
+// between attempts to absorb the slower/flakier container init on
+// Taurus. Each retry repeats `down -v --remove-orphans` so partial
+// state can't leak between attempts.
+//
+// Start is transactional: if all startRetries attempts fail, it self-
+// rolls-back by invoking Stop() best-effort before returning the error.
+// This mirrors RemoteCluster's rollback() pattern and means callers do
+// not need to remember to Stop() after a Start failure — the partial
+// cluster is already gone. Stop's own errors during rollback are
+// silenced; the original Start error is what the caller sees.
 func (b *LocalClusterBackend) Start() error {
-	if out, err := exec.Command("docker", "compose", "-f", localClusterCompose, "down", "-v", "--remove-orphans").CombinedOutput(); err != nil {
+	if out, err := composeCmd(localClusterCompose, "down", "-v", "--remove-orphans").CombinedOutput(); err != nil {
 		log.Printf("LocalClusterBackend: pre-Start teardown returned error (continuing): %v; output: %s", err, strings.TrimSpace(string(out)))
 	}
-	out, err := exec.Command("docker", "compose", "-f", localClusterCompose, "up", "-d").CombinedOutput()
-	if err != nil {
-		// Self-rollback: tear the partial stack down so a retry sees a
-		// clean slate and the operator doesn't need a manual `docker
-		// compose down`. Stop errors are intentionally swallowed — the
-		// caller is already getting one error (the Start failure) and a
-		// second teardown error would obscure the root cause.
-		if stopErr := b.Stop(); stopErr != nil {
-			log.Printf("LocalClusterBackend: rollback after failed Start also failed (continuing to return original Start error): %v", stopErr)
+	var lastErr error
+	var lastOut []byte
+	for attempt := 1; attempt <= startRetries; attempt++ {
+		if attempt > 1 {
+			log.Printf("LocalClusterBackend: retry %d/%d", attempt, startRetries)
+			_, _ = composeCmd(localClusterCompose, "down", "-v", "--remove-orphans").CombinedOutput()
+			time.Sleep(retryBackoff)
 		}
-		return fmt.Errorf("compose up cluster: %w (output: %s)", err, out)
+		out, err := composeCmd(localClusterCompose, "up", "-d").CombinedOutput()
+		if err == nil {
+			return nil
+		}
+		lastErr, lastOut = err, out
 	}
-	return nil
+	if stopErr := b.Stop(); stopErr != nil {
+		log.Printf("LocalClusterBackend: rollback after %d failed attempts also failed (continuing to return original Start error): %v", startRetries, stopErr)
+	}
+	return fmt.Errorf("compose up cluster after %d attempts: %w (last output: %s)", startRetries, lastErr, lastOut)
 }
 
 // Stop tears the cluster down with `docker compose down -v --remove-orphans`,
-// removing volumes so the next Start gets a fresh database.
+// removing volumes so the next Start gets a fresh database. Uses
+// composeCmd for the V1/V2 fallback.
 func (b *LocalClusterBackend) Stop() error {
-	out, err := exec.Command("docker", "compose", "-f", localClusterCompose, "down", "-v", "--remove-orphans").CombinedOutput()
+	out, err := composeCmd(localClusterCompose, "down", "-v", "--remove-orphans").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("compose down cluster: %w (output: %s)", err, out)
 	}

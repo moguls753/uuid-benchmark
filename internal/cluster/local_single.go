@@ -29,24 +29,37 @@ func NewLocalSingle() *LocalSingleBackend { return &LocalSingleBackend{} }
 // Start brings the single-node container up. Per the project's "fresh
 // container per UUID type" invariant, it first tears down any existing
 // stack with volumes removed so each Start delivers an empty database.
+//
+// Compose calls go through composeCmd so the V1/V2 docker-compose
+// fallback applies (Taurus HPC nodes only have V1; the laptop has V2).
+// `compose up -d` is retried up to startRetries times with retryBackoff
+// between attempts; container init on Taurus is slower and flakier than
+// on a developer laptop, so a single attempt is not robust enough. Each
+// retry repeats the `down -v --remove-orphans` so partial state from a
+// failed `up` doesn't poison the next attempt.
 func (b *LocalSingleBackend) Start() error {
-	// Best-effort teardown — typically nothing is running and `down` exits
-	// 0 on a clean slate. Failures here are usually benign (no project
-	// to remove) but can also indicate a stuck container that the next
-	// `up -d` will then collide with; log the output so the failure is
-	// visible without blocking the bringup.
-	if out, err := exec.Command("docker", "compose", "-f", localSingleCompose, "down", "-v", "--remove-orphans").CombinedOutput(); err != nil {
+	if out, err := composeCmd(localSingleCompose, "down", "-v", "--remove-orphans").CombinedOutput(); err != nil {
 		log.Printf("LocalSingleBackend: pre-Start teardown returned error (continuing): %v; output: %s", err, strings.TrimSpace(string(out)))
 	}
-	out, err := exec.Command("docker", "compose", "-f", localSingleCompose, "up", "-d").CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("compose up: %w (output: %s)", err, out)
+	var lastErr error
+	var lastOut []byte
+	for attempt := 1; attempt <= startRetries; attempt++ {
+		if attempt > 1 {
+			log.Printf("LocalSingleBackend: retry %d/%d", attempt, startRetries)
+			_, _ = composeCmd(localSingleCompose, "down", "-v", "--remove-orphans").CombinedOutput()
+			time.Sleep(retryBackoff)
+		}
+		out, err := composeCmd(localSingleCompose, "up", "-d").CombinedOutput()
+		if err == nil {
+			return nil
+		}
+		lastErr, lastOut = err, out
 	}
-	return nil
+	return fmt.Errorf("compose up after %d attempts: %w (last output: %s)", startRetries, lastErr, lastOut)
 }
 
 func (b *LocalSingleBackend) Stop() error {
-	out, err := exec.Command("docker", "compose", "-f", localSingleCompose, "down", "-v", "--remove-orphans").CombinedOutput()
+	out, err := composeCmd(localSingleCompose, "down", "-v", "--remove-orphans").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("compose down: %w (output: %s)", err, out)
 	}
