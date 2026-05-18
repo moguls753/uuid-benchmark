@@ -17,6 +17,20 @@ var (
 	copiedToMu sync.Mutex
 )
 
+// ExecutionMode selects how the workload binary is launched.
+type ExecutionMode string
+
+const (
+	// ExecutionModeContainer is the default for single-node benchmarks: it
+	// docker cp's the workload binary into the named container and runs it
+	// via docker exec.
+	ExecutionModeContainer ExecutionMode = "container"
+	// ExecutionModeNative runs the workload binary directly on the host where
+	// the orchestrator runs. Used for multi-node clusters where the workload
+	// connects over the network to one of N nodes.
+	ExecutionModeNative ExecutionMode = "native"
+)
+
 // BuildBinary compiles the workload binary as a static Linux binary.
 // It is safe to call multiple times; the binary is built only once.
 func BuildBinary() (string, error) {
@@ -93,9 +107,11 @@ func ResetCopyCache() {
 
 // ExecutorConfig configures a workload binary execution.
 type ExecutorConfig struct {
-	ContainerName    string
-	DBType           string // mongodb, cassandra, or mysql
-	Op               string // insert, read, update, mixed
+	Mode             ExecutionMode // Execution mode (default "" → ExecutionModeContainer)
+	ContainerName    string        // Container name (required for ExecutionModeContainer)
+	BinaryPath       string        // Path to workload binary on host (used in ExecutionModeNative; default "./workload", resolved relative to the orchestrator's working directory)
+	DBType           string        // mongodb, cassandra, or mysql
+	Op               string        // insert, read, update, mixed
 	KeyType          string
 	NumRecords       int
 	NumOps           int
@@ -106,17 +122,14 @@ type ExecutorConfig struct {
 	ReadPct          int    // Read percentage for mixed workload
 	UpdatePct        int    // Update percentage for mixed workload
 	TableName        string // Table/collection name (default "bench")
+	NumBuckets       int    // Number of Cassandra partition buckets (Cassandra-only; forwarded when > 0)
+	Consistency      string // CQL consistency level (Cassandra-only); forwarded as --consistency when non-empty. Empty preserves the workload binary's own default (local_one).
 }
 
-// Execute runs the workload binary inside a container and returns parsed results.
-func Execute(cfg ExecutorConfig) (*WorkloadResult, error) {
-	if err := CopyToContainer(cfg.ContainerName); err != nil {
-		return nil, fmt.Errorf("copy to container: %w", err)
-	}
-
+// buildExecArgs assembles the workload binary CLI arguments from cfg.
+// It does not include the binary path itself or any docker-exec prefix.
+func buildExecArgs(cfg ExecutorConfig) []string {
 	args := []string{
-		"exec", cfg.ContainerName,
-		"/tmp/workload",
 		"--db-type", cfg.DBType,
 		"--op", cfg.Op,
 		"--key-type", cfg.KeyType,
@@ -140,6 +153,14 @@ func Execute(cfg ExecutorConfig) (*WorkloadResult, error) {
 		args = append(args, "--table-name", cfg.TableName)
 	}
 
+	if cfg.NumBuckets > 0 {
+		args = append(args, "--num-buckets", fmt.Sprintf("%d", cfg.NumBuckets))
+	}
+
+	if cfg.Consistency != "" {
+		args = append(args, "--consistency", cfg.Consistency)
+	}
+
 	if cfg.Op == "mixed" {
 		args = append(args,
 			"--insert-pct", fmt.Sprintf("%d", cfg.InsertPct),
@@ -148,14 +169,48 @@ func Execute(cfg ExecutorConfig) (*WorkloadResult, error) {
 		)
 	}
 
-	cmd := exec.Command("docker", args...)
+	return args
+}
+
+// Execute runs the workload binary (in a container or natively) and returns parsed results.
+func Execute(cfg ExecutorConfig) (*WorkloadResult, error) {
+	mode := cfg.Mode
+	if mode == "" {
+		mode = ExecutionModeContainer
+	}
+
+	args := buildExecArgs(cfg)
+
+	var cmd *exec.Cmd
+	switch mode {
+	case ExecutionModeContainer:
+		if cfg.ContainerName == "" {
+			return nil, fmt.Errorf("container mode requires ContainerName")
+		}
+		if err := CopyToContainer(cfg.ContainerName); err != nil {
+			return nil, fmt.Errorf("copy to container: %w", err)
+		}
+		dockerArgs := append([]string{"exec", cfg.ContainerName, "/tmp/workload"}, args...)
+		cmd = exec.Command("docker", dockerArgs...)
+	case ExecutionModeNative:
+		path := cfg.BinaryPath
+		if path == "" {
+			path = binaryPath // populated by BuildBinary; empty if it wasn't called
+		}
+		if path == "" {
+			path = "./workload"
+		}
+		cmd = exec.Command(path, args...)
+	default:
+		return nil, fmt.Errorf("unknown execution mode: %q", mode)
+	}
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("execute workload: %w (stderr: %s)", err, stderr.String())
+		return nil, fmt.Errorf("execute workload (%s): %w (stderr: %s)", mode, err, stderr.String())
 	}
 
 	result, err := ParseResult(stdout.String())

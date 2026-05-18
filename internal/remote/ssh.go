@@ -1,0 +1,212 @@
+// Package remote provides a minimal SSH executor used by RemoteClusterBackend
+// to run commands and copy files on Cassandra nodes over SSH. The executor
+// is intentionally thin: no connection pooling, no host-key verification
+// (Taurus deployments run on a private VPN), and no retry logic. Higher
+// layers (RemoteCluster, WaitForRing) handle transient failure retries.
+package remote
+
+import (
+	"bytes"
+	"fmt"
+	"net"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"golang.org/x/crypto/ssh"
+)
+
+// Client holds SSH credentials and authentication material. It does NOT
+// cache connections — each Exec call opens a fresh TCP+SSH session and
+// closes it on return. This is intentionally simple for the benchmark's
+// low-frequency use (a few exec calls per scenario, not per query).
+type Client struct {
+	user    string
+	keyPath string // empty → falls back to ~/.ssh/id_ed25519
+}
+
+// NewClient constructs a client that will authenticate as user. If keyPath
+// is empty, the client falls back to ~/.ssh/id_ed25519 at dial time.
+func NewClient(user, keyPath string) *Client {
+	return &Client{user: user, keyPath: keyPath}
+}
+
+// Exec runs the given argv on the remote host and returns combined
+// stdout+stderr. Each argv element is shell-quoted (single-quotes with
+// '\'' escapes) before being space-joined, so shell metacharacters in
+// args are preserved literally rather than expanded by the remote shell.
+func (c *Client) Exec(host string, argv ...string) (string, error) {
+	if host == "" {
+		return "", fmt.Errorf("remote.Exec: host is empty")
+	}
+	if c.user == "" {
+		return "", fmt.Errorf("remote.Exec: client user is empty")
+	}
+	if len(argv) == 0 {
+		return "", fmt.Errorf("remote.Exec: argv is empty")
+	}
+
+	cli, err := c.dial(host)
+	if err != nil {
+		return "", err
+	}
+	defer cli.Close()
+
+	session, err := cli.NewSession()
+	if err != nil {
+		return "", fmt.Errorf("ssh new session: %w", err)
+	}
+	defer session.Close()
+
+	var buf bytes.Buffer
+	session.Stdout = &buf
+	session.Stderr = &buf
+
+	full := buildShellCommand(argv)
+	if err := session.Run(full); err != nil {
+		// Trim the buffer on the error path for readable error logs;
+		// the success path below returns raw bytes since callers parse
+		// structured output (e.g. `nodetool status`) and care about exact
+		// whitespace.
+		return buf.String(), fmt.Errorf("ssh %s: %w (output: %s)", host, err, strings.TrimSpace(buf.String()))
+	}
+	return buf.String(), nil
+}
+
+// Copy uses the system `scp` binary to transfer src on the local host to
+// dst on the remote host (over SSH). Authenticates using the same key
+// material as Exec; host must be a bare hostname (no ":port" suffix —
+// scp would misparse it as part of the destination path).
+//
+// scp is required on the orchestrator's PATH. This shells out rather
+// than reimplementing the SCP protocol in Go (golang.org/x/crypto/ssh
+// does not ship an SCP client).
+func (c *Client) Copy(host, src, dst string) error {
+	if host == "" {
+		return fmt.Errorf("remote.Copy: host is empty")
+	}
+	if c.user == "" {
+		return fmt.Errorf("remote.Copy: client user is empty")
+	}
+	if src == "" {
+		return fmt.Errorf("remote.Copy: src is empty")
+	}
+	if dst == "" {
+		return fmt.Errorf("remote.Copy: dst is empty")
+	}
+	// scp parses the first ":" in the destination as the host/path
+	// separator, so a host of "taurus5:22" would produce destination
+	// "22:/path/...", a confusing runtime failure. Reject up-front.
+	// Asymmetric with Exec's dial(), which deliberately accepts a
+	// ":port" suffix on host — the doc on Copy calls this out.
+	if strings.Contains(host, ":") {
+		return fmt.Errorf("remote.Copy: host %q must not contain ':' (port suffix not supported by scp)", host)
+	}
+	args := buildScpArgs(c.keyPath, c.user, host, src, dst)
+	out, err := exec.Command("scp", args...).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("scp %s -> %s:%s: %w (output: %s)", src, host, dst, err, strings.TrimSpace(string(out)))
+	}
+	return nil
+}
+
+// signer loads and parses the SSH private key. Falls back to
+// ~/.ssh/id_ed25519 when c.keyPath is empty.
+func (c *Client) signer() (ssh.Signer, error) {
+	path := c.keyPath
+	if path == "" {
+		path = filepath.Join(os.Getenv("HOME"), ".ssh", "id_ed25519")
+	}
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read key %s: %w", path, err)
+	}
+	signer, err := ssh.ParsePrivateKey(data)
+	if err != nil {
+		return nil, fmt.Errorf("parse private key %s: %w", path, err)
+	}
+	return signer, nil
+}
+
+// dial opens a TCP+SSH connection to host. If host lacks a ":port" suffix,
+// ":22" is appended.
+func (c *Client) dial(host string) (*ssh.Client, error) {
+	signer, err := c.signer()
+	if err != nil {
+		return nil, err
+	}
+	cfg := &ssh.ClientConfig{
+		User:            c.user,
+		Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), // Taurus runs on a private VPN; host-key verification deferred (documented in CLAUDE.md by Task 7.1)
+		Timeout:         15 * time.Second,
+	}
+	addr := host
+	if !hasPort(host) {
+		addr = host + ":22"
+	}
+	cli, err := ssh.Dial("tcp", addr, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("ssh dial %s: %w", addr, err)
+	}
+	return cli, nil
+}
+
+// hasPort reports whether host already includes a ":port" suffix. Uses
+// net.SplitHostPort, which correctly classifies bracketed IPv6 forms
+// (`[::1]:22`) but rejects raw IPv6 literals (`::1`) as malformed. Raw
+// IPv6 callers must therefore bracket their addresses; this benchmark
+// only ever uses DNS names so the limitation is academic.
+func hasPort(host string) bool {
+	if host == "" {
+		return false
+	}
+	_, _, err := net.SplitHostPort(host)
+	return err == nil
+}
+
+// buildShellCommand joins argv into a single shell-safe command line:
+// each element is shell-quoted, then space-joined. The remote shell
+// parses the result back into tokens; per-element quoting prevents
+// $VAR expansion and other metacharacter surprises.
+func buildShellCommand(argv []string) string {
+	quoted := make([]string, len(argv))
+	for i, a := range argv {
+		quoted[i] = shellQuote(a)
+	}
+	return strings.Join(quoted, " ")
+}
+
+// shellQuote wraps s in single quotes, escaping any internal single
+// quotes as '\''. The result is safe to splice into a POSIX shell
+// command line.
+func shellQuote(s string) string {
+	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
+// buildScpArgs assembles the argv passed to the system `scp` binary for
+// copying src → user@host:dst. If keyPath is empty, no -i flag is emitted
+// and scp falls back to ssh-agent / default key locations. The
+// StrictHostKeyChecking=no + UserKnownHostsFile=/dev/null pair mirrors
+// the InsecureIgnoreHostKey policy in dial() — Taurus runs on a private
+// VPN; see CLAUDE.md (Task 7.1).
+func buildScpArgs(keyPath, user, host, src, dst string) []string {
+	var args []string
+	if keyPath != "" {
+		args = append(args, "-i", keyPath)
+	}
+	args = append(args,
+		"-o", "StrictHostKeyChecking=no",
+		"-o", "UserKnownHostsFile=/dev/null",
+		// Batch mode: never prompt for a password. With key auth this is
+		// implicit, but adding it explicitly turns a misconfigured key
+		// from a hung scp (no timeout flag exists) into an immediate
+		// failure visible in the error chain.
+		"-o", "BatchMode=yes",
+		src,
+		fmt.Sprintf("%s@%s:%s", user, host, dst),
+	)
+	return args
+}

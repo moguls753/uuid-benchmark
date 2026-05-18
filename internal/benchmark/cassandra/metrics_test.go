@@ -119,3 +119,217 @@ func TestParseTableStats(t *testing.T) {
 		}
 	})
 }
+
+func TestAggregateSnapshots(t *testing.T) {
+	t.Parallel()
+	t.Run("two-node sum + ratio mean", func(t *testing.T) {
+		t.Parallel()
+		a := &CassandraMetricsSnapshot{
+			SSTableCount:         4,
+			SpaceUsedLive:        100 * 1024 * 1024,
+			SpaceUsedTotal:       120 * 1024 * 1024,
+			MemtableSwitchCount:  7,
+			BloomFilterFP:        42,
+			BloomFilterFPRatio:   0.001,
+			KeyCacheHitRate:      0.80,
+			CompactionBytesTotal: 1_000_000,
+		}
+		b := &CassandraMetricsSnapshot{
+			SSTableCount:         6,
+			SpaceUsedLive:        200 * 1024 * 1024,
+			SpaceUsedTotal:       240 * 1024 * 1024,
+			MemtableSwitchCount:  9,
+			BloomFilterFP:        8,
+			BloomFilterFPRatio:   0.003,
+			KeyCacheHitRate:      0.90,
+			CompactionBytesTotal: 500_000,
+		}
+		got := AggregateSnapshots([]*CassandraMetricsSnapshot{a, b})
+		if got.SSTableCount != 10 {
+			t.Errorf("SSTableCount: got %d want 10", got.SSTableCount)
+		}
+		if got.SpaceUsedLive != 300*1024*1024 {
+			t.Errorf("SpaceUsedLive: got %d want %d", got.SpaceUsedLive, 300*1024*1024)
+		}
+		if got.SpaceUsedTotal != 360*1024*1024 {
+			t.Errorf("SpaceUsedTotal: got %d want %d", got.SpaceUsedTotal, 360*1024*1024)
+		}
+		if got.MemtableSwitchCount != 16 {
+			t.Errorf("MemtableSwitchCount: got %d want 16", got.MemtableSwitchCount)
+		}
+		if got.BloomFilterFP != 50 {
+			t.Errorf("BloomFilterFP: got %d want 50", got.BloomFilterFP)
+		}
+		if got.CompactionBytesTotal != 1_500_000 {
+			t.Errorf("CompactionBytesTotal: got %d want 1500000", got.CompactionBytesTotal)
+		}
+		// Ratios are averaged.
+		if got.BloomFilterFPRatio < 0.00199 || got.BloomFilterFPRatio > 0.00201 {
+			t.Errorf("BloomFilterFPRatio: got %v want ~0.002", got.BloomFilterFPRatio)
+		}
+		if got.KeyCacheHitRate < 0.849 || got.KeyCacheHitRate > 0.851 {
+			t.Errorf("KeyCacheHitRate: got %v want ~0.85", got.KeyCacheHitRate)
+		}
+	})
+	t.Run("empty input returns zero snapshot", func(t *testing.T) {
+		t.Parallel()
+		got := AggregateSnapshots(nil)
+		if got == nil {
+			t.Fatal("expected non-nil zero snapshot, got nil")
+		}
+		if *got != (CassandraMetricsSnapshot{}) {
+			t.Errorf("expected zero-value snapshot, got %+v", got)
+		}
+	})
+	t.Run("nil entries are skipped", func(t *testing.T) {
+		t.Parallel()
+		// Defense against a partially-populated input — e.g. one node
+		// failed and the caller passed nil for its slot.
+		a := &CassandraMetricsSnapshot{SSTableCount: 3, KeyCacheHitRate: 0.5}
+		got := AggregateSnapshots([]*CassandraMetricsSnapshot{a, nil, a})
+		if got.SSTableCount != 6 {
+			t.Errorf("SSTableCount: got %d want 6 (nil skipped)", got.SSTableCount)
+		}
+		if got.KeyCacheHitRate < 0.499 || got.KeyCacheHitRate > 0.501 {
+			t.Errorf("KeyCacheHitRate: got %v want ~0.5 (avg over 2 non-nil snaps)", got.KeyCacheHitRate)
+		}
+	})
+	t.Run("single-snapshot aggregation is identity on ratios", func(t *testing.T) {
+		t.Parallel()
+		// Pins n=1 against a future "off by one" refactor of the
+		// average denominator. A single snap's ratios must come through
+		// unchanged, not divided by 0 (NaN) or 2 (halved).
+		a := &CassandraMetricsSnapshot{
+			SSTableCount:       5,
+			BloomFilterFPRatio: 0.0037,
+			KeyCacheHitRate:    0.73,
+		}
+		got := AggregateSnapshots([]*CassandraMetricsSnapshot{a})
+		if got.SSTableCount != 5 {
+			t.Errorf("SSTableCount: got %d want 5", got.SSTableCount)
+		}
+		if got.BloomFilterFPRatio < 0.00369 || got.BloomFilterFPRatio > 0.00371 {
+			t.Errorf("BloomFilterFPRatio: got %v want 0.0037 (identity for n=1)", got.BloomFilterFPRatio)
+		}
+		if got.KeyCacheHitRate < 0.729 || got.KeyCacheHitRate > 0.731 {
+			t.Errorf("KeyCacheHitRate: got %v want 0.73 (identity for n=1)", got.KeyCacheHitRate)
+		}
+	})
+}
+
+func TestBuildBenchmarkResult(t *testing.T) {
+	t.Parallel()
+	t.Run("delta + ratio assembly with before snapshot", func(t *testing.T) {
+		t.Parallel()
+		before := &CassandraMetricsSnapshot{
+			SSTableCount:  4,
+			BloomFilterFP: 10,
+		}
+		after := &CassandraMetricsSnapshot{
+			SSTableCount:    7,
+			SpaceUsedLive:   200 * 1024 * 1024,
+			SpaceUsedTotal:  250 * 1024 * 1024,
+			BloomFilterFP:   25,
+			KeyCacheHitRate: 0.91,
+		}
+		got := buildBenchmarkResult(before, after)
+		if got.TableSize != after.SpaceUsedLive {
+			t.Errorf("TableSize: got %d want %d", got.TableSize, after.SpaceUsedLive)
+		}
+		if got.IndexSize != 0 {
+			t.Errorf("IndexSize: got %d want 0 (Cassandra doesn't separate index)", got.IndexSize)
+		}
+		// PageSplits = SSTableCount delta = 7 - 4 = 3.
+		if got.PageSplits != 3 {
+			t.Errorf("PageSplits: got %d want 3", got.PageSplits)
+		}
+		// BloomFilterFP delta = 25 - 10 = 15.
+		if got.BloomFilterFP != 15 {
+			t.Errorf("BloomFilterFP: got %d want 15", got.BloomFilterFP)
+		}
+		if got.BufferHitRatio != after.KeyCacheHitRate {
+			t.Errorf("BufferHitRatio: got %v want %v", got.BufferHitRatio, after.KeyCacheHitRate)
+		}
+		if got.IndexBufferHitRatio != got.BufferHitRatio {
+			t.Errorf("IndexBufferHitRatio: got %v want %v (equal to BufferHitRatio)", got.IndexBufferHitRatio, got.BufferHitRatio)
+		}
+		// Fragmentation% = (total - live) / total * 100 = 50 / 250 * 100 = 20%.
+		if got.Fragmentation.FragmentationPercent < 19.9 || got.Fragmentation.FragmentationPercent > 20.1 {
+			t.Errorf("FragmentationPercent: got %v want ~20", got.Fragmentation.FragmentationPercent)
+		}
+		if got.Fragmentation.LeafPages != int64(after.SSTableCount) {
+			t.Errorf("LeafPages (repurposed for SSTable count): got %d want %d", got.Fragmentation.LeafPages, after.SSTableCount)
+		}
+	})
+	t.Run("nil before snapshot leaves delta fields zero", func(t *testing.T) {
+		t.Parallel()
+		after := &CassandraMetricsSnapshot{
+			SSTableCount:  3,
+			SpaceUsedLive: 100,
+			BloomFilterFP: 7,
+		}
+		got := buildBenchmarkResult(nil, after)
+		if got.PageSplits != 0 {
+			t.Errorf("PageSplits: got %d want 0 (no before)", got.PageSplits)
+		}
+		if got.BloomFilterFP != 0 {
+			t.Errorf("BloomFilterFP: got %d want 0 (no before)", got.BloomFilterFP)
+		}
+		if got.TableSize != after.SpaceUsedLive {
+			t.Errorf("TableSize: got %d want %d", got.TableSize, after.SpaceUsedLive)
+		}
+	})
+	t.Run("negative delta is clamped to zero", func(t *testing.T) {
+		t.Parallel()
+		// Cassandra counters can legitimately decrease (e.g. compaction
+		// merges SSTables, lowering the count). buildBenchmarkResult
+		// reports 0 instead of a negative delta — a benchmark "page
+		// splits" or "bloom FPs added" can't be negative.
+		before := &CassandraMetricsSnapshot{SSTableCount: 10, BloomFilterFP: 100}
+		after := &CassandraMetricsSnapshot{SSTableCount: 4, BloomFilterFP: 50}
+		got := buildBenchmarkResult(before, after)
+		if got.PageSplits != 0 {
+			t.Errorf("PageSplits: got %d want 0 (negative delta clamped)", got.PageSplits)
+		}
+		if got.BloomFilterFP != 0 {
+			t.Errorf("BloomFilterFP: got %d want 0 (negative delta clamped)", got.BloomFilterFP)
+		}
+	})
+}
+
+func TestParseKeyCacheHitRate(t *testing.T) {
+	cases := map[string]struct {
+		in   string
+		want float64
+	}{
+		"hits-and-requests form": {
+			in:   "Key Cache              : entries 100, size 1 MB, capacity 25 MB, 800 hits, 1000 requests, 0.8 recent hit rate",
+			want: 0.8,
+		},
+		"recent-hit-rate fallback": {
+			// No "X hits, Y requests" pair — only the rate.
+			in:   "Key Cache: 0.42 recent hit rate",
+			want: 0.42,
+		},
+		"NaN recent hit rate (zero requests)": {
+			// Newly-started Cassandra; 0 hits / 0 requests → no rate.
+			in:   "Key Cache        : entries 0, size 0 bytes, capacity 25 MB, 0 hits, 0 requests, NaN recent hit rate",
+			want: 0,
+		},
+		"no key cache line at all": {
+			in:   "Load: 1 KiB\nGeneration No: 0",
+			want: 0,
+		},
+	}
+	for name, tc := range cases {
+		t.Run(name, func(t *testing.T) {
+			got := parseKeyCacheHitRate(tc.in)
+			if got != tc.want {
+				// Allow a small float tolerance for the parsed cases.
+				if got < tc.want-1e-9 || got > tc.want+1e-9 {
+					t.Errorf("parseKeyCacheHitRate: got %v want %v", got, tc.want)
+				}
+			}
+		})
+	}
+}

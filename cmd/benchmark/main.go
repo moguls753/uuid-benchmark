@@ -10,6 +10,7 @@ import (
 	"github.com/moguls753/uuid-benchmark/internal/benchmark"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/statistics"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/workload"
+	"github.com/moguls753/uuid-benchmark/internal/cluster"
 	"github.com/moguls753/uuid-benchmark/internal/container"
 	"github.com/moguls753/uuid-benchmark/internal/display"
 	"github.com/moguls753/uuid-benchmark/internal/export"
@@ -22,7 +23,8 @@ var allKeyTypes = []string{"sequential", "uuidv4", "uuidv7", "ulid", "ulid_monot
 type dbConfig struct {
 	name             string
 	id               string // canonical lowercase name for display logic ("postgres", "mysql", "mongodb", "cassandra")
-	containerCfg     container.Config
+	start            func() error
+	stop             func() error
 	insertFunc       func(string, int, int, int) (*benchmark.InsertPerformanceResult, error)
 	readFunc         func(string, int, int) (*benchmark.ReadPerformanceResult, error)
 	updateFunc       func(string, int, int, int) (*benchmark.UpdatePerformanceResult, error)
@@ -33,7 +35,8 @@ type dbConfig struct {
 var postgresDB = dbConfig{
 	name:             "PostgreSQL",
 	id:               "postgres",
-	containerCfg:     container.PostgresConfig,
+	start:            func() error { container.Start(container.PostgresConfig); return nil },
+	stop:             func() error { container.Stop(container.PostgresConfig.ComposeFile); return nil },
 	insertFunc:       runner.InsertPerformance,
 	readFunc:         runner.ReadPerformance,
 	updateFunc:       runner.UpdatePerformance,
@@ -44,7 +47,8 @@ var postgresDB = dbConfig{
 var mysqlDB = dbConfig{
 	name:             "MySQL",
 	id:               "mysql",
-	containerCfg:     container.MySQLConfig,
+	start:            func() error { container.Start(container.MySQLConfig); return nil },
+	stop:             func() error { container.Stop(container.MySQLConfig.ComposeFile); return nil },
 	insertFunc:       runner.MySQLInsertPerformance,
 	readFunc:         runner.MySQLReadPerformance,
 	updateFunc:       runner.MySQLUpdatePerformance,
@@ -55,7 +59,8 @@ var mysqlDB = dbConfig{
 var mongodbDB = dbConfig{
 	name:             "MongoDB",
 	id:               "mongodb",
-	containerCfg:     container.MongoDBConfig,
+	start:            func() error { container.Start(container.MongoDBConfig); return nil },
+	stop:             func() error { container.Stop(container.MongoDBConfig.ComposeFile); return nil },
 	insertFunc:       runner.MongoDBInsertPerformance,
 	readFunc:         runner.MongoDBReadPerformance,
 	updateFunc:       runner.MongoDBUpdatePerformance,
@@ -63,15 +68,49 @@ var mongodbDB = dbConfig{
 	mixedReadUpdate:  runner.MongoDBMixedWorkloadReadUpdate,
 }
 
-var cassandraDB = dbConfig{
-	name:             "Cassandra",
-	id:               "cassandra",
-	containerCfg:     container.CassandraConfig,
-	insertFunc:       runner.CassandraInsertPerformance,
-	readFunc:         runner.CassandraReadPerformance,
-	updateFunc:       runner.CassandraUpdatePerformance,
-	mixedInsertHeavy: runner.CassandraMixedWorkloadInsertHeavy,
-	mixedReadUpdate:  runner.CassandraMixedWorkloadReadUpdate,
+// cassandraDBConfig builds a Cassandra dbConfig that closes over the cluster
+// config and Backend, since runner.Cassandra* signatures take both but the
+// shared dbConfig function types do not (the other databases don't use them).
+func cassandraDBConfig(cfg cluster.ClusterConfig, backend cluster.Backend) dbConfig {
+	return dbConfig{
+		name: "Cassandra",
+		id:   "cassandra",
+		start: func() error {
+			if err := backend.Start(); err != nil {
+				return fmt.Errorf("backend start: %w", err)
+			}
+			if err := backend.WaitForReady(); err != nil {
+				return fmt.Errorf("backend wait for ready: %w", err)
+			}
+			return nil
+		},
+		stop: func() error {
+			err := backend.Stop()
+			// The container is gone; the cached "we already docker cp'd the
+			// binary into <name>" entry would otherwise short-circuit the next
+			// copy and leave the fresh container with no /tmp/workload.
+			workload.ResetCopyCache()
+			if err != nil {
+				return fmt.Errorf("backend stop: %w", err)
+			}
+			return nil
+		},
+		insertFunc: func(keyType string, numRecords, batchSize, connections int) (*benchmark.InsertPerformanceResult, error) {
+			return runner.CassandraInsertPerformance(keyType, numRecords, batchSize, connections, cfg, backend)
+		},
+		readFunc: func(keyType string, numRecords, numReads int) (*benchmark.ReadPerformanceResult, error) {
+			return runner.CassandraReadPerformance(keyType, numRecords, numReads, cfg, backend)
+		},
+		updateFunc: func(keyType string, numRecords, numUpdates, batchSize int) (*benchmark.UpdatePerformanceResult, error) {
+			return runner.CassandraUpdatePerformance(keyType, numRecords, numUpdates, batchSize, cfg, backend)
+		},
+		mixedInsertHeavy: func(keyType string, totalOps, connections, batchSize int) (*benchmark.MixedWorkloadResult, error) {
+			return runner.CassandraMixedWorkloadInsertHeavy(keyType, totalOps, connections, batchSize, cfg, backend)
+		},
+		mixedReadUpdate: func(keyType string, totalOps, connections int) (*benchmark.MixedWorkloadResult, error) {
+			return runner.CassandraMixedWorkloadReadUpdate(keyType, totalOps, connections, cfg, backend)
+		},
+	}
 }
 
 var currentDB dbConfig
@@ -84,6 +123,15 @@ func main() {
 	connections := flag.Int("connections", 1, "Number of concurrent connections")
 	batchSize := flag.Int("batch-size", 100, "Batch size for inserts/updates")
 	numRuns := flag.Int("num-runs", 1, "Number of runs per UUID type (for statistical analysis)")
+	numBuckets := flag.Int("num-buckets", 1000, "Number of Cassandra partition buckets")
+	// Cassandra cluster topology flags — only consulted for -database=cassandra.
+	clusterMode := flag.String("cluster-mode", "local-single", "Cassandra cluster mode: local-single, local-cluster, remote-cluster (Cassandra only)")
+	nodes := flag.String("nodes", "", "Comma-separated hostnames for remote-cluster mode (e.g. taurus5,taurus6,taurus7)")
+	sshUser := flag.String("ssh-user", "", "SSH user for remote-cluster mode")
+	sshKey := flag.String("ssh-key", "", "SSH private key path for remote-cluster mode (default: ssh-agent / ~/.ssh/id_*)")
+	replicationFactor := flag.Int("replication-factor", 0, "Cassandra replication factor (default: 1 for local-single, 3 for cluster modes)")
+	consistency := flag.String("consistency", "", "CQL consistency level: one, local_one, local_quorum, quorum (default: local_one for local-single, local_quorum for cluster modes)")
+	clusterNodeCount := flag.Int("cluster-nodes", 3, "Number of nodes for local-cluster mode (must match docker/docker-compose.cassandra-cluster.yml service count)")
 	output := flag.String("output", "", "Output CSV file for statistical results")
 	flag.Parse()
 
@@ -98,7 +146,18 @@ func main() {
 		allKeyTypes = append(allKeyTypes, "objectid")
 		buildWorkloadBinary()
 	case "cassandra", "cass":
-		currentDB = cassandraDB
+		if *clusterMode == "local-cluster" && *clusterNodeCount <= 0 {
+			log.Fatalf("-cluster-nodes must be >= 1 (got %d)", *clusterNodeCount)
+		}
+		cfg, err := buildClusterConfig(*clusterMode, *nodes, *sshUser, *sshKey, *consistency, *replicationFactor, *numBuckets)
+		if err != nil {
+			log.Fatalf("Build cluster config: %v", err)
+		}
+		backend, err := buildBackend(cfg, *clusterNodeCount)
+		if err != nil {
+			log.Fatalf("Build backend: %v", err)
+		}
+		currentDB = cassandraDBConfig(cfg, backend)
 		buildWorkloadBinary()
 	default:
 		log.Fatalf("Invalid database: %s (use 'postgres', 'mysql', 'mongodb', or 'cassandra')", *database)
@@ -107,6 +166,9 @@ func main() {
 	fmt.Printf("UUID Benchmark - %s\n", currentDB.name)
 	fmt.Println(strings.Repeat("=", 70))
 	fmt.Printf("Database:     %s\n", currentDB.name)
+	if currentDB.id == "cassandra" {
+		fmt.Printf("Cluster mode: %s\n", *clusterMode)
+	}
 	fmt.Printf("Scenario:     %s\n", *scenario)
 	fmt.Printf("Records:      %d\n", *numRecords)
 	if *connections > 1 {
@@ -178,16 +240,22 @@ func runScenario[R any](
 				fmt.Printf("  Run %d/%d... ", i+1, numRuns)
 			}
 
-			container.Start(currentDB.containerCfg)
+			if err := currentDB.start(); err != nil {
+				log.Fatalf("Run %d start failed for %s: %v", i+1, keyType, err)
+			}
 
 			result, err := runOne(keyType)
 			if err != nil {
-				container.Stop(currentDB.containerCfg.ComposeFile)
+				if stopErr := currentDB.stop(); stopErr != nil {
+					fmt.Printf("Warning: stop after failure: %v\n", stopErr)
+				}
 				log.Fatalf("Run %d failed for %s: %v", i+1, keyType, err)
 			}
 
 			allRuns[keyType] = append(allRuns[keyType], result)
-			container.Stop(currentDB.containerCfg.ComposeFile)
+			if err := currentDB.stop(); err != nil {
+				log.Fatalf("Run %d stop failed for %s: %v", i+1, keyType, err)
+			}
 
 			if numRuns > 1 {
 				fmt.Println("done")
@@ -581,6 +649,91 @@ func exportCSV(scenarioName string, allStats map[string]map[string]statistics.St
 	} else {
 		fmt.Printf("  Raw runs data: %s\n", rawFile)
 	}
+}
+
+// buildClusterConfig assembles a cluster.ClusterConfig from CLI flags,
+// applies per-mode defaults for replication factor and consistency, sets
+// NumBuckets, and runs cfg.Validate(). The single-helper contract means
+// callers can't accidentally skip validation by reordering setup steps.
+func buildClusterConfig(mode, nodesStr, sshUser, sshKey, consistency string, rf, numBuckets int) (cluster.ClusterConfig, error) {
+	cfg := cluster.ClusterConfig{
+		Keyspace:   "uuid_benchmark",
+		Mode:       cluster.Mode(mode),
+		NumBuckets: numBuckets,
+	}
+	switch cfg.Mode {
+	case cluster.ModeLocalSingle:
+		cfg.ContactPoints = []string{"127.0.0.1"}
+		if rf == 0 {
+			rf = 1
+		}
+		if consistency == "" {
+			consistency = string(cluster.ConsistencyLocalOne)
+		}
+	case cluster.ModeLocalCluster:
+		cfg.ContactPoints = []string{"127.0.0.1"}
+		if rf == 0 {
+			rf = 3
+		}
+		if consistency == "" {
+			consistency = string(cluster.ConsistencyLocalQuorum)
+		}
+	case cluster.ModeRemoteCluster:
+		hosts := parseHostList(nodesStr)
+		if len(hosts) == 0 {
+			return cfg, fmt.Errorf("remote-cluster mode requires -nodes (comma-separated hostnames)")
+		}
+		cfg.ContactPoints = hosts
+		cfg.Hostnames = hosts
+		cfg.SSHUser = sshUser
+		cfg.SSHKeyPath = sshKey
+		if rf == 0 {
+			rf = 3
+		}
+		if consistency == "" {
+			consistency = string(cluster.ConsistencyLocalQuorum)
+		}
+	default:
+		return cfg, fmt.Errorf("unknown cluster mode %q (expected local-single, local-cluster, or remote-cluster)", mode)
+	}
+	cfg.ReplicationFactor = rf
+	cfg.Consistency = cluster.Consistency(consistency)
+	if err := cfg.Validate(); err != nil {
+		return cfg, err
+	}
+	return cfg, nil
+}
+
+// buildBackend constructs the cluster.Backend matching cfg.Mode. localNodeCount
+// is only consulted in ModeLocalCluster.
+func buildBackend(cfg cluster.ClusterConfig, localNodeCount int) (cluster.Backend, error) {
+	switch cfg.Mode {
+	case cluster.ModeLocalSingle:
+		return cluster.NewLocalSingle(), nil
+	case cluster.ModeLocalCluster:
+		return cluster.NewLocalCluster(localNodeCount), nil
+	case cluster.ModeRemoteCluster:
+		return cluster.NewRemoteCluster(cfg), nil
+	}
+	return nil, fmt.Errorf("unknown cluster mode %q", cfg.Mode)
+}
+
+// parseHostList splits a comma-separated host list, trimming whitespace and
+// dropping empty entries. Mirrors parseContactPoints in cmd/workload/main.go
+// but lives locally since the workload binary's helper isn't importable.
+func parseHostList(s string) []string {
+	if s == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
 }
 
 func buildWorkloadBinary() {

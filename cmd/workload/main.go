@@ -4,6 +4,7 @@ import (
 	"context"
 	crand "crypto/rand"
 	"database/sql"
+	"encoding/binary"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"math/rand/v2"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"regexp"
 	"sync/atomic"
@@ -58,6 +60,8 @@ func main() {
 	readPct := flag.Int("read-pct", 0, "Read percentage for mixed workload")
 	updatePct := flag.Int("update-pct", 0, "Update percentage for mixed workload")
 	tableName := flag.String("table-name", "bench", "Table/collection name")
+	numBuckets := flag.Int("num-buckets", 1000, "Number of Cassandra partition buckets")
+	consistency := flag.String("consistency", "local_one", "CQL consistency level (Cassandra only): one, local_one, local_quorum, quorum")
 	flag.Parse()
 
 	if *dbType == "" || *op == "" || *keyType == "" {
@@ -71,7 +75,7 @@ func main() {
 	case "mongodb":
 		result, err = runMongoDB(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct)
 	case "cassandra":
-		result, err = runCassandra(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct)
+		result, err = runCassandra(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct, *numBuckets, *consistency)
 	case "mysql":
 		result, err = runMySQL(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct, *tableName)
 	default:
@@ -1010,10 +1014,54 @@ func mysqlMixed(db *sql.DB, tableName, keyType string, numOps, threads, insertPc
 	}, nil
 }
 
-func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int, connString string, insertPct, readPct, updatePct int) (*Result, error) {
-	cluster := gocql.NewCluster(connString)
+// parseContactPoints splits a comma-separated list of Cassandra contact points
+// into a slice suitable for gocql.NewCluster. Whitespace around each entry is
+// trimmed and empty entries are dropped (so stray leading, trailing, or
+// doubled commas are tolerated). An empty input yields an empty slice; the
+// caller must validate before passing the result to gocql.
+func parseContactPoints(s string) []string {
+	if s == "" {
+		return []string{}
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// parseConsistency mirrors the orchestrator's
+// internal/benchmark/cassandra.parseConsistency. Re-implemented locally
+// because cmd/workload is a standalone binary that does not import the
+// orchestrator's cassandra package. The accepted string values match
+// internal/cluster.Consistency constants.
+func parseConsistency(s string) gocql.Consistency {
+	switch s {
+	case "one":
+		return gocql.One
+	case "local_one":
+		return gocql.LocalOne
+	case "local_quorum":
+		return gocql.LocalQuorum
+	case "quorum":
+		return gocql.Quorum
+	default:
+		return gocql.LocalOne
+	}
+}
+
+func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int, connString string, insertPct, readPct, updatePct, numBuckets int, consistency string) (*Result, error) {
+	points := parseContactPoints(connString)
+	if len(points) == 0 {
+		return nil, fmt.Errorf("no Cassandra contact points provided")
+	}
+	cluster := gocql.NewCluster(points...)
 	cluster.Keyspace = "uuid_benchmark"
-	cluster.Consistency = gocql.LocalOne
+	cluster.Consistency = parseConsistency(consistency)
 	cluster.NumConns = threads
 	cluster.Timeout = 30 * time.Second
 	cluster.ConnectTimeout = 30 * time.Second
@@ -1026,22 +1074,123 @@ func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int
 
 	switch op {
 	case "insert":
-		return cassandraInsert(session, keyType, numRecords, batchSize, threads)
+		return cassandraInsert(session, keyType, numRecords, batchSize, threads, numBuckets)
 	case "read":
-		return cassandraRead(session, keyType, numOps, threads)
+		return cassandraRead(session, keyType, numOps, threads, numBuckets)
 	case "update":
-		return cassandraUpdate(session, keyType, numOps, threads)
+		return cassandraUpdate(session, keyType, numOps, threads, numBuckets)
 	case "mixed":
-		return cassandraMixed(session, keyType, numOps, threads, insertPct, readPct, updatePct)
+		return cassandraMixed(session, keyType, numOps, threads, insertPct, readPct, updatePct, numBuckets)
 	default:
 		return nil, fmt.Errorf("unknown operation: %s", op)
 	}
 }
 
-const cassandraBucket = 1
-const cassandraInsertQuery = "INSERT INTO bench (bucket, id, payload) VALUES (?, ?, ?)"
+const (
+	cassandraInsertQuery = "INSERT INTO bench (bucket, id, payload) VALUES (?, ?, ?)"
+	cassandraReadQuery   = "SELECT payload FROM bench WHERE bucket = ? AND id = ?"
+	cassandraUpdateQuery = "UPDATE bench SET payload = ? WHERE bucket = ? AND id = ?"
+)
 
-func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSize, threads int) (*Result, error) {
+// idAsBytes returns a stable byte representation of an id for hashing.
+// Handles the id types produced by the various UUID/ULID/sequential generators
+// in this workload binary.
+//
+// Note: hot-path callers should prefer bucketForIDValue, which folds this
+// type-switch into the hash loop and avoids the per-call slice allocation
+// implicit in this function (returning a slice over a local array forces
+// heap escape).
+func idAsBytes(id any) []byte {
+	switch v := id.(type) {
+	case gocql.UUID:
+		b := [16]byte(v)
+		return b[:]
+	case []byte:
+		return v
+	case int64:
+		buf := make([]byte, 8)
+		binary.BigEndian.PutUint64(buf, uint64(v))
+		return buf
+	default:
+		// Defensive fallback: stringify. Stable per-type but suboptimal.
+		return []byte(fmt.Sprintf("%v", v))
+	}
+}
+
+// bucketForID returns a stable bucket assignment for the given id bytes.
+// Used to spread data across N Cassandra partitions while keeping id-as-
+// clustering-column behavior from the thesis intact. Deterministic and
+// approximately uniform for non-adversarial input.
+//
+// Inlined FNV-1a (zero allocation) since this runs once per row on the hot
+// path; the stdlib hash/fnv.New32a() escapes its hasher to the heap.
+//
+// Panics on n <= 0: a misconfigured numBuckets would silently route every row
+// to bucket 0 and recreate the thesis's single-partition design, invalidating
+// the entire multi-node experiment. Loud failure is the only safe behavior.
+func bucketForID(id []byte, n int) int {
+	if n <= 0 {
+		panic("bucketForID: n must be >= 1")
+	}
+	const offset32 = 2166136261
+	const prime32 = 16777619
+	var h uint32 = offset32
+	for _, b := range id {
+		h ^= uint32(b)
+		h *= prime32
+	}
+	return int(h % uint32(n))
+}
+
+// bucketForIDValue is the typed, zero-allocation companion to bucketForID for
+// hot-path use. It accepts the id types produced by generateCassandraKey
+// (gocql.UUID, []byte, int64) and computes the FNV-1a hash directly over the
+// id's bytes without materializing an intermediate []byte (which would force
+// a heap allocation per call — see idAsBytes for that pattern).
+//
+// At 100M-record benchmark scale this saves ~1.6GB of cumulative allocations
+// on the insert path alone, eliminating GC-induced p99 latency jitter that
+// would otherwise contaminate the throughput measurements.
+//
+// Equivalent in output to bucketForID(idAsBytes(id), n) for any supported type;
+// see TestBucketForIDValueMatchesBucketForID for the contract.
+//
+// Panics on n <= 0 for the same reason as bucketForID.
+func bucketForIDValue(id any, n int) int {
+	if n <= 0 {
+		panic("bucketForIDValue: n must be >= 1")
+	}
+	const offset32 = 2166136261
+	const prime32 = 16777619
+	var h uint32 = offset32
+	switch v := id.(type) {
+	case gocql.UUID:
+		for i := 0; i < 16; i++ {
+			h ^= uint32(v[i])
+			h *= prime32
+		}
+	case []byte:
+		for _, b := range v {
+			h ^= uint32(b)
+			h *= prime32
+		}
+	case int64:
+		u := uint64(v)
+		for i := 7; i >= 0; i-- {
+			h ^= uint32(byte(u >> (i * 8)))
+			h *= prime32
+		}
+	default:
+		// Defensive fallback (unreachable for generateCassandraKey return types).
+		for _, b := range []byte(fmt.Sprintf("%v", v)) {
+			h ^= uint32(b)
+			h *= prime32
+		}
+	}
+	return int(h % uint32(n))
+}
+
+func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSize, threads, numBuckets int) (*Result, error) {
 	var counter atomic.Int64
 	recordsPerThread := numRecords / threads
 	remainder := numRecords % threads
@@ -1072,7 +1221,8 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 				batch := session.NewBatch(gocql.UnloggedBatch)
 				for j := i; j < batchEnd; j++ {
 					key := kg.generateCassandraKey()
-					batch.Query(cassandraInsertQuery, cassandraBucket, key, payload)
+					bucket := bucketForIDValue(key, numBuckets)
+					batch.Query(cassandraInsertQuery, bucket, key, payload)
 				}
 
 				opStart := time.Now()
@@ -1108,7 +1258,7 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 	}, nil
 }
 
-func cassandraRead(session *gocql.Session, keyType string, numOps, threads int) (*Result, error) {
+func cassandraRead(session *gocql.Session, keyType string, numOps, threads, numBuckets int) (*Result, error) {
 	ids, err := fetchCassandraIDs(session, keyType, numOps)
 	if err != nil {
 		return nil, fmt.Errorf("fetch ids: %w", err)
@@ -1143,7 +1293,8 @@ func cassandraRead(session *gocql.Session, keyType string, numOps, threads int) 
 				idx := (offset + i) % len(ids)
 				opStart := time.Now()
 				var readPayload []byte
-				err := session.Query("SELECT payload FROM bench WHERE bucket = 1 AND id = ?", ids[idx]).Scan(&readPayload)
+				bucket := bucketForIDValue(ids[idx], numBuckets)
+				err := session.Query(cassandraReadQuery, bucket, ids[idx]).Scan(&readPayload)
 				latUS := time.Since(opStart).Microseconds()
 				latencies = append(latencies, latUS)
 				if err != nil {
@@ -1175,7 +1326,7 @@ func cassandraRead(session *gocql.Session, keyType string, numOps, threads int) 
 	}, nil
 }
 
-func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads int) (*Result, error) {
+func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads, numBuckets int) (*Result, error) {
 	ids, err := fetchCassandraIDs(session, keyType, numOps)
 	if err != nil {
 		return nil, fmt.Errorf("fetch ids: %w", err)
@@ -1211,7 +1362,8 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads int
 			for i := 0; i < ops; i++ {
 				idx := (offset + i) % len(ids)
 				opStart := time.Now()
-				err := session.Query("UPDATE bench SET payload = ? WHERE bucket = 1 AND id = ?", newPayload, ids[idx]).Exec()
+				bucket := bucketForIDValue(ids[idx], numBuckets)
+				err := session.Query(cassandraUpdateQuery, newPayload, bucket, ids[idx]).Exec()
 				latUS := time.Since(opStart).Microseconds()
 				latencies = append(latencies, latUS)
 				if err != nil {
@@ -1243,7 +1395,7 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads int
 	}, nil
 }
 
-func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, insertPct, readPct, updatePct int) (*Result, error) {
+func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, insertPct, readPct, updatePct, numBuckets int) (*Result, error) {
 	ids, _ := fetchCassandraIDs(session, keyType, numOps)
 	var idsMu sync.RWMutex
 
@@ -1277,8 +1429,9 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 
 				if roll < insertPct {
 					key := kg.generateCassandraKey()
+					bucket := bucketForIDValue(key, numBuckets)
 					opStart := time.Now()
-					err := session.Query(cassandraInsertQuery, cassandraBucket, key, payload).Exec()
+					err := session.Query(cassandraInsertQuery, bucket, key, payload).Exec()
 					latencies = append(latencies, time.Since(opStart).Microseconds())
 					if err != nil {
 						totalErrors.Add(1)
@@ -1300,7 +1453,8 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 					if id != nil {
 						opStart := time.Now()
 						var readPayload []byte
-						err := session.Query("SELECT payload FROM bench WHERE bucket = 1 AND id = ?", id).Scan(&readPayload)
+						bucket := bucketForIDValue(id, numBuckets)
+						err := session.Query(cassandraReadQuery, bucket, id).Scan(&readPayload)
 						latencies = append(latencies, time.Since(opStart).Microseconds())
 						if err != nil {
 							totalErrors.Add(1)
@@ -1318,7 +1472,8 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 
 					if id != nil {
 						opStart := time.Now()
-						err := session.Query("UPDATE bench SET payload = ? WHERE bucket = 1 AND id = ?", newPayload, id).Exec()
+						bucket := bucketForIDValue(id, numBuckets)
+						err := session.Query(cassandraUpdateQuery, newPayload, bucket, id).Exec()
 						latencies = append(latencies, time.Since(opStart).Microseconds())
 						if err != nil {
 							totalErrors.Add(1)
@@ -1356,7 +1511,7 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 }
 
 func fetchCassandraIDs(session *gocql.Session, keyType string, limit int) ([]any, error) {
-	query := "SELECT id FROM bench WHERE bucket = 1"
+	query := "SELECT id FROM bench"
 	if limit > 0 {
 		query += fmt.Sprintf(" LIMIT %d", limit)
 	}
@@ -1386,6 +1541,9 @@ func fetchCassandraIDs(session *gocql.Session, keyType string, limit int) ([]any
 
 	if err := iter.Close(); err != nil {
 		return ids, err
+	}
+	if len(ids) == 0 {
+		return nil, fmt.Errorf("fetchCassandraIDs: no rows returned from bench table (limit=%d, keyType=%s); the table appears empty, which likely means inserts did not complete", limit, keyType)
 	}
 	return ids, nil
 }

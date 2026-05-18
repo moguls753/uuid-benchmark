@@ -2,6 +2,8 @@ package cassandra
 
 import (
 	"github.com/gocql/gocql"
+
+	"github.com/moguls753/uuid-benchmark/internal/cluster"
 )
 
 type CassandraBenchmarker struct {
@@ -9,8 +11,11 @@ type CassandraBenchmarker struct {
 	keyType       string
 	tableName     string
 	metricsBefore *CassandraMetricsSnapshot
+	cfg           cluster.ClusterConfig
 }
 
-func New() *CassandraBenchmarker {
-	return &CassandraBenchmarker{}
+func New(cfg cluster.ClusterConfig) *CassandraBenchmarker {
+	return &CassandraBenchmarker{
+		cfg: cfg,
+	}
 }
