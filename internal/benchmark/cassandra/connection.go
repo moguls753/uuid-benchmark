@@ -18,6 +18,16 @@ func (c *CassandraBenchmarker) Connect() error {
 	cl.Timeout = 30 * time.Second
 	cl.ConnectTimeout = 30 * time.Second
 	cl.NumConns = 4
+	// Reconnect on dropped pool entries (mid-workload host flap, JVM
+	// stop-the-world longer than Timeout, etc.). gocql's default is
+	// nil — one drop and the next query to that host fails. With 3
+	// contact points the initial CreateSession already tolerates a
+	// single host being down; this covers steady-state losses during
+	// the workload.
+	cl.ReconnectionPolicy = &gocql.ConstantReconnectionPolicy{
+		MaxRetries: 5,
+		Interval:   2 * time.Second,
+	}
 
 	// First session without keyspace, to create the keyspace.
 	bootstrap, err := cl.CreateSession()

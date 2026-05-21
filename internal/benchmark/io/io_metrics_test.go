@@ -3,6 +3,7 @@ package docker
 import (
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestParseIOStatContent(t *testing.T) {
@@ -91,6 +92,134 @@ func TestGetClusterIOStatsEmpty(t *testing.T) {
 	}
 	if got.Timestamp.IsZero() {
 		t.Error("Timestamp should be set even for empty refs")
+	}
+}
+
+func TestGetClusterIOStatsRejectsEmptyContainerID(t *testing.T) {
+	t.Parallel()
+	// Defense in depth against [[project-io-metric-empty-container-id-bug]].
+	// NodeContainerIDs() is supposed to reject empty IDs, but if a future
+	// caller bypasses it we want a clean error here — not a vague
+	// "no cgroup io.stat at docker-.scope" message followed by a uint64
+	// underflow downstream in CalculateIOMetrics.
+	cases := []struct {
+		name string
+		id   string
+	}{
+		{"empty string", ""},
+		{"whitespace only", "   \t\n  "},
+	}
+	for _, tc := range cases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			refs := []NodeRef{{Host: "remote.example", ContainerID: tc.id}}
+			_, err := GetClusterIOStats(refs, "user", "")
+			if err == nil {
+				t.Fatal("expected error for empty container ID")
+			}
+			if !strings.Contains(err.Error(), "empty container ID") {
+				t.Errorf("expected 'empty container ID' in error, got: %v", err)
+			}
+		})
+	}
+}
+
+func TestCalculateIOMetricsClampsUnderflow(t *testing.T) {
+	t.Parallel()
+	// Regression test for [[project-io-metric-empty-container-id-bug]]:
+	// previously, end<start produced a uint64 underflow that surfaced
+	// as ~8e18 values in the comparison table. The clamp must zero
+	// these out so the operator sees "no data" rather than nonsense.
+	now := time.Now()
+	start := &IOStats{
+		ReadBytes:  1_000_000,
+		WriteBytes: 2_000_000,
+		ReadOps:    100,
+		WriteOps:   200,
+		Timestamp:  now,
+	}
+	end := &IOStats{
+		// Every counter is SMALLER than start — the underflow scenario.
+		ReadBytes:  10,
+		WriteBytes: 20,
+		ReadOps:    1,
+		WriteOps:   2,
+		Timestamp:  now.Add(5 * time.Second),
+	}
+	got := CalculateIOMetrics(start, end)
+	if got.ReadIOPS != 0 || got.WriteIOPS != 0 ||
+		got.ReadThroughputMB != 0 || got.WriteThroughputMB != 0 {
+		t.Errorf("expected all-zero metrics on underflow, got %+v", got)
+	}
+}
+
+func TestCalculateIOMetricsClampsPartialUnderflow(t *testing.T) {
+	t.Parallel()
+	// More realistic regression of the I/O metric bug: only SOME fields
+	// underflow (e.g. a truncated SSH-cat read populated rbytes/wbytes
+	// but not the ops fields, leaving them at 0 while start is non-zero).
+	// The clamp must zero out only the regressed fields, leaving valid
+	// ones intact.
+	now := time.Now()
+	start := &IOStats{
+		ReadBytes:  100,
+		WriteBytes: 1024 * 1024,
+		ReadOps:    50, // <- start has 50, end has 0 → regresses
+		WriteOps:   100,
+		Timestamp:  now,
+	}
+	end := &IOStats{
+		ReadBytes:  200,                     // delta 100 (valid)
+		WriteBytes: 3 * 1024 * 1024,         // delta 2 MiB (valid)
+		ReadOps:    0,                       // regression
+		WriteOps:   300,                     // delta 200 (valid)
+		Timestamp:  now.Add(2 * time.Second),
+	}
+	got := CalculateIOMetrics(start, end)
+	if got.ReadIOPS != 0 {
+		t.Errorf("ReadIOPS: got %v want 0 (clamped)", got.ReadIOPS)
+	}
+	if got.WriteIOPS != 100 {
+		t.Errorf("WriteIOPS: got %v want 100", got.WriteIOPS)
+	}
+	if got.ReadThroughputMB == 0 {
+		t.Errorf("ReadThroughputMB: got 0, want non-zero (valid delta)")
+	}
+	if got.WriteThroughputMB != 1 {
+		t.Errorf("WriteThroughputMB: got %v want 1", got.WriteThroughputMB)
+	}
+}
+
+func TestCalculateIOMetricsHappyPath(t *testing.T) {
+	t.Parallel()
+	now := time.Now()
+	start := &IOStats{
+		ReadBytes:  1024 * 1024,         // 1 MiB
+		WriteBytes: 2 * 1024 * 1024,     // 2 MiB
+		ReadOps:    100,
+		WriteOps:   200,
+		Timestamp:  now,
+	}
+	end := &IOStats{
+		ReadBytes:  3 * 1024 * 1024,     // delta 2 MiB
+		WriteBytes: 6 * 1024 * 1024,     // delta 4 MiB
+		ReadOps:    300,                 // delta 200
+		WriteOps:   600,                 // delta 400
+		Timestamp:  now.Add(2 * time.Second),
+	}
+	got := CalculateIOMetrics(start, end)
+	if got.ReadIOPS != 100 {
+		t.Errorf("ReadIOPS: got %v want 100", got.ReadIOPS)
+	}
+	if got.WriteIOPS != 200 {
+		t.Errorf("WriteIOPS: got %v want 200", got.WriteIOPS)
+	}
+	if got.ReadThroughputMB != 1 {
+		t.Errorf("ReadThroughputMB: got %v want 1", got.ReadThroughputMB)
+	}
+	if got.WriteThroughputMB != 2 {
+		t.Errorf("WriteThroughputMB: got %v want 2", got.WriteThroughputMB)
 	}
 }
 

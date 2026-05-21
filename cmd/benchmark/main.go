@@ -132,6 +132,10 @@ func main() {
 	replicationFactor := flag.Int("replication-factor", 0, "Cassandra replication factor (default: 1 for local-single, 3 for cluster modes)")
 	consistency := flag.String("consistency", "", "CQL consistency level: one, local_one, local_quorum, quorum (default: local_one for local-single, local_quorum for cluster modes)")
 	clusterNodeCount := flag.Int("cluster-nodes", 3, "Number of nodes for local-cluster mode (must match docker/docker-compose.cassandra-cluster.yml service count)")
+	cassandraHeap := flag.String("cassandra-heap", "8G", "MAX_HEAP_SIZE for each Cassandra container (remote-cluster only; Taurus-sized default)")
+	cassandraNewGen := flag.String("cassandra-newgen", "2G", "HEAP_NEWSIZE for each Cassandra container (remote-cluster only; must be <= cassandra-heap)")
+	cassandraCPUs := flag.String("cassandra-cpus", "8", "docker --cpus value for each Cassandra container (remote-cluster only; rejected by docker if > host CPU count)")
+	cassandraMemory := flag.String("cassandra-memory", "32g", "docker --memory value for each Cassandra container (remote-cluster only)")
 	output := flag.String("output", "", "Output CSV file for statistical results")
 	flag.Parse()
 
@@ -188,7 +192,7 @@ func main() {
 		if *clusterMode == "local-cluster" && *clusterNodeCount <= 0 {
 			log.Fatalf("-cluster-nodes must be >= 1 (got %d)", *clusterNodeCount)
 		}
-		cfg, err := buildClusterConfig(*clusterMode, *nodes, *sshUser, *sshKey, *consistency, *replicationFactor, *numBuckets)
+		cfg, err := buildClusterConfig(*clusterMode, *nodes, *sshUser, *sshKey, *consistency, *replicationFactor, *numBuckets, *cassandraHeap, *cassandraNewGen, *cassandraCPUs, *cassandraMemory)
 		if err != nil {
 			log.Fatalf("Build cluster config: %v", err)
 		}
@@ -701,7 +705,7 @@ func exportCSV(scenarioName string, allStats map[string]map[string]statistics.St
 // applies per-mode defaults for replication factor and consistency, sets
 // NumBuckets, and runs cfg.Validate(). The single-helper contract means
 // callers can't accidentally skip validation by reordering setup steps.
-func buildClusterConfig(mode, nodesStr, sshUser, sshKey, consistency string, rf, numBuckets int) (cluster.ClusterConfig, error) {
+func buildClusterConfig(mode, nodesStr, sshUser, sshKey, consistency string, rf, numBuckets int, cassandraHeap, cassandraNewGen, cassandraCPUs, cassandraMemory string) (cluster.ClusterConfig, error) {
 	cfg := cluster.ClusterConfig{
 		Keyspace:   "uuid_benchmark",
 		Mode:       cluster.Mode(mode),
@@ -733,6 +737,14 @@ func buildClusterConfig(mode, nodesStr, sshUser, sshKey, consistency string, rf,
 		cfg.Hostnames = hosts
 		cfg.SSHUser = sshUser
 		cfg.SSHKeyPath = sshKey
+		// Resource flags are only meaningful in remote-cluster mode —
+		// LocalSingle and LocalCluster pin their sizing in the
+		// docker-compose YAMLs. Wired here so Validate() can check the
+		// heap/newGen invariant per ClusterConfig.
+		cfg.CassandraHeap = cassandraHeap
+		cfg.CassandraNewGen = cassandraNewGen
+		cfg.CassandraCPUs = cassandraCPUs
+		cfg.CassandraMemory = cassandraMemory
 		if rf == 0 {
 			rf = 3
 		}

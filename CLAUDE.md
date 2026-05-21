@@ -78,6 +78,10 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 | `-replication-factor` | `1` (single) / `3` (cluster) | Cassandra keyspace RF |
 | `-consistency` | `local_one` (single) / `local_quorum` (cluster) | gocql consistency: `one`, `local_one`, `local_quorum`, `quorum` |
 | `-num-buckets` | `1000` | Partition-key bucket count for the bucketed Cassandra schema |
+| `-cassandra-heap` | `8G` | `MAX_HEAP_SIZE` per remote Cassandra container (Taurus-sized default; lower for laptop validation) |
+| `-cassandra-newgen` | `2G` | `HEAP_NEWSIZE` per remote Cassandra container (must be ≤ heap) |
+| `-cassandra-cpus` | `8` | `docker --cpus` per remote container (docker rejects values > host CPU count) |
+| `-cassandra-memory` | `32g` | `docker --memory` per remote container |
 
 **UUID Types Tested:** Sequential integer (BIGSERIAL/AUTO_INCREMENT/bigint), UUIDv1, UUIDv4, UUIDv7, ULID (non-monotonic), ULID (monotonic)
 

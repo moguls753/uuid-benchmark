@@ -7,7 +7,63 @@ package cluster
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 )
+
+// parseMemoryQuantity converts strings like "8G", "512M", "2g", "1024k"
+// to a byte count. Empty string returns 0 with no error (callers
+// interpret 0 as "use default"). Recognised suffixes are case-
+// insensitive K/M/G/T (1024-based). A bare integer is treated as bytes.
+// Used in ClusterConfig.Validate to reject malformed or inverted
+// heap/newGen pairs before they reach Cassandra.
+func parseMemoryQuantity(s string) (int64, error) {
+	if s == "" {
+		return 0, nil
+	}
+	mult := int64(1)
+	num := s
+	switch s[len(s)-1] {
+	case 'K', 'k':
+		mult = 1024
+		num = s[:len(s)-1]
+	case 'M', 'm':
+		mult = 1024 * 1024
+		num = s[:len(s)-1]
+	case 'G', 'g':
+		mult = 1024 * 1024 * 1024
+		num = s[:len(s)-1]
+	case 'T', 't':
+		mult = 1024 * 1024 * 1024 * 1024
+		num = s[:len(s)-1]
+	}
+	n, err := strconv.ParseInt(strings.TrimSpace(num), 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid quantity %q (expected e.g. 8G, 512M, or a bare byte count)", s)
+	}
+	if n <= 0 {
+		return 0, fmt.Errorf("quantity %q must be positive", s)
+	}
+	return n * mult, nil
+}
+
+// validateCPUString accepts an empty string (use default) or any
+// positive decimal number. Docker rejects --cpus values > host CPU count
+// at run-time; we can't validate against the remote host's CPU count
+// here, so we only catch syntactic garbage.
+func validateCPUString(s string) error {
+	if s == "" {
+		return nil
+	}
+	n, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		return fmt.Errorf("invalid cpu value %q (expected a number, e.g. 8 or 2.5)", s)
+	}
+	if n <= 0 {
+		return fmt.Errorf("cpu value %q must be positive", s)
+	}
+	return nil
+}
 
 // Mode names the deployment topology a ClusterConfig describes.
 type Mode string
@@ -51,6 +107,20 @@ type ClusterConfig struct {
 	Consistency       Consistency // CQL consistency level; one of the Consistency* constants
 	Keyspace          string
 	NumBuckets        int // number of partition buckets for the bench table; controls Cassandra distribution granularity
+
+	// Cassandra-process resource sizing. Currently only consumed by
+	// RemoteClusterBackend (LocalSingle and LocalCluster pin their own
+	// sizing in the docker-compose files). All four are strings rather
+	// than integers because they're passed verbatim to docker (--cpus,
+	// --memory) and to Cassandra's env (MAX_HEAP_SIZE, HEAP_NEWSIZE),
+	// which accept their own suffix conventions ("8G", "32g", "2"). An
+	// empty value means "use the RemoteCluster default" (Taurus-sized:
+	// heap=8G, newGen=2G, cpus=8, memory=32g) — keeps the test fixtures
+	// and the local-cluster path from having to set every field.
+	CassandraHeap   string // MAX_HEAP_SIZE
+	CassandraNewGen string // HEAP_NEWSIZE (must be ≤ heap or Cassandra refuses to start)
+	CassandraCPUs   string // docker run --cpus (strict: rejected if > host cpu count)
+	CassandraMemory string // docker run --memory (soft: docker accepts even > host RAM)
 }
 
 // DefaultLocalSingle returns a sensible single-node baseline for the paper-
@@ -140,6 +210,29 @@ func (c ClusterConfig) Validate() error {
 		}
 		if c.ReplicationFactor > len(c.Hostnames) {
 			return fmt.Errorf("replication factor %d exceeds host count %d", c.ReplicationFactor, len(c.Hostnames))
+		}
+		// Resource fields: where provided, must parse. Empty falls
+		// through to the RemoteCluster defaults. If both heap and newGen
+		// parse, reject inversion before Cassandra does — Cassandra's
+		// own failure mode for HEAP_NEWSIZE > MAX_HEAP_SIZE is opaque
+		// (silent crash mid-startup with no diagnostic in the docker log).
+		heapBytes, herr := parseMemoryQuantity(c.CassandraHeap)
+		if herr != nil {
+			return fmt.Errorf("cassandra-heap: %w", herr)
+		}
+		newGenBytes, nerr := parseMemoryQuantity(c.CassandraNewGen)
+		if nerr != nil {
+			return fmt.Errorf("cassandra-newgen: %w", nerr)
+		}
+		if _, merr := parseMemoryQuantity(c.CassandraMemory); merr != nil {
+			return fmt.Errorf("cassandra-memory: %w", merr)
+		}
+		if heapBytes > 0 && newGenBytes > 0 && newGenBytes > heapBytes {
+			return fmt.Errorf("cassandra-newgen (%s) exceeds cassandra-heap (%s) — Cassandra requires HEAP_NEWSIZE <= MAX_HEAP_SIZE",
+				c.CassandraNewGen, c.CassandraHeap)
+		}
+		if err := validateCPUString(c.CassandraCPUs); err != nil {
+			return fmt.Errorf("cassandra-cpus: %w", err)
 		}
 	}
 	return nil

@@ -116,17 +116,40 @@ func TestNewRemoteClusterPanicsOnEmptySSHUser(t *testing.T) {
 
 // fakeSSH records every Exec/Copy call and lets tests script per-call
 // responses. The scripting is keyed by (host, command-prefix) so a
-// test can say "on taurus5, the third statusgossip should return
-// running". Unmatched calls return ("", nil) — a benign default that
-// keeps the Start() happy path moving when a test doesn't care.
+// test can say "on taurus5, the third nodetool status should report
+// taurus6 as UN". Unmatched calls return ("", nil) — a benign default
+// that keeps the Start() happy path moving when a test doesn't care.
+//
+// `Start()` waits for each just-launched node to reach UN status as
+// reported by `nodetool status` on the seed (cluster.RemoteClusterBackend.
+// waitForNodeUN). Tests script the seed's status responses to drive
+// that wait — either via a popped per-call script
+// (`nodetoolStatusResponses`) or a sticky default
+// (`nodetoolStatusDefault`).
 type fakeSSH struct {
 	mu    sync.Mutex
 	calls []fakeCall
 
-	// statusgossipResponses[host] is consumed front-to-back on each
-	// `docker exec ... nodetool statusgossip` call for that host. If
-	// the slice is exhausted, the call returns ("", nil).
-	statusgossipResponses map[string][]fakeResp
+	// nodetoolStatusResponses[host] is consumed front-to-back on each
+	// `docker exec ... nodetool status` call for that host. When the
+	// slice is exhausted, the fake falls through to
+	// nodetoolStatusDefault[host]; if that is also empty, the call
+	// returns ("", nil).
+	nodetoolStatusResponses map[string][]fakeResp
+
+	// nodetoolStatusDefault[host] is the sticky reply for any
+	// `nodetool status` call on `host` after nodetoolStatusResponses is
+	// exhausted. Use this in happy-path tests where every poll should
+	// return the same "all nodes UN" view.
+	nodetoolStatusDefault map[string]fakeResp
+
+	// statusBinaryResponses[host] / statusBinaryDefault[host] script
+	// the per-call and sticky replies for `nodetool statusbinary`,
+	// the second per-node readiness gate that Start() consults after
+	// waitForNodeUN. If both maps are empty for a host, the fake
+	// returns "running" so the default test fixture stays happy.
+	statusBinaryResponses map[string][]fakeResp
+	statusBinaryDefault   map[string]fakeResp
 }
 
 type fakeCall struct {
@@ -144,13 +167,31 @@ func (f *fakeSSH) Exec(host string, argv ...string) (string, error) {
 	defer f.mu.Unlock()
 	f.calls = append(f.calls, fakeCall{host: host, argv: append([]string(nil), argv...)})
 
-	// Detect `docker exec <name> nodetool statusgossip` and pop a scripted response.
-	if len(argv) >= 5 && argv[0] == "docker" && argv[1] == "exec" && argv[3] == "nodetool" && argv[4] == "statusgossip" {
-		if resps := f.statusgossipResponses[host]; len(resps) > 0 {
+	// Detect `docker exec <name> nodetool status` and reply from the script.
+	if len(argv) >= 5 && argv[0] == "docker" && argv[1] == "exec" && argv[3] == "nodetool" && argv[4] == "status" {
+		if resps := f.nodetoolStatusResponses[host]; len(resps) > 0 {
 			r := resps[0]
-			f.statusgossipResponses[host] = resps[1:]
+			f.nodetoolStatusResponses[host] = resps[1:]
 			return r.out, r.err
 		}
+		if def, ok := f.nodetoolStatusDefault[host]; ok {
+			return def.out, def.err
+		}
+	}
+	// Detect `docker exec <name> nodetool statusbinary`. The default
+	// happy-path reply is "running" so Start() proceeds. Tests that want
+	// to script the native-transport gate can override via
+	// statusBinaryDefault / statusBinaryResponses below.
+	if len(argv) >= 5 && argv[0] == "docker" && argv[1] == "exec" && argv[3] == "nodetool" && argv[4] == "statusbinary" {
+		if resps := f.statusBinaryResponses[host]; len(resps) > 0 {
+			r := resps[0]
+			f.statusBinaryResponses[host] = resps[1:]
+			return r.out, r.err
+		}
+		if def, ok := f.statusBinaryDefault[host]; ok {
+			return def.out, def.err
+		}
+		return "running", nil
 	}
 	return "", nil
 }
@@ -176,24 +217,39 @@ func newRemoteForTest(hosts []string, ssh *fakeSSH) *RemoteClusterBackend {
 		NumBuckets:        1000,
 	})
 	b.ssh = ssh
-	b.gossipBudget = 200 * time.Millisecond
-	b.gossipPollInterval = 5 * time.Millisecond
+	b.nodeReadyBudget = 200 * time.Millisecond
+	b.pollInterval = 5 * time.Millisecond
 	return b
 }
 
-// gossipRunningOnEveryHost wires the fake so every host's first
-// statusgossip call returns "running" — i.e. happy-path Start.
-func gossipRunningOnEveryHost(hosts []string) map[string][]fakeResp {
-	m := make(map[string][]fakeResp, len(hosts))
-	for _, h := range hosts {
-		m[h] = []fakeResp{{out: "gossip running\n"}}
+// nodetoolStatusText builds a synthetic `nodetool status` output where
+// every host in `unHosts` is reported as UN. Used in tests to script the
+// seed's reply to Start()'s per-node UN poll.
+func nodetoolStatusText(unHosts []string) string {
+	var b strings.Builder
+	b.WriteString("Datacenter: dc1\n")
+	b.WriteString("===============\n")
+	b.WriteString("Status=Up/Down\n")
+	b.WriteString("|/ State=Normal/Leaving/Joining/Moving\n")
+	b.WriteString("--  Address  Load  Tokens  Owns  Host ID  Rack\n")
+	for i, h := range unHosts {
+		fmt.Fprintf(&b, "UN  %s  100KiB  16  100.0%%  host-%d  rack1\n", h, i)
 	}
-	return m
+	return b.String()
+}
+
+// happyPathNodetoolStatus wires the seed's nodetoolStatusDefault so any
+// `nodetool status` poll returns "all hosts UN" — i.e. every just-started
+// node is immediately visible as joined. The simplest happy-path setup.
+func happyPathNodetoolStatus(seed string, allHosts []string) map[string]fakeResp {
+	return map[string]fakeResp{
+		seed: {out: nodetoolStatusText(allHosts)},
+	}
 }
 
 func TestStartSetsBroadcastAddressPerHost(t *testing.T) {
 	hosts := []string{"vm1", "vm2", "vm3"}
-	ssh := &fakeSSH{statusgossipResponses: gossipRunningOnEveryHost(hosts)}
+	ssh := &fakeSSH{nodetoolStatusDefault: happyPathNodetoolStatus("vm1", hosts)}
 	b := newRemoteForTest(hosts, ssh)
 
 	if err := b.Start(); err != nil {
@@ -223,7 +279,7 @@ func TestStartSetsBroadcastAddressPerHost(t *testing.T) {
 
 func TestStartPullsImageBeforeRun(t *testing.T) {
 	hosts := []string{"vm1", "vm2", "vm3"}
-	ssh := &fakeSSH{statusgossipResponses: gossipRunningOnEveryHost(hosts)}
+	ssh := &fakeSSH{nodetoolStatusDefault: happyPathNodetoolStatus("vm1", hosts)}
 	b := newRemoteForTest(hosts, ssh)
 
 	if err := b.Start(); err != nil {
@@ -257,20 +313,29 @@ func TestStartPullsImageBeforeRun(t *testing.T) {
 	}
 }
 
-func TestStartPollsUntilGossipRunning(t *testing.T) {
-	// Each host's first two statusgossip calls return non-"running"
-	// output (and an error to simulate the early boot window where
-	// nodetool exits non-zero); the third returns "running". Start
-	// must succeed.
+func TestStartPollsUntilNodeReachesUN(t *testing.T) {
+	// First two `nodetool status` calls on the seed exit non-zero (the
+	// early boot window where Cassandra hasn't opened its JMX port yet);
+	// the third returns a ring that includes the freshly started node
+	// as UN. Start must succeed by retrying through the boot window.
+	//
+	// Three hosts ⇒ three per-iteration UN waits; we script the seed to
+	// return error twice, then UN three times. The sticky default
+	// (all-hosts-UN) catches anything beyond that, so the test is
+	// resilient to budget changes.
 	hosts := []string{"vm1", "vm2", "vm3"}
-	ssh := &fakeSSH{statusgossipResponses: map[string][]fakeResp{}}
 	bootErr := fmt.Errorf("nodetool: connection refused (Cassandra still booting)")
-	for _, h := range hosts {
-		ssh.statusgossipResponses[h] = []fakeResp{
-			{err: bootErr},
-			{out: "starting up\n", err: bootErr},
-			{out: "running\n"},
-		}
+	ssh := &fakeSSH{
+		nodetoolStatusResponses: map[string][]fakeResp{
+			"vm1": {
+				{err: bootErr},
+				{out: "starting up\n", err: bootErr},
+				{out: nodetoolStatusText([]string{"vm1"})},
+				{out: nodetoolStatusText([]string{"vm1", "vm2"})},
+				{out: nodetoolStatusText(hosts)},
+			},
+		},
+		nodetoolStatusDefault: happyPathNodetoolStatus("vm1", hosts),
 	}
 	b := newRemoteForTest(hosts, ssh)
 
@@ -278,59 +343,53 @@ func TestStartPollsUntilGossipRunning(t *testing.T) {
 		t.Fatalf("Start: %v", err)
 	}
 
-	// Each host should have received exactly 3 statusgossip calls.
-	gossipCalls := func(host string) int {
-		n := 0
-		for _, c := range ssh.calls {
-			if c.host == host && len(c.argv) >= 5 && c.argv[0] == "docker" && c.argv[1] == "exec" && c.argv[3] == "nodetool" && c.argv[4] == "statusgossip" {
-				n++
-			}
-		}
-		return n
-	}
-	for _, h := range hosts {
-		if got := gossipCalls(h); got != 3 {
-			t.Errorf("host %s: got %d statusgossip calls, want 3", h, got)
-		}
+	// Sanity: at least the two scripted error responses must have been
+	// consumed (i.e. the wait actually retried through the boot window).
+	if remaining := len(ssh.nodetoolStatusResponses["vm1"]); remaining > 3 {
+		t.Errorf("seed still has %d unconsumed scripted responses; "+
+			"Start did not poll through the boot window", remaining)
 	}
 }
 
-func TestStartFailsWhenGossipNeverReachesRunning(t *testing.T) {
-	// The fake never returns "running" — Start must time out with a
-	// host-named error that includes the last output.
+func TestStartFailsWhenNodeNeverReachesUN(t *testing.T) {
+	// The fake never returns a parsable status with the new node UN —
+	// Start must time out with a host-named error that explains it was
+	// waiting on UN. The error must blame the FIRST failing node (vm1,
+	// the seed) so the operator can locate the wedge.
 	hosts := []string{"vm1", "vm2", "vm3"}
-	// Empty default (unmatched calls return ("", nil)) is "not running",
-	// so we don't even need to script vm1 — the budget will elapse
-	// without ever seeing "running".
-	ssh := &fakeSSH{statusgossipResponses: map[string][]fakeResp{}}
+	// Empty maps: unmatched calls return ("", nil); ParseNodetoolStatus
+	// rejects that as "no nodes found", so the wait budget elapses
+	// without ever seeing vm1 UN.
+	ssh := &fakeSSH{}
 	b := newRemoteForTest(hosts, ssh)
 
 	err := b.Start()
 	if err == nil {
 		t.Fatal("Start: expected timeout error, got nil")
 	}
-	// Error must blame vm1 (the first host that fails) and mention
-	// gossip so the operator knows what was being waited on.
 	msg := err.Error()
 	if !strings.Contains(msg, "vm1") {
-		t.Errorf("error %q should name the offending host vm1", msg)
+		t.Errorf("error %q should name the first failing host vm1", msg)
 	}
-	if !strings.Contains(msg, "gossip") {
-		t.Errorf("error %q should mention gossip", msg)
+	if !strings.Contains(msg, "UN") {
+		t.Errorf("error %q should mention UN — the operator needs to know what was being waited on", msg)
 	}
 }
 
 func TestStartRollsBackOnLaterHostFailure(t *testing.T) {
-	// vm1 and vm2 succeed; vm3 never reports running. Start must fail
-	// AND roll back vm1+vm2 (docker rm -f / volume rm calls recorded).
+	// vm1 and vm2 reach UN; vm3 never reaches UN. Start must fail and
+	// roll back vm1 + vm2 (docker rm -f / volume rm calls recorded).
+	//
+	// We script the seed's nodetool status to cycle through ring views
+	// that include vm1 and vm2 as UN but never vm3. Once both happen-
+	// path responses are consumed, the sticky default returns vm1+vm2
+	// UN — vm3 never appears, so its UN wait times out.
 	hosts := []string{"vm1", "vm2", "vm3"}
-	// vm1 and vm2 report running; vm3 is unscripted so every poll
-	// returns ("", nil) — gossip-running substring never matches and
-	// the budget elapses.
-	ssh := &fakeSSH{statusgossipResponses: map[string][]fakeResp{
-		"vm1": {{out: "running\n"}},
-		"vm2": {{out: "running\n"}},
-	}}
+	ssh := &fakeSSH{
+		nodetoolStatusDefault: map[string]fakeResp{
+			"vm1": {out: nodetoolStatusText([]string{"vm1", "vm2"})},
+		},
+	}
 	b := newRemoteForTest(hosts, ssh)
 
 	if err := b.Start(); err == nil {
@@ -338,11 +397,9 @@ func TestStartRollsBackOnLaterHostFailure(t *testing.T) {
 	}
 
 	// After the failure, rollback should have run `docker rm -f cassandra`
-	// on vm1 AND vm2 (the started set). Count those calls AFTER the
-	// first gossip-success window — i.e. there should be more than one
-	// rm-f call per started host (the prep-teardown at the top of each
-	// iteration plus the rollback teardown), but we just need at least
-	// two total per host.
+	// on vm1 AND vm2 (the successfully-started set). Each host gets one
+	// rm-f at iteration start (prep teardown) plus one at rollback time,
+	// so we expect at least 2 calls per started host.
 	rmCount := func(host string) int {
 		n := 0
 		for _, c := range ssh.calls {
@@ -356,5 +413,149 @@ func TestStartRollsBackOnLaterHostFailure(t *testing.T) {
 		if got := rmCount(h); got < 2 {
 			t.Errorf("host %s: got %d docker rm -f calls, want >=2 (prep + rollback)", h, got)
 		}
+	}
+}
+
+func TestStartGatesNextDockerRunOnPreviousUN(t *testing.T) {
+	// Regression test for the bootstrap-token-collision bug (see
+	// project_remote_cluster_token_collision_bug.md): if Start launches
+	// node N+1 before node N is fully joined (UN), both can pick
+	// overlapping tokens and the ring wedges. Fix gates each docker run
+	// on the previous node having reached UN as visible to the seed.
+	//
+	// Setup: script the seed's responses so vm2 NEVER reaches UN. After
+	// docker-running vm1 (UN), the orchestrator should block on vm2's
+	// UN wait, eventually time out, and roll back — without ever
+	// docker-running vm3.
+	hosts := []string{"vm1", "vm2", "vm3"}
+	ssh := &fakeSSH{
+		nodetoolStatusDefault: map[string]fakeResp{
+			// vm1 visible UN, vm2 visible only as UJ, vm3 not visible.
+			"vm1": {out: "Datacenter: dc1\n" +
+				"===============\n" +
+				"Status=Up/Down\n" +
+				"|/ State=Normal/Leaving/Joining/Moving\n" +
+				"--  Address  Load  Tokens  Owns  Host ID  Rack\n" +
+				"UN  vm1  100KiB  16  100.0%  host-0  rack1\n" +
+				"UJ  vm2  100KiB  16  ?       host-1  rack1\n"},
+		},
+	}
+	b := newRemoteForTest(hosts, ssh)
+
+	if err := b.Start(); err == nil {
+		t.Fatal("Start: expected error, got nil")
+	}
+
+	// The critical assertion: no docker run for vm3 was ever issued,
+	// because vm2 never reached UN and Start should not have advanced.
+	for _, c := range ssh.calls {
+		if c.host == "vm3" && len(c.argv) >= 2 && c.argv[0] == "docker" && c.argv[1] == "run" {
+			t.Fatalf("vm3 docker run was issued before vm2 reached UN — "+
+				"the per-node UN gate is broken; full argv was: %v", c.argv)
+		}
+	}
+}
+
+func TestStartSetsMemlockUlimit(t *testing.T) {
+	// Cassandra mlocks its heap to prevent swap-induced GC stalls.
+	// Without --ulimit memlock=-1:-1 the container's RLIMIT_MEMLOCK is
+	// the default 64 KiB and the JVM's mlock call fails with ENOMEM
+	// (logged as "Unable to lock JVM memory (ENOMEM)"). Validate that
+	// the docker run on every host raises memlock to unlimited.
+	hosts := []string{"vm1", "vm2", "vm3"}
+	ssh := &fakeSSH{nodetoolStatusDefault: happyPathNodetoolStatus("vm1", hosts)}
+	b := newRemoteForTest(hosts, ssh)
+
+	if err := b.Start(); err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+
+	for _, h := range hosts {
+		var found bool
+		for _, c := range ssh.calls {
+			if c.host != h || len(c.argv) < 2 || c.argv[0] != "docker" || c.argv[1] != "run" {
+				continue
+			}
+			// Look for the consecutive pair "--ulimit", "memlock=-1:-1"
+			// (the value `memlock=-1:-1` sets both soft and hard limits
+			// to unlimited).
+			for i := 0; i < len(c.argv)-1; i++ {
+				if c.argv[i] == "--ulimit" && c.argv[i+1] == "memlock=-1:-1" {
+					found = true
+					break
+				}
+			}
+			if found {
+				break
+			}
+		}
+		if !found {
+			t.Errorf("docker run on %s missing --ulimit memlock=-1:-1", h)
+		}
+	}
+}
+
+func TestStartWaitsForNativeTransportPerNode(t *testing.T) {
+	// Start() must gate each node on `nodetool statusbinary` returning
+	// "running" — without this, gocql can dial the joining node's CQL
+	// port before the listener has actually bound, surfacing as a
+	// transient "connection refused". The fake's first two calls per
+	// host return "not running", forcing the poll loop to spin until
+	// the sticky default ("running") takes over.
+	hosts := []string{"vm1", "vm2", "vm3"}
+	statusBinaryResponses := map[string][]fakeResp{}
+	for _, h := range hosts {
+		statusBinaryResponses[h] = []fakeResp{
+			{out: "not running"},
+			{out: "not running"},
+		}
+	}
+	ssh := &fakeSSH{
+		nodetoolStatusDefault: happyPathNodetoolStatus("vm1", hosts),
+		statusBinaryResponses: statusBinaryResponses,
+		// statusBinaryDefault left nil — fake falls back to "running"
+		// once responses are drained, see Exec().
+	}
+	b := newRemoteForTest(hosts, ssh)
+
+	if err := b.Start(); err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+
+	// Every host must have at least one statusbinary call.
+	for _, h := range hosts {
+		count := 0
+		for _, c := range ssh.calls {
+			if c.host == h && len(c.argv) >= 5 && c.argv[0] == "docker" &&
+				c.argv[1] == "exec" && c.argv[3] == "nodetool" && c.argv[4] == "statusbinary" {
+				count++
+			}
+		}
+		if count < 3 {
+			t.Errorf("host %s: expected >=3 statusbinary calls (2 not-running + at least 1 running), got %d", h, count)
+		}
+	}
+}
+
+func TestStartFailsWhenNativeTransportNeverRuns(t *testing.T) {
+	// If statusbinary keeps reporting "not running" past the
+	// nodeReadyBudget, Start() must fail with a descriptive error
+	// rather than wedging forever or dropping into the next node.
+	hosts := []string{"vm1", "vm2"}
+	ssh := &fakeSSH{
+		nodetoolStatusDefault: happyPathNodetoolStatus("vm1", hosts),
+		statusBinaryDefault: map[string]fakeResp{
+			"vm1": {out: "not running"},
+			"vm2": {out: "not running"},
+		},
+	}
+	b := newRemoteForTest(hosts, ssh)
+
+	err := b.Start()
+	if err == nil {
+		t.Fatal("Start: expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "native transport") {
+		t.Errorf("expected error mentioning 'native transport', got: %v", err)
 	}
 }

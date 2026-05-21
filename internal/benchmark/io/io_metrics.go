@@ -73,7 +73,17 @@ func GetClusterIOStats(refs []NodeRef, sshUser, sshKey string) (*IOStats, error)
 	}
 
 	var sshClient *remote.Client // lazily constructed only if a remote ref appears
-	for _, ref := range refs {
+	for i, ref := range refs {
+		// Empty/whitespace container ID is always a bug upstream
+		// (NodeContainerIDs() should have rejected it). Catching it
+		// here keeps the failure mode obvious instead of producing
+		// a vague "no cgroup io.stat at docker-.scope" lower down,
+		// and prevents the empty-ID value from leaking into a
+		// downstream uint64 underflow in CalculateIOMetrics. See
+		// [[project-io-metric-empty-container-id-bug]].
+		if strings.TrimSpace(ref.ContainerID) == "" {
+			return nil, fmt.Errorf("io stats refs[%d] host=%q: empty container ID", i, ref.Host)
+		}
 		var (
 			stats *IOStats
 			err   error
@@ -97,17 +107,54 @@ func GetClusterIOStats(refs []NodeRef, sshUser, sshKey string) (*IOStats, error)
 	return total, nil
 }
 
-// CalculateIOMetrics calculates I/O metrics from two IOStats snapshots
+// CalculateIOMetrics calculates I/O metrics from two IOStats snapshots.
+//
+// Deltas are clamped at 0. cgroup io.stat counters are monotonically
+// increasing for a given container's lifetime, so end >= start is the
+// only valid case. A "negative" delta (end < start) means one of:
+// (a) the container was recreated between snapshots and we re-aliased
+//     the cgroup path to a fresh, smaller-counter container,
+// (b) one snapshot summed a different set of block devices than the
+//     other (e.g. a device went away),
+// (c) one snapshot was a partial / zero read that didn't error
+//     upstream.
+// In every case the correct user-visible value is "we don't have a
+// reliable measurement here" — i.e. 0 — NOT a uint64 underflow cast to
+// float (~1.8e19) divided by a few seconds (~3.6e18). The latter would
+// silently corrupt the I/O column of the comparison table without any
+// operator-visible warning. See [[project-io-metric-empty-container-id-bug]].
 func CalculateIOMetrics(start, end *IOStats) IOMetrics {
 	duration := end.Timestamp.Sub(start.Timestamp).Seconds()
 	if duration <= 0 {
 		return IOMetrics{}
 	}
 
-	readBytes := float64(end.ReadBytes - start.ReadBytes)
-	writeBytes := float64(end.WriteBytes - start.WriteBytes)
-	readOps := float64(end.ReadOps - start.ReadOps)
-	writeOps := float64(end.WriteOps - start.WriteOps)
+	// Surface counter regressions before clamping. Distinguishing
+	// "I/O field reported 0 because no I/O happened" from "I/O field
+	// reported 0 because we dropped the measurement" matters for the
+	// thesis comparison table: a silent 0 in the I/O column would look
+	// like a real result. The warning gives the operator a paper trail.
+	var regressions []string
+	if end.ReadBytes < start.ReadBytes {
+		regressions = append(regressions, fmt.Sprintf("rbytes %d<%d", end.ReadBytes, start.ReadBytes))
+	}
+	if end.WriteBytes < start.WriteBytes {
+		regressions = append(regressions, fmt.Sprintf("wbytes %d<%d", end.WriteBytes, start.WriteBytes))
+	}
+	if end.ReadOps < start.ReadOps {
+		regressions = append(regressions, fmt.Sprintf("rios %d<%d", end.ReadOps, start.ReadOps))
+	}
+	if end.WriteOps < start.WriteOps {
+		regressions = append(regressions, fmt.Sprintf("wios %d<%d", end.WriteOps, start.WriteOps))
+	}
+	if len(regressions) > 0 {
+		fmt.Fprintf(os.Stderr, "Warning: I/O counter regression (clamped to 0): %s\n", strings.Join(regressions, ", "))
+	}
+
+	readBytes := clampedDelta(end.ReadBytes, start.ReadBytes)
+	writeBytes := clampedDelta(end.WriteBytes, start.WriteBytes)
+	readOps := clampedDelta(end.ReadOps, start.ReadOps)
+	writeOps := clampedDelta(end.WriteOps, start.WriteOps)
 
 	return IOMetrics{
 		ReadIOPS:          readOps / duration,
@@ -115,6 +162,15 @@ func CalculateIOMetrics(start, end *IOStats) IOMetrics {
 		ReadThroughputMB:  readBytes / duration / (1024 * 1024),
 		WriteThroughputMB: writeBytes / duration / (1024 * 1024),
 	}
+}
+
+// clampedDelta returns end-start as a float64, with end<start treated
+// as 0 rather than allowed to underflow uint64 arithmetic.
+func clampedDelta(end, start uint64) float64 {
+	if end < start {
+		return 0
+	}
+	return float64(end - start)
 }
 
 // cgroupPathCandidates returns the cgroup v2 paths to probe for a Docker

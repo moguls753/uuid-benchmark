@@ -49,14 +49,17 @@ const (
 		"sed -i 's/^batch_size_warn_threshold:.*/batch_size_warn_threshold: 100KiB/' /etc/cassandra/cassandra.yaml && " +
 		"exec docker-entrypoint.sh cassandra -f"
 
-	// defaultGossipBudget is the per-node deadline for nodetool
-	// statusgossip to report "running" after a docker run. Generous
-	// because the first node to boot also has to download the image's
-	// JVM/Cassandra startup overhead from a cold disk on slower HPC
-	// hardware. Cassandra normally reaches gossip-running in ~30 s on
-	// warm caches; 5 min is plenty of margin.
-	defaultGossipBudget       = 5 * time.Minute
-	defaultGossipPollInterval = 5 * time.Second
+	// defaultNodeReadyBudget is the per-node deadline for waiting until
+	// `nodetool status` on the seed reports the just-started node as UN.
+	// Replaces the older gossip-running gate: gossip-running fires the
+	// moment Cassandra's gossip Verb handler binds, which is long before
+	// the node has finished bootstrap. Using gossip-running as the
+	// per-node gate let consecutive non-seed nodes bootstrap concurrently
+	// and ended in a Bootstrap Token collision on the seed; using UN
+	// instead serialises bootstrap. Budget is generous because UN now
+	// covers gossip handshake + bootstrap streaming + token claim.
+	defaultNodeReadyBudget = 8 * time.Minute
+	defaultPollInterval    = 5 * time.Second
 
 	// remoteReadyTimeout is the WaitForReady budget covering the full
 	// ring-convergence step (all nodes reporting UN in nodetool status
@@ -108,13 +111,13 @@ type RemoteClusterBackend struct {
 	cpus   string // docker run --cpus value, e.g. "8"
 	memory string // docker run --memory value, e.g. "32g"
 
-	// gossipBudget / gossipPollInterval tune the per-node
-	// "wait until nodetool statusgossip says running" poll in Start.
-	// Exposed as fields (not constants) so tests can shrink them; not
-	// exposed as CLI flags because no operator scenario has needed
-	// retuning.
-	gossipBudget       time.Duration
-	gossipPollInterval time.Duration
+	// nodeReadyBudget / pollInterval tune the per-node
+	// "wait until nodetool status on the seed reports this node as UN"
+	// poll in Start. Exposed as fields (not constants) so tests can
+	// shrink them; not exposed as CLI flags because no operator scenario
+	// has needed retuning.
+	nodeReadyBudget time.Duration
+	pollInterval    time.Duration
 }
 
 // NewRemoteCluster builds a backend from a ClusterConfig. Panics if
@@ -136,16 +139,31 @@ func NewRemoteCluster(cfg ClusterConfig) *RemoteClusterBackend {
 		panic("NewRemoteCluster: cfg.SSHUser is empty")
 	}
 	return &RemoteClusterBackend{
-		hostnames:          append([]string(nil), cfg.Hostnames...),
-		user:               cfg.SSHUser,
-		ssh:                remote.NewClient(cfg.SSHUser, cfg.SSHKeyPath),
-		heap:               "8G",
-		newGen:             "2G",
-		cpus:               "8",
-		memory:             "32g",
-		gossipBudget:       defaultGossipBudget,
-		gossipPollInterval: defaultGossipPollInterval,
+		hostnames: append([]string(nil), cfg.Hostnames...),
+		user:      cfg.SSHUser,
+		ssh:       remote.NewClient(cfg.SSHUser, cfg.SSHKeyPath),
+		// Per-field fallback to Taurus-sized defaults if the caller
+		// left a field empty. Configurations that come through
+		// cmd/benchmark/main.go always populate all four (flag defaults
+		// are these same values), so the fallback exists mainly for
+		// programmatic / test callers that don't bother to set them.
+		heap:            stringOr(cfg.CassandraHeap, "8G"),
+		newGen:          stringOr(cfg.CassandraNewGen, "2G"),
+		cpus:            stringOr(cfg.CassandraCPUs, "8"),
+		memory:          stringOr(cfg.CassandraMemory, "32g"),
+		nodeReadyBudget: defaultNodeReadyBudget,
+		pollInterval:    defaultPollInterval,
 	}
+}
+
+// stringOr returns s if non-empty, otherwise fallback. Local helper
+// because the standard library's cmp.Or only landed in Go 1.22 and we
+// don't want to bump the module's minimum just for this.
+func stringOr(s, fallback string) string {
+	if s == "" {
+		return fallback
+	}
+	return s
 }
 
 // Start brings up a fresh Cassandra container on every host, in
@@ -158,10 +176,16 @@ func NewRemoteCluster(cfg ClusterConfig) *RemoteClusterBackend {
 //  3. `docker run -d` with the batch-threshold sed CMD (see
 //     remoteCassandraStartCmd) and CASSANDRA_BROADCAST_ADDRESS set to
 //     the host's hostname.
-//  4. Poll `nodetool statusgossip` over SSH every gossipPollInterval
-//     until the output contains "running", or fail with the host's
-//     last output if gossipBudget elapses. This per-node gate
-//     replaces the empirical sleep-stagger the file used to carry.
+//  4. Poll `nodetool status` on the seed every pollInterval until the
+//     just-started host shows as UN, or fail with the seed's last output
+//     if nodeReadyBudget elapses. UN — not gossip-running — is the
+//     correct gate: gossip-running fires the moment Cassandra's gossip
+//     Verb handler binds, long before bootstrap completes. Using
+//     gossip-running let consecutive non-seed nodes bootstrap
+//     concurrently, which ended in a Bootstrap Token collision on the
+//     seed and a permanently wedged ring. The "did this node finish
+//     joining" question is exactly what the seed's `nodetool status`
+//     answers, so we wait on that.
 //
 // CASSANDRA_BROADCAST_ADDRESS is the structural fix that makes
 // cross-host gossip work: without it, each container advertises its
@@ -224,6 +248,14 @@ func (b *RemoteClusterBackend) Start() error {
 			"-v", "cassandra-data-" + host + ":/var/lib/cassandra",
 			"--cpus", b.cpus,
 			"--memory", b.memory,
+			// memlock=-1 ⇒ unlimited mlock budget for the container.
+			// Cassandra mlocks its heap to avoid the JVM heap being
+			// swapped out (a well-known Cassandra anti-pattern that
+			// causes long GC stalls). Without this, every node logs
+			// "Unable to lock JVM memory (ENOMEM)" at startup and the
+			// heap is eligible for swap, which is especially bad on
+			// memory-constrained or oversubscribed hosts.
+			"--ulimit", "memlock=-1:-1",
 			remoteCassandraImage,
 			// CMD override: apply the batch-threshold sed dance, then
 			// exec the standard entrypoint. See remoteCassandraStartCmd.
@@ -234,36 +266,106 @@ func (b *RemoteClusterBackend) Start() error {
 			return fmt.Errorf("start node %d (%s): %w (output: %s)", i, host, err, strings.TrimSpace(out))
 		}
 		started = append(started, host)
-		if err := b.waitForGossipRunning(host); err != nil {
+		if err := b.waitForNodeUN(seed, host); err != nil {
 			rollback()
-			return fmt.Errorf("wait gossip on node %d (%s): %w", i, host, err)
+			return fmt.Errorf("wait UN for node %d (%s): %w", i, host, err)
+		}
+		// UN-on-seed precedes the joining node opening its own CQL
+		// listener — the seed sees the gossip state flip slightly
+		// before the joining node binds 9042. Without this second
+		// gate, gocql can race the bind and hit "connection refused"
+		// on the host that just turned UN, and the IO-metric collector
+		// can race the cgroup setup on the same host. See
+		// [[project-io-metric-empty-container-id-bug]] for the
+		// downstream effect.
+		if err := b.waitForNativeTransport(host); err != nil {
+			rollback()
+			return fmt.Errorf("wait native transport for node %d (%s): %w", i, host, err)
 		}
 	}
 	return nil
 }
 
-// waitForGossipRunning polls `nodetool statusgossip` inside the host's
-// cassandra container until it prints "running" or gossipBudget
-// elapses. Exec errors during the boot window are normal (nodetool
-// returns non-zero before Cassandra opens its JMX port) and are
-// treated as "not ready, keep polling". On timeout the returned error
-// includes the host's last output so the operator can tell whether
-// Cassandra failed to start vs. SSH itself is unreachable.
-func (b *RemoteClusterBackend) waitForGossipRunning(host string) error {
-	deadline := time.Now().Add(b.gossipBudget)
+// waitForNativeTransport polls `nodetool statusbinary` on the target
+// host until it reports "running", or nodeReadyBudget elapses.
+//
+// Distinct from waitForNodeUN: that one asks the seed whether the
+// joining node has finished bootstrap (a ring-membership question).
+// This one asks the joining node directly whether its CQL listener is
+// bound (a client-reachability question). The two events are usually
+// milliseconds apart on a healthy host but can be seconds apart on a
+// slow host — long enough that a gocql dial scheduled right after
+// waitForNodeUN can lose the race and surface as "connection refused".
+//
+// Transient errors and any non-"running" body are treated as "not
+// ready, keep polling" — same convention as waitForNodeUN.
+func (b *RemoteClusterBackend) waitForNativeTransport(host string) error {
+	deadline := time.Now().Add(b.nodeReadyBudget)
 	var lastOut string
 	var lastErr error
 	for {
-		out, err := b.ssh.Exec(host, "docker", "exec", remoteContainerName, "nodetool", "statusgossip")
-		if err == nil && strings.Contains(out, "running") {
+		out, err := b.ssh.Exec(host, "docker", "exec", remoteContainerName, "nodetool", "statusbinary")
+		// `nodetool statusbinary` prints exactly one of "running" or
+		// "not running" (single line, no trailing punctuation). Match
+		// the trimmed-and-lowered output equally, NOT via substring —
+		// "not running" contains "running".
+		if err == nil && strings.EqualFold(strings.TrimSpace(out), "running") {
 			return nil
 		}
 		lastOut, lastErr = out, err
 		if time.Now().After(deadline) {
-			return fmt.Errorf("gossip did not reach 'running' within %s (last err: %v, last output: %s)",
-				b.gossipBudget, lastErr, strings.TrimSpace(lastOut))
+			return fmt.Errorf("node %s native transport did not report running within %s (last err: %v, last output: %s)",
+				host, b.nodeReadyBudget, lastErr, strings.TrimSpace(lastOut))
 		}
-		time.Sleep(b.gossipPollInterval)
+		time.Sleep(b.pollInterval)
+	}
+}
+
+// waitForNodeUN polls `nodetool status` on the seed until the target
+// host appears with status "UN" (Up/Normal) — i.e. has finished joining
+// the ring — or nodeReadyBudget elapses.
+//
+// Used as the per-node gate in Start(). The seed is the canonical
+// source of truth for "has this peer finished bootstrap?" because it
+// receives the gossip state change that flips a joining node from UJ to
+// UN. Polling the joining node itself is unreliable: a node typically
+// reports itself UN before the seed has acknowledged the transition,
+// and starting the NEXT node while the previous one is still
+// bootstrapping causes a Bootstrap Token collision (rare in absolute
+// terms but consistent on slow hardware where the bootstrap window is
+// wide enough to overlap).
+//
+// During the boot window nodetool can exit non-zero (JMX not yet up) or
+// emit transient output that ParseNodetoolStatus rejects — both are
+// treated as "not ready, keep polling". On timeout the returned error
+// includes the seed's last output so the operator can tell whether
+// Cassandra failed to start, SSH itself is unreachable, or the target
+// host never joined the ring.
+//
+// For the seed itself (host == seed) this still works: the seed has no
+// peers to wait for, so as soon as Cassandra is up and nodetool can
+// talk to it, the seed reports itself UN.
+func (b *RemoteClusterBackend) waitForNodeUN(seed, host string) error {
+	deadline := time.Now().Add(b.nodeReadyBudget)
+	var lastOut string
+	var lastErr error
+	for {
+		out, err := b.ssh.Exec(seed, "docker", "exec", remoteContainerName, "nodetool", "status")
+		if err == nil {
+			if nodes, perr := ParseNodetoolStatus(out); perr == nil {
+				for _, n := range nodes {
+					if n.Address == host && n.Status == "UN" {
+						return nil
+					}
+				}
+			}
+		}
+		lastOut, lastErr = out, err
+		if time.Now().After(deadline) {
+			return fmt.Errorf("node %s did not reach UN within %s (last err: %v, last output: %s)",
+				host, b.nodeReadyBudget, lastErr, strings.TrimSpace(lastOut))
+		}
+		time.Sleep(b.pollInterval)
 	}
 }
 
@@ -335,17 +437,19 @@ func (b *RemoteClusterBackend) NodeAddresses() []string {
 }
 
 // NodeContainerIDs returns the long-form Docker container ID on each
-// host. Uses `docker inspect --format {{.Id}}` rather than `docker ps`
-// because the container name is constant ("cassandra") per remote
-// host, making inspect by name the most direct lookup. Errors if any
-// host's container ID comes back empty, matching Backend.NodeContainerIDs's
-// contract (every returned entry must be a valid non-empty ID).
+// host. Uses `docker ps --filter name=^cassandra$` rather than
+// `docker inspect --format '{{.Id}}'` because Docker 29.x intermittently
+// returns exit 0 with empty stdout for inspect's template path when
+// the daemon is under load (observed 2026-05-20 on incus VMs during
+// Cassandra compaction). `docker ps` is reliable under the same
+// conditions. The `^name$` anchor mirrors LocalSingleBackend.NodeContainerIDs
+// and prevents substring matches against unrelated containers.
 func (b *RemoteClusterBackend) NodeContainerIDs() ([]string, error) {
 	ids := make([]string, len(b.hostnames))
 	for i, host := range b.hostnames {
-		out, err := b.ssh.Exec(host, "docker", "inspect", "--format", "{{.Id}}", remoteContainerName)
+		out, err := b.ssh.Exec(host, "docker", "ps", "-q", "--no-trunc", "--filter", "name=^"+remoteContainerName+"$")
 		if err != nil {
-			return nil, fmt.Errorf("docker inspect on %s: %w", host, err)
+			return nil, fmt.Errorf("docker ps on %s: %w", host, err)
 		}
 		id := strings.TrimSpace(out)
 		if id == "" {
