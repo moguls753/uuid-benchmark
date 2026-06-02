@@ -14,10 +14,36 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"golang.org/x/crypto/ssh"
 )
+
+// syncBuffer is a goroutine-safe io.Writer wrapper around a bytes.Buffer.
+// ssh.Session.Run launches SEPARATE copier goroutines for Stdout and Stderr
+// (see session.go start/stdout/stderr), so pointing both at one bare
+// *bytes.Buffer is a data race — concurrent Writes corrupt the buffer and,
+// in practice, silently drop output (which made remote command failures
+// show up with an empty "(output: )" and undiagnosable). Guarding writes
+// with a mutex keeps the combined, interleaved-output semantics while being
+// race-free.
+type syncBuffer struct {
+	mu  sync.Mutex
+	buf bytes.Buffer
+}
+
+func (w *syncBuffer) Write(p []byte) (int, error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.buf.Write(p)
+}
+
+func (w *syncBuffer) String() string {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.buf.String()
+}
 
 // defaultClientTimeout caps each Exec/Copy call. The ssh.ClientConfig.Timeout
 // only bounds the TCP+handshake phase; after that a stalled remote (PAM,
@@ -87,11 +113,23 @@ func runSession(sess sessionRunner, cmd string, timeout time.Duration) error {
 		return err
 	case <-time.After(timeout):
 		// Best-effort: tell the remote shell to die and tear the session
-		// down. The goroutine above will then unblock — but we don't wait
-		// for it; the session is dead from our perspective and the
-		// goroutine is short-lived.
+		// down. Close() unblocks the abandoned Run goroutine above — its
+		// stdout/stderr copiers get EOF.
 		_ = sess.Signal(ssh.SIGKILL)
 		_ = sess.Close()
+		// WAIT for that goroutine to actually return before we do. Without
+		// this, runSession returns immediately and the caller's
+		// `defer session.Close()` / `defer cli.Close()` (see Exec) tear the
+		// connection down while the copier goroutines are still reading the
+		// SSH channel — a data race inside x/crypto/ssh that nil-derefs the
+		// channel buffer (b.head) and panics the whole process. Bounded so a
+		// Close that somehow fails to unblock Run can't wedge the call
+		// indefinitely; in that (unobserved) case we accept the residual
+		// leak rather than hang.
+		select {
+		case <-done:
+		case <-time.After(10 * time.Second):
+		}
 		return fmt.Errorf("ssh session timed out after %s", timeout)
 	}
 }
@@ -129,7 +167,9 @@ func (c *Client) Exec(host string, argv ...string) (string, error) {
 	}
 	defer session.Close()
 
-	var buf bytes.Buffer
+	// One race-free buffer for both streams — see syncBuffer. The stdout and
+	// stderr copier goroutines started by Run write here concurrently.
+	var buf syncBuffer
 	session.Stdout = &buf
 	session.Stderr = &buf
 

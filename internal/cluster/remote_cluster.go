@@ -221,11 +221,19 @@ func (b *RemoteClusterBackend) Start() error {
 		_, _ = b.ssh.Exec(host, "docker", "rm", "-f", remoteContainerName)
 		_, _ = b.ssh.Exec(host, "docker", "volume", "rm", "cassandra-data-"+host)
 
-		// Pull the image first so a missing-image failure surfaces here
-		// (with a clean error) rather than as a vague `docker run` error.
+		// Pull the image so a genuinely missing image surfaces here rather
+		// than as a vague `docker run` error. But a pull failure is NOT
+		// fatal if the image is already present locally: the registry can
+		// blip transiently, and the target cluster may have no internet
+		// egress at all (e.g. an air-gapped HPC allocation where the image
+		// was pre-provisioned). In those cases we proceed with the local
+		// image; we only abort when the image is also absent locally.
 		if out, err := b.ssh.Exec(host, "docker", "pull", remoteCassandraImage); err != nil {
-			rollback()
-			return fmt.Errorf("pull image on node %d (%s): %w (output: %s)", i, host, err, strings.TrimSpace(out))
+			if _, ierr := b.ssh.Exec(host, "docker", "image", "inspect", remoteCassandraImage); ierr != nil {
+				rollback()
+				return fmt.Errorf("pull image on node %d (%s): %w (output: %s); image also not present locally: %v", i, host, err, strings.TrimSpace(out), ierr)
+			}
+			fmt.Printf("Warning: docker pull failed on %s (%v) but %s is present locally; continuing with the local image\n", host, err, remoteCassandraImage)
 		}
 
 		runArgs := []string{
