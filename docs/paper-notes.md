@@ -34,6 +34,14 @@ Cassandra's `batch_size_fail_threshold` was raised from the default 50 KiB to 20
 
 ### `fetchCassandraIDs` token-order sampling skew (use in: limitations / threats-to-validity section)
 
+> **VERALTET (Hinweis 2026-08-31):** Dieser Abschnitt beschreibt Code, der
+> seit Commit 38ea3d2 (2026-05-18) nicht mehr existiert. Alle Juni-Läufe
+> nutzten bucketweises `PER PARTITION LIMIT`-Sampling
+> (`cmd/workload/main.go:1522-1548, 1589`). Die tatsächliche Limitation ist
+> eine andere (Partition-Head-Sampling: typabhängige Working-Set-Größe und
+> Fetch-Vorwärmung); maßgeblich ist `uuid-paper/drafts/verifikation.md` §5.
+> NICHT ins Paper übernehmen.
+
 The benchmark's read and update workloads sample a target id set via `SELECT id FROM bench LIMIT M`. Cassandra returns rows in token order and terminates the scan once M rows are collected. When M is small relative to per-partition row count, the sample concentrates within the first few partitions encountered in token order, which in turn concentrate on the nodes owning those tokens. At 100M-record / 1000-bucket scale each partition holds approximately 100K rows; a sample of M=10K ids therefore comes from a single partition and exercises read load on at most one or two replicas rather than the full cluster.
 
 We retain the simpler unfiltered scan to keep the implementation minimal and to mirror Cassandra's idiomatic LIMIT-without-WHERE semantics. A stratified alternative (iterating buckets 0..N-1 and fetching M/N ids from each) would spread the load uniformly but adds N CQL round-trips per workload setup. For our scale runs we report the sample's bucket-diversity statistic and interpret per-node read variance accordingly. Where multi-node read variance is suspiciously low, the result reflects the sampling concentration rather than per-node behaviour.
