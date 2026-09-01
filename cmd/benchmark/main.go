@@ -46,12 +46,23 @@ var campaignOutput string
 
 var campaignManifest manifest
 
+// effectiveCluster is filled once the Cassandra cluster config is resolved,
+// before initManifest writes the manifest.
+var effectiveCluster map[string]string
+
 type manifest struct {
-	Commit                string            `json:"commit"`
-	WorkingTreeDirty      bool              `json:"working_tree_dirty"`
-	OrchestratorMD5       string            `json:"orchestrator_md5"`
-	WorkloadMD5           string            `json:"workload_md5"`
-	Flags                 map[string]string `json:"flags"`
+	Commit           string            `json:"commit"`
+	WorkingTreeDirty bool              `json:"working_tree_dirty"`
+	OrchestratorMD5  string            `json:"orchestrator_md5"`
+	WorkloadMD5      string            `json:"workload_md5"`
+	Flags            map[string]string `json:"flags"`
+	// EffectiveCluster records what the cluster config resolved to, not what
+	// was typed. Several values default silently: an unset -replication-factor
+	// becomes 1 or 3 depending on mode and node count, an unset -consistency
+	// becomes local_one or local_quorum. The flag dump alone shows a 0 there,
+	// and for the node-count anchor the replication factor is exactly the
+	// variable that separates it from the three-node arms.
+	EffectiveCluster      map[string]string `json:"effective_cluster,omitempty"`
 	CampaignSeed          int64             `json:"campaign_seed"`
 	PrepInsertConnections int               `json:"prep_insert_connections"`
 	MeasuredConnections   int               `json:"measured_connections_read_update"`
@@ -183,6 +194,7 @@ func initManifest(database string) {
 		CampaignSeed:          campaignSeed,
 		PrepInsertConnections: runner.PrepInsertConnections,
 		MeasuredConnections:   measuredConnections,
+		EffectiveCluster:      effectiveCluster,
 		Started:               time.Now(),
 	}
 	// The run log is append-only within a campaign, so a rerun into the same
@@ -485,6 +497,20 @@ func main() {
 		backend, err := buildBackend(cfg, *clusterNodeCount)
 		if err != nil {
 			log.Fatalf("Build backend: %v", err)
+		}
+		image := cfg.CassandraImage
+		if image == "" {
+			image = "cassandra:5 (floating tag)"
+		}
+		effectiveCluster = map[string]string{
+			"mode":               string(cfg.Mode),
+			"nodes":              strings.Join(cfg.ContactPoints, ","),
+			"node_count":         fmt.Sprintf("%d", len(cfg.ContactPoints)),
+			"replication_factor": fmt.Sprintf("%d", cfg.ReplicationFactor),
+			"consistency":        string(cfg.Consistency),
+			"num_buckets":        fmt.Sprintf("%d", cfg.NumBuckets),
+			"image":              image,
+			"head_sampling":      fmt.Sprintf("%t", cfg.HeadSampling),
 		}
 		currentDB = cassandraDBConfig(cfg, backend)
 		buildWorkloadBinary()
