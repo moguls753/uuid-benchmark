@@ -3,18 +3,22 @@ package main
 import (
 	"context"
 	crand "crypto/rand"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/binary"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand/v2"
 	"os"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
-	"regexp"
 	"sync/atomic"
 	"time"
 
@@ -28,16 +32,31 @@ import (
 )
 
 type Result struct {
-	Throughput  float64 `json:"throughput"`
-	LatencyP50  int64   `json:"latency_p50_us"`
-	LatencyP95  int64   `json:"latency_p95_us"`
-	LatencyP99  int64   `json:"latency_p99_us"`
-	TotalOps    int     `json:"total_ops"`
-	DurationMs  int64   `json:"duration_ms"`
-	Errors      int     `json:"errors"`
-	InsertOps   int     `json:"insert_ops,omitempty"`
-	ReadOps     int     `json:"read_ops,omitempty"`
-	UpdateOps   int     `json:"update_ops,omitempty"`
+	Throughput float64 `json:"throughput"`
+	LatencyP50 int64   `json:"latency_p50_us"`
+	LatencyP95 int64   `json:"latency_p95_us"`
+	LatencyP99 int64   `json:"latency_p99_us"`
+	TotalOps   int     `json:"total_ops"`
+	DurationMs int64   `json:"duration_ms"`
+	Errors     int     `json:"errors"`
+	// NotFound counts operations whose query succeeded but returned no row.
+	// Tracked separately from Errors because the read target ids are drawn
+	// during the insert (see sampleIndices): a row that never made it into
+	// the table returns fast and would otherwise inflate throughput while
+	// looking like a clean run.
+	NotFound int `json:"not_found"`
+	// FetchMs is the time spent fetching target ids from the database. It is
+	// zero whenever the ids come from an id file, which is what keeps the
+	// runner's I/O window free of sampling traffic.
+	FetchMs int64 `json:"fetch_ms"`
+	// IDFileSHA256 fingerprints the read set an insert handed to the next
+	// phase. Without it the target set is unverifiable afterwards: the file
+	// lives in a container or a temp dir and is gone by the time anyone
+	// looks at the CSV.
+	IDFileSHA256 string `json:"id_file_sha256,omitempty"`
+	InsertOps    int    `json:"insert_ops,omitempty"`
+	ReadOps      int    `json:"read_ops,omitempty"`
+	UpdateOps    int    `json:"update_ops,omitempty"`
 }
 
 // payload is a fixed-size byte slice to simulate realistic row sizes
@@ -62,6 +81,9 @@ func main() {
 	tableName := flag.String("table-name", "bench", "Table/collection name")
 	numBuckets := flag.Int("num-buckets", 1000, "Number of Cassandra partition buckets")
 	consistency := flag.String("consistency", "local_one", "CQL consistency level (Cassandra only): one, local_one, local_quorum, quorum")
+	idFile := flag.String("id-file", "", "Target-id file (Cassandra only). On --op=insert the run samples --sample-size ids uniformly over insert order, shuffles them and writes them here. On --op=read/update the ids are read from here instead of being fetched from the database.")
+	sampleSize := flag.Int("sample-size", 0, "Number of ids to sample during insert (requires --id-file on --op=insert)")
+	sampleSeed := flag.Int64("sample-seed", 0, "Seed for the id sample and its shuffle (requires --id-file on --op=insert)")
 	flag.Parse()
 
 	if *dbType == "" || *op == "" || *keyType == "" {
@@ -75,7 +97,7 @@ func main() {
 	case "mongodb":
 		result, err = runMongoDB(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct)
 	case "cassandra":
-		result, err = runCassandra(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct, *numBuckets, *consistency)
+		result, err = runCassandra(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct, *numBuckets, *consistency, *idFile, *sampleSize, *sampleSeed)
 	case "mysql":
 		result, err = runMySQL(*op, *keyType, *numRecords, *numOps, *batchSize, *threads, *connString, *insertPct, *readPct, *updatePct, *tableName)
 	default:
@@ -1054,7 +1076,7 @@ func parseConsistency(s string) gocql.Consistency {
 	}
 }
 
-func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int, connString string, insertPct, readPct, updatePct, numBuckets int, consistency string) (*Result, error) {
+func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int, connString string, insertPct, readPct, updatePct, numBuckets int, consistency, idFile string, sampleSize int, sampleSeed int64) (*Result, error) {
 	points := parseContactPoints(connString)
 	if len(points) == 0 {
 		return nil, fmt.Errorf("no Cassandra contact points provided")
@@ -1074,11 +1096,11 @@ func runCassandra(op, keyType string, numRecords, numOps, batchSize, threads int
 
 	switch op {
 	case "insert":
-		return cassandraInsert(session, keyType, numRecords, batchSize, threads, numBuckets)
+		return cassandraInsert(session, keyType, numRecords, batchSize, threads, numBuckets, idFile, sampleSize, sampleSeed)
 	case "read":
-		return cassandraRead(session, keyType, numOps, threads, numBuckets)
+		return cassandraRead(session, keyType, numOps, threads, numBuckets, idFile)
 	case "update":
-		return cassandraUpdate(session, keyType, numOps, threads, numBuckets)
+		return cassandraUpdate(session, keyType, numOps, threads, numBuckets, idFile)
 	case "mixed":
 		return cassandraMixed(session, keyType, numOps, threads, insertPct, readPct, updatePct, numBuckets)
 	default:
@@ -1196,14 +1218,24 @@ func bucketForIDValue(id any, n int) int {
 	return int(h % uint32(n))
 }
 
-func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSize, threads, numBuckets int) (*Result, error) {
+func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSize, threads, numBuckets int, idFile string, sampleSize int, sampleSeed int64) (*Result, error) {
 	var counter atomic.Int64
 	recordsPerThread := numRecords / threads
 	remainder := numRecords % threads
 
 	var wg sync.WaitGroup
 	allLatencies := make([][]int64, threads)
+	sampled := make([][]any, threads)
 	var totalErrors atomic.Int64
+
+	// One draw over all rows, then split by writer range. Drawing per thread
+	// instead would give rows unequal inclusion probability whenever the
+	// threads own different numbers of rows, which is what numRecords not
+	// dividing by threads produces.
+	var perThreadWant [][]int
+	if idFile != "" {
+		perThreadWant = splitSampleByThread(sampleIndices(sampleSize, numRecords, sampleSeed), recordsPerThread, remainder, threads)
+	}
 
 	start := time.Now()
 
@@ -1212,11 +1244,29 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 		if t < remainder {
 			records++
 		}
+		var wantIdx []int
+		if perThreadWant != nil {
+			wantIdx = perThreadWant[t]
+		}
 		wg.Add(1)
-		go func(threadID, records int) {
+		go func(threadID, records int, wantIdx []int) {
 			defer wg.Done()
+			// One generator per writer, unchanged. Only ulid_monotonic carries
+			// state here, so with more than one writer that type becomes as
+			// many interleaved monotonic streams as there are writers rather
+			// than one. The dilution is confined to keys sharing a millisecond
+			// timestamp prefix and does not widen the SSTable key ranges the
+			// read benchmark is about; keeping it identical across every
+			// scenario and both samplers matters more than removing it.
 			kg := newKeyGenerator(keyType, &counter)
 			latencies := make([]int64, 0, (records/batchSize)+1)
+
+			// wantIdx is ascending and so is j below, so one cursor replaces a
+			// per-row set lookup across all numRecords rows.
+			var wantCursor int
+			if len(wantIdx) > 0 {
+				sampled[threadID] = make([]any, 0, len(wantIdx))
+			}
 
 			for i := 0; i < records; i += batchSize {
 				batchEnd := i + batchSize
@@ -1225,8 +1275,13 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 				}
 
 				batch := session.NewBatch(gocql.UnloggedBatch)
+				var staged []any
 				for j := i; j < batchEnd; j++ {
 					key := kg.generateCassandraKey()
+					if wantCursor < len(wantIdx) && wantIdx[wantCursor] == j {
+						staged = append(staged, key)
+						wantCursor++
+					}
 					bucket := bucketForIDValue(key, numBuckets)
 					batch.Query(cassandraInsertQuery, bucket, key, payload)
 				}
@@ -1236,15 +1291,40 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 				latUS := time.Since(opStart).Microseconds()
 				latencies = append(latencies, latUS)
 				if err != nil {
-					totalErrors.Add(1)
+					// Count rows, not batches: a failed batch loses every row
+					// in it, and reporting one failure out of numRecords would
+					// describe a dead run as 99.9 % healthy.
+					totalErrors.Add(int64(batchEnd - i))
+					continue
 				}
+				// Only rows that were actually written become read targets.
+				// Otherwise a failed batch would seed the read set with rows
+				// that do not exist: fast misses on read, and on update a
+				// silent upsert that creates them inside the measured phase.
+				sampled[threadID] = append(sampled[threadID], staged...)
 			}
 			allLatencies[threadID] = latencies
-		}(t, records)
+		}(t, records, wantIdx)
 	}
 
 	wg.Wait()
 	duration := time.Since(start)
+
+	// Written after the timer stops: the read set is bookkeeping for the next
+	// phase, not part of the measured insert.
+	var idFileSum string
+	if idFile != "" {
+		ids := make([]any, 0, sampleSize)
+		for _, part := range sampled {
+			ids = append(ids, part...)
+		}
+		shuffleIDs(ids, sampleSeed)
+		sum, err := writeIDFile(idFile, keyType, sampleSeed, ids)
+		if err != nil {
+			return nil, fmt.Errorf("write id file: %w", err)
+		}
+		idFileSum = sum
+	}
 
 	var merged []int64
 	for _, l := range allLatencies {
@@ -1254,20 +1334,27 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 	p50, p95, p99 := calculatePercentiles(merged)
 
 	return &Result{
-		Throughput: float64(numRecords) / duration.Seconds(),
-		LatencyP50: p50,
-		LatencyP95: p95,
-		LatencyP99: p99,
-		TotalOps:   numRecords,
-		DurationMs: duration.Milliseconds(),
-		Errors:     int(totalErrors.Load()),
+		Throughput:   float64(numRecords) / duration.Seconds(),
+		LatencyP50:   p50,
+		LatencyP95:   p95,
+		LatencyP99:   p99,
+		TotalOps:     numRecords,
+		DurationMs:   duration.Milliseconds(),
+		Errors:       int(totalErrors.Load()),
+		IDFileSHA256: idFileSum,
 	}, nil
 }
 
-func cassandraRead(session *gocql.Session, keyType string, numOps, threads, numBuckets int) (*Result, error) {
-	ids, err := fetchCassandraIDs(session, keyType, numOps, numBuckets)
+func cassandraRead(session *gocql.Session, keyType string, numOps, threads, numBuckets int, idFile string) (*Result, error) {
+	ids, fetchDur, readSetSum, err := targetIDs(session, keyType, numOps, numBuckets, idFile)
 	if err != nil {
-		return nil, fmt.Errorf("fetch ids: %w", err)
+		return nil, err
+	}
+	if idFile != "" {
+		// The read set is the workload. If the insert lost rows, fewer
+		// operations run and attempted drops below num-ops, which is visible
+		// downstream instead of being cycled away by a modulo.
+		numOps = len(ids)
 	}
 
 	opsPerThread := numOps / threads
@@ -1276,6 +1363,7 @@ func cassandraRead(session *gocql.Session, keyType string, numOps, threads, numB
 	var wg sync.WaitGroup
 	allLatencies := make([][]int64, threads)
 	var totalErrors atomic.Int64
+	var totalNotFound atomic.Int64
 
 	start := time.Now()
 
@@ -1304,7 +1392,11 @@ func cassandraRead(session *gocql.Session, keyType string, numOps, threads, numB
 				latUS := time.Since(opStart).Microseconds()
 				latencies = append(latencies, latUS)
 				if err != nil {
-					totalErrors.Add(1)
+					if errors.Is(err, gocql.ErrNotFound) {
+						totalNotFound.Add(1)
+					} else {
+						totalErrors.Add(1)
+					}
 				}
 			}
 			allLatencies[threadID] = latencies
@@ -1322,20 +1414,29 @@ func cassandraRead(session *gocql.Session, keyType string, numOps, threads, numB
 	p50, p95, p99 := calculatePercentiles(merged)
 
 	return &Result{
-		Throughput: float64(numOps) / duration.Seconds(),
-		LatencyP50: p50,
-		LatencyP95: p95,
-		LatencyP99: p99,
-		TotalOps:   numOps,
-		DurationMs: duration.Milliseconds(),
-		Errors:     int(totalErrors.Load()),
+		Throughput:   float64(numOps) / duration.Seconds(),
+		LatencyP50:   p50,
+		LatencyP95:   p95,
+		LatencyP99:   p99,
+		TotalOps:     numOps,
+		DurationMs:   duration.Milliseconds(),
+		Errors:       int(totalErrors.Load()),
+		NotFound:     int(totalNotFound.Load()),
+		FetchMs:      fetchDur.Milliseconds(),
+		IDFileSHA256: readSetSum,
 	}, nil
 }
 
-func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads, numBuckets int) (*Result, error) {
-	ids, err := fetchCassandraIDs(session, keyType, numOps, numBuckets)
+func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads, numBuckets int, idFile string) (*Result, error) {
+	ids, fetchDur, readSetSum, err := targetIDs(session, keyType, numOps, numBuckets, idFile)
 	if err != nil {
-		return nil, fmt.Errorf("fetch ids: %w", err)
+		return nil, err
+	}
+	if idFile != "" {
+		// The read set is the workload. If the insert lost rows, fewer
+		// operations run and attempted drops below num-ops, which is visible
+		// downstream instead of being cycled away by a modulo.
+		numOps = len(ids)
 	}
 
 	opsPerThread := numOps / threads
@@ -1344,6 +1445,7 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads, nu
 	var wg sync.WaitGroup
 	allLatencies := make([][]int64, threads)
 	var totalErrors atomic.Int64
+	var totalNotFound atomic.Int64
 
 	start := time.Now()
 
@@ -1373,7 +1475,11 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads, nu
 				latUS := time.Since(opStart).Microseconds()
 				latencies = append(latencies, latUS)
 				if err != nil {
-					totalErrors.Add(1)
+					if errors.Is(err, gocql.ErrNotFound) {
+						totalNotFound.Add(1)
+					} else {
+						totalErrors.Add(1)
+					}
 				}
 			}
 			allLatencies[threadID] = latencies
@@ -1391,13 +1497,16 @@ func cassandraUpdate(session *gocql.Session, keyType string, numOps, threads, nu
 	p50, p95, p99 := calculatePercentiles(merged)
 
 	return &Result{
-		Throughput: float64(numOps) / duration.Seconds(),
-		LatencyP50: p50,
-		LatencyP95: p95,
-		LatencyP99: p99,
-		TotalOps:   numOps,
-		DurationMs: duration.Milliseconds(),
-		Errors:     int(totalErrors.Load()),
+		Throughput:   float64(numOps) / duration.Seconds(),
+		LatencyP50:   p50,
+		LatencyP95:   p95,
+		LatencyP99:   p99,
+		TotalOps:     numOps,
+		DurationMs:   duration.Milliseconds(),
+		Errors:       int(totalErrors.Load()),
+		NotFound:     int(totalNotFound.Load()),
+		FetchMs:      fetchDur.Milliseconds(),
+		IDFileSHA256: readSetSum,
 	}, nil
 }
 
@@ -1517,6 +1626,226 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 		ReadOps:    int(totalReads.Load()),
 		UpdateOps:  int(totalUpdates.Load()),
 	}, nil
+}
+
+// targetIDs returns the read/update target set and the time spent asking the
+// database for it. With an id file the set was drawn during the insert
+// (sampleIndices) and no query runs at all, so the fetch duration is zero by
+// construction — that is what keeps the runner's I/O window free of sampling
+// traffic and removes the pre-warming of exactly the rows about to be
+// measured. Without an id file the legacy partition-head fetch runs, which is
+// the bridge arm that quantifies what that sampling was worth.
+//
+// On the id-file path the returned set also defines how many operations run:
+// the caller uses len(ids) rather than the requested numOps. A short file means
+// the insert lost rows to failed batches, and cycling the survivors with a
+// modulo would hide that behind a full-looking operation count. Letting
+// attempted fall below num-ops instead surfaces it in the exported counters,
+// where the protocol's validity rule catches it.
+// The returned digest is computed by the reader over the bytes it actually
+// loaded. The runner compares it against the digest the insert reported, so a
+// read set that was replaced or edited between the phases is caught instead of
+// producing plausible numbers against the wrong rows.
+func targetIDs(session *gocql.Session, keyType string, numOps, numBuckets int, idFile string) ([]any, time.Duration, string, error) {
+	if idFile != "" {
+		ids, sum, err := loadIDFile(idFile, keyType)
+		if err != nil {
+			return nil, 0, "", fmt.Errorf("load id file: %w", err)
+		}
+		return ids, 0, sum, nil
+	}
+	start := time.Now()
+	ids, err := fetchCassandraIDs(session, keyType, numOps, numBuckets)
+	if err != nil {
+		return nil, 0, "", fmt.Errorf("fetch ids: %w", err)
+	}
+	return ids, time.Since(start), "", nil
+}
+
+// threadRange returns the [start, end) slice of insert order owned by writer
+// thread t. It mirrors the record split in cassandraInsert, where the first
+// `remainder` threads take one extra row.
+func threadRange(t, recordsPerThread, remainder int) (int, int) {
+	start := t*recordsPerThread + min(t, remainder)
+	size := recordsPerThread
+	if t < remainder {
+		size++
+	}
+	return start, start + size
+}
+
+// splitSampleByThread maps globally drawn ascending record indices onto the
+// writer threads that will generate them, rebased to each thread's own
+// counter. The draw happens once over all rows and is split afterwards so that
+// every row has the same inclusion probability; drawing a fixed share per
+// thread would not, because the threads can own different numbers of rows.
+func splitSampleByThread(global []int, recordsPerThread, remainder, threads int) [][]int {
+	out := make([][]int, threads)
+	cursor := 0
+	for t := 0; t < threads; t++ {
+		start, end := threadRange(t, recordsPerThread, remainder)
+		for cursor < len(global) && global[cursor] < end {
+			out[t] = append(out[t], global[cursor]-start)
+			cursor++
+		}
+	}
+	return out
+}
+
+// sampleIndices draws k distinct indices uniformly without replacement from
+// [0, n) and returns them ascending. Rejection sampling keeps this allocation-
+// light for the production shape (k is well under 1 % of n), and the Perm
+// fallback covers the small-dataset smoke tests where k approaches n and
+// rejection would thrash.
+func sampleIndices(k, n int, seed int64) []int {
+	if k <= 0 || n <= 0 {
+		return nil
+	}
+	if k > n {
+		k = n
+	}
+	rng := rand.New(rand.NewPCG(uint64(seed), idSampleStream))
+	if k*2 > n {
+		idx := rng.Perm(n)[:k]
+		sort.Ints(idx)
+		return idx
+	}
+	seen := make(map[int]struct{}, k)
+	out := make([]int, 0, k)
+	for len(out) < k {
+		i := rng.IntN(n)
+		if _, dup := seen[i]; dup {
+			continue
+		}
+		seen[i] = struct{}{}
+		out = append(out, i)
+	}
+	sort.Ints(out)
+	return out
+}
+
+// shuffleIDs randomises the read order in place. Without it the read set would
+// be traversed in insert order, which for the time-ordered key types is also
+// disk order: a near-sequential walk that keeps one SSTable's index and bloom
+// filter hot at a time, while UUIDv4 would jump between all of them. That is
+// the same type-dependent advantage the sampling change removes, one level
+// down, so both have to go.
+func shuffleIDs(ids []any, seed int64) {
+	rng := rand.New(rand.NewPCG(uint64(seed), idShuffleStream))
+	rng.Shuffle(len(ids), func(i, j int) { ids[i], ids[j] = ids[j], ids[i] })
+}
+
+// The two PCG streams keep the sample draw and the shuffle independent even
+// though both derive from the same run seed.
+const (
+	idSampleStream  = 0x9e3779b97f4a7c15
+	idShuffleStream = 0xc2b2ae3d27d4eb4f
+)
+
+// writeIDFile persists the read set. Line 1 is "<key type> <count> <seed>",
+// every following line one id. Text rather than a binary encoding: the file is
+// small (one line per operation), has to survive a docker cp into the
+// container, and is worth being able to read by eye when a run looks wrong.
+// The header count catches a truncated file and the seed ties the set back to
+// the run manifest.
+// It returns the SHA-256 of the file content so the run manifest can pin
+// which read set a measurement actually used.
+func writeIDFile(path, keyType string, seed int64, ids []any) (string, error) {
+	var b strings.Builder
+	fmt.Fprintf(&b, "%s %d %d\n", keyType, len(ids), seed)
+	for _, id := range ids {
+		text, err := formatID(id)
+		if err != nil {
+			return "", err
+		}
+		b.WriteString(text)
+		b.WriteByte('\n')
+	}
+	content := []byte(b.String())
+	if err := os.WriteFile(path, content, 0o644); err != nil {
+		return "", err
+	}
+	sum := sha256.Sum256(content)
+	return hex.EncodeToString(sum[:]), nil
+}
+
+func formatID(id any) (string, error) {
+	switch v := id.(type) {
+	case int64:
+		return strconv.FormatInt(v, 10), nil
+	case gocql.UUID:
+		return v.String(), nil
+	case []byte:
+		return hex.EncodeToString(v), nil
+	default:
+		return "", fmt.Errorf("formatID: unsupported id type %T", id)
+	}
+}
+
+// loadIDFile reads back what writeIDFile wrote and refuses anything that does
+// not match this run: a foreign key type (a file from a different container
+// generation, whose every lookup would miss) or a body shorter than the header
+// promises (a write that was cut off). Both would otherwise produce a run that
+// looks healthy in every exported number.
+func loadIDFile(path, keyType string) ([]any, string, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, "", err
+	}
+	digest := sha256.Sum256(raw)
+	sum := hex.EncodeToString(digest[:])
+	lines := strings.Split(strings.TrimRight(string(raw), "\n"), "\n")
+	if len(lines) < 2 {
+		return nil, sum, fmt.Errorf("id file %s holds no ids", path)
+	}
+	header := strings.Fields(lines[0])
+	if len(header) != 3 {
+		return nil, sum, fmt.Errorf("id file %s has a malformed header %q", path, lines[0])
+	}
+	if header[0] != keyType {
+		return nil, sum, fmt.Errorf("id file %s was written for key type %q, this run is %q", path, header[0], keyType)
+	}
+	want, err := strconv.Atoi(header[1])
+	if err != nil {
+		return nil, sum, fmt.Errorf("id file %s has a malformed id count %q", path, header[1])
+	}
+	if got := len(lines) - 1; got != want {
+		return nil, sum, fmt.Errorf("id file %s is truncated: header promises %d ids, body holds %d", path, want, got)
+	}
+	ids := make([]any, 0, len(lines)-1)
+	for i, line := range lines[1:] {
+		id, err := parseID(keyType, line)
+		if err != nil {
+			return nil, sum, fmt.Errorf("id file %s line %d: %w", path, i+2, err)
+		}
+		ids = append(ids, id)
+	}
+	return ids, sum, nil
+}
+
+func parseID(keyType, text string) (any, error) {
+	switch keyType {
+	case "sequential":
+		v, err := strconv.ParseInt(text, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return v, nil
+	case "uuidv1", "uuidv4", "uuidv7":
+		u, err := gocql.ParseUUID(text)
+		if err != nil {
+			return nil, err
+		}
+		return u, nil
+	case "ulid", "ulid_monotonic":
+		b, err := hex.DecodeString(text)
+		if err != nil {
+			return nil, err
+		}
+		return b, nil
+	default:
+		return nil, fmt.Errorf("parseID: unknown key type %q", keyType)
+	}
 }
 
 // fetchCassandraIDs samples up to `limit` ids spread across all numBuckets

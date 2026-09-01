@@ -124,6 +124,14 @@ type ExecutorConfig struct {
 	TableName        string // Table/collection name (default "bench")
 	NumBuckets       int    // Number of Cassandra partition buckets (Cassandra-only; forwarded when > 0)
 	Consistency      string // CQL consistency level (Cassandra-only); forwarded as --consistency when non-empty. Empty preserves the workload binary's own default (local_one).
+	// IDFile is the read-set handoff between the two workload invocations of a
+	// read or update scenario (Cassandra-only). On Op "insert" the binary
+	// samples SampleSize ids uniformly over insert order and writes them here;
+	// on Op "read"/"update" it reads them back instead of querying the database
+	// for target ids. Empty keeps the legacy partition-head fetch (bridge arm).
+	IDFile     string
+	SampleSize int
+	SampleSeed int64
 }
 
 // buildExecArgs assembles the workload binary CLI arguments from cfg.
@@ -159,6 +167,16 @@ func buildExecArgs(cfg ExecutorConfig) []string {
 
 	if cfg.Consistency != "" {
 		args = append(args, "--consistency", cfg.Consistency)
+	}
+
+	if cfg.IDFile != "" {
+		args = append(args, "--id-file", cfg.IDFile)
+		if cfg.Op == "insert" {
+			args = append(args,
+				"--sample-size", fmt.Sprintf("%d", cfg.SampleSize),
+				"--sample-seed", fmt.Sprintf("%d", cfg.SampleSeed),
+			)
+		}
 	}
 
 	if cfg.Op == "mixed" {

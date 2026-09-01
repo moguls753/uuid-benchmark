@@ -3,7 +3,9 @@ package main
 import (
 	"crypto/rand"
 	"errors"
+	"os"
 	"slices"
+	"strings"
 	"testing"
 
 	"github.com/gocql/gocql"
@@ -362,5 +364,313 @@ func TestFetchIDsAcrossBucketsZeroLimit(t *testing.T) {
 	}
 	if called {
 		t.Error("query invoked for limit=0; want short-circuit")
+	}
+}
+
+func TestSampleIndicesDrawsDistinctAscendingIndices(t *testing.T) {
+	const k, n = 500, 100000
+	got := sampleIndices(k, n, 42)
+
+	if len(got) != k {
+		t.Fatalf("got %d indices, want %d", len(got), k)
+	}
+	seen := make(map[int]bool, k)
+	for i, idx := range got {
+		if idx < 0 || idx >= n {
+			t.Fatalf("index %d out of range [0,%d)", idx, n)
+		}
+		if seen[idx] {
+			t.Fatalf("duplicate index %d", idx)
+		}
+		seen[idx] = true
+		if i > 0 && got[i-1] >= idx {
+			t.Fatalf("not ascending at %d: %d >= %d", i, got[i-1], idx)
+		}
+	}
+}
+
+// The insert loop walks record indices in ascending order and advances a
+// single cursor, so an unsorted or duplicated draw would silently skip
+// sample slots.
+func TestSampleIndicesDeterministicPerSeed(t *testing.T) {
+	a := sampleIndices(100, 10000, 7)
+	b := sampleIndices(100, 10000, 7)
+	c := sampleIndices(100, 10000, 8)
+
+	if !slices.Equal(a, b) {
+		t.Fatal("same seed produced different samples")
+	}
+	if slices.Equal(a, c) {
+		t.Fatal("different seeds produced identical samples")
+	}
+}
+
+// k close to n takes the permutation branch; rejection sampling would spin
+// there. Smoke-test configurations hit this.
+func TestSampleIndicesHandlesDenseAndDegenerateDraws(t *testing.T) {
+	dense := sampleIndices(90, 100, 3)
+	if len(dense) != 90 {
+		t.Fatalf("dense draw: got %d, want 90", len(dense))
+	}
+
+	all := sampleIndices(10, 10, 3)
+	if len(all) != 10 {
+		t.Fatalf("k==n: got %d, want 10", len(all))
+	}
+
+	if over := sampleIndices(50, 10, 3); len(over) != 10 {
+		t.Fatalf("k>n should clamp to n: got %d, want 10", len(over))
+	}
+	if empty := sampleIndices(0, 10, 3); empty != nil {
+		t.Fatalf("k=0 should return nil, got %v", empty)
+	}
+	if empty := sampleIndices(5, 0, 3); empty != nil {
+		t.Fatalf("n=0 should return nil, got %v", empty)
+	}
+}
+
+func TestShuffleIDsPermutesDeterministically(t *testing.T) {
+	build := func() []any {
+		ids := make([]any, 200)
+		for i := range ids {
+			ids[i] = int64(i)
+		}
+		return ids
+	}
+
+	a, b, c := build(), build(), build()
+	shuffleIDs(a, 99)
+	shuffleIDs(b, 99)
+	shuffleIDs(c, 100)
+
+	if !slices.Equal(a, b) {
+		t.Fatal("same seed produced different orders")
+	}
+	if slices.Equal(a, c) {
+		t.Fatal("different seeds produced identical orders")
+	}
+
+	seen := make(map[int64]bool, len(a))
+	for _, id := range a {
+		seen[id.(int64)] = true
+	}
+	if len(seen) != 200 {
+		t.Fatalf("shuffle lost elements: %d of 200 survived", len(seen))
+	}
+
+	ordered := build()
+	shuffleIDs(ordered, 99)
+	if slices.Equal(ordered, build()) {
+		t.Fatal("shuffle left the list in insert order, which is disk order for time-ordered keys")
+	}
+}
+
+func TestIDFileRoundTripsEveryKeyType(t *testing.T) {
+	uuidA, err := gocql.ParseUUID("018f3a1c-0000-7000-8000-000000000001")
+	if err != nil {
+		t.Fatalf("parse fixture uuid: %v", err)
+	}
+	uuidB, err := gocql.ParseUUID("018f3a1c-0000-7000-8000-000000000002")
+	if err != nil {
+		t.Fatalf("parse fixture uuid: %v", err)
+	}
+
+	cases := map[string][]any{
+		"sequential":     {int64(1), int64(2), int64(9223372036854775807)},
+		"uuidv1":         {uuidA, uuidB},
+		"uuidv4":         {uuidA, uuidB},
+		"uuidv7":         {uuidA, uuidB},
+		"ulid":           {[]byte{0x01, 0x02, 0x03}, []byte{0xff, 0xee}},
+		"ulid_monotonic": {[]byte{0xaa, 0xbb, 0xcc}},
+	}
+
+	for keyType, ids := range cases {
+		t.Run(keyType, func(t *testing.T) {
+			path := t.TempDir() + "/ids.txt"
+			if _, err := writeIDFile(path, keyType, 4242, ids); err != nil {
+				t.Fatalf("write: %v", err)
+			}
+			got, _, err := loadIDFile(path, keyType)
+			if err != nil {
+				t.Fatalf("load: %v", err)
+			}
+			if len(got) != len(ids) {
+				t.Fatalf("got %d ids, want %d", len(got), len(ids))
+			}
+			for i := range ids {
+				wantBytes := idAsBytes(ids[i])
+				gotBytes := idAsBytes(got[i])
+				if !slices.Equal(wantBytes, gotBytes) {
+					t.Fatalf("id %d differs: %x vs %x", i, gotBytes, wantBytes)
+				}
+			}
+		})
+	}
+}
+
+// A file left over from another key type would otherwise produce a run in
+// which every lookup misses while the throughput number looks healthy.
+func TestLoadIDFileRejectsForeignKeyType(t *testing.T) {
+	path := t.TempDir() + "/ids.txt"
+	if _, err := writeIDFile(path, "sequential", 4242, []any{int64(1)}); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	if _, _, err := loadIDFile(path, "uuidv4"); err == nil {
+		t.Fatal("expected key type mismatch to be rejected")
+	}
+}
+
+func TestLoadIDFileRejectsEmptyFile(t *testing.T) {
+	path := t.TempDir() + "/ids.txt"
+	if _, err := writeIDFile(path, "sequential", 4242, nil); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	if _, _, err := loadIDFile(path, "sequential"); err == nil {
+		t.Fatal("expected a file with no ids to be rejected")
+	}
+}
+
+func TestFormatIDRejectsUnsupportedType(t *testing.T) {
+	if _, err := formatID("not-an-id"); err == nil {
+		t.Fatal("expected unsupported id type to be rejected")
+	}
+}
+
+// Threads own unequal slices whenever numRecords does not divide by threads.
+// A per-thread draw of a fixed share would then give rows in the shorter
+// slices a higher inclusion probability; the global draw must not.
+func TestSplitSampleByThreadPreservesGlobalDraw(t *testing.T) {
+	const numRecords, threads = 10, 4
+	recordsPerThread, remainder := numRecords/threads, numRecords%threads
+
+	global := []int{0, 2, 3, 5, 6, 9}
+	got := splitSampleByThread(global, recordsPerThread, remainder, threads)
+
+	if len(got) != threads {
+		t.Fatalf("got %d thread slices, want %d", len(got), threads)
+	}
+
+	var rebuilt []int
+	for tid, local := range got {
+		start, end := threadRange(tid, recordsPerThread, remainder)
+		for i, idx := range local {
+			if idx < 0 || start+idx >= end {
+				t.Fatalf("thread %d: local index %d maps outside [%d,%d)", tid, idx, start, end)
+			}
+			if i > 0 && local[i-1] >= idx {
+				t.Fatalf("thread %d: local indices not ascending: %v", tid, local)
+			}
+			rebuilt = append(rebuilt, start+idx)
+		}
+	}
+	slices.Sort(rebuilt)
+	if !slices.Equal(rebuilt, global) {
+		t.Fatalf("rebuilt %v, want %v", rebuilt, global)
+	}
+}
+
+func TestThreadRangesTileInsertOrderExactly(t *testing.T) {
+	for _, tc := range []struct{ numRecords, threads int }{
+		{10, 4}, {50000000, 8}, {7, 8}, {8, 8}, {1, 1},
+	} {
+		recordsPerThread, remainder := tc.numRecords/tc.threads, tc.numRecords%tc.threads
+		prevEnd := 0
+		for tid := 0; tid < tc.threads; tid++ {
+			start, end := threadRange(tid, recordsPerThread, remainder)
+			if start != prevEnd {
+				t.Fatalf("numRecords=%d threads=%d: gap or overlap at thread %d (%d != %d)", tc.numRecords, tc.threads, tid, start, prevEnd)
+			}
+			prevEnd = end
+		}
+		if prevEnd != tc.numRecords {
+			t.Fatalf("numRecords=%d threads=%d: ranges cover %d rows", tc.numRecords, tc.threads, prevEnd)
+		}
+	}
+}
+
+// Every row must be equally likely to be drawn. With unequal thread slices a
+// per-thread fixed share breaks that; this checks the global draw does not.
+func TestSampleIndicesUniformAcrossUnequalThreadSlices(t *testing.T) {
+	const numRecords, threads, sampleSize, trials = 10, 4, 5, 40000
+	recordsPerThread, remainder := numRecords/threads, numRecords%threads
+
+	hits := make([]int, numRecords)
+	for trial := 0; trial < trials; trial++ {
+		split := splitSampleByThread(sampleIndices(sampleSize, numRecords, int64(trial)), recordsPerThread, remainder, threads)
+		for tid, local := range split {
+			start, _ := threadRange(tid, recordsPerThread, remainder)
+			for _, idx := range local {
+				hits[start+idx]++
+			}
+		}
+	}
+
+	want := float64(trials*sampleSize) / float64(numRecords)
+	for row, got := range hits {
+		if deviation := float64(got)/want - 1; deviation < -0.05 || deviation > 0.05 {
+			t.Errorf("row %d drawn %d times, expected about %.0f (%.1f %% off)", row, got, want, deviation*100)
+		}
+	}
+}
+
+// A write cut off halfway leaves a file whose ids all parse. Without the
+// header count the run would proceed on a short target set and report a
+// plausible throughput over the wrong number of operations.
+func TestLoadIDFileRejectsTruncatedBody(t *testing.T) {
+	path := t.TempDir() + "/ids.txt"
+	if _, err := writeIDFile(path, "sequential", 4242, []any{int64(1), int64(2), int64(3)}); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read back: %v", err)
+	}
+	lines := strings.Split(strings.TrimRight(string(raw), "\n"), "\n")
+	if err := os.WriteFile(path, []byte(strings.Join(lines[:len(lines)-1], "\n")+"\n"), 0o644); err != nil {
+		t.Fatalf("truncate: %v", err)
+	}
+
+	if _, _, err := loadIDFile(path, "sequential"); err == nil {
+		t.Fatal("expected a truncated id file to be rejected")
+	}
+}
+
+func TestLoadIDFileRejectsMalformedHeader(t *testing.T) {
+	path := t.TempDir() + "/ids.txt"
+	if err := os.WriteFile(path, []byte("sequential\n1\n2\n"), 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	if _, _, err := loadIDFile(path, "sequential"); err == nil {
+		t.Fatal("expected a header without count and seed to be rejected")
+	}
+}
+
+// The digest travels with the read set so the runner can prove the phase that
+// measured is the phase whose targets were drawn. A file edited between the
+// two phases must therefore produce a different digest.
+func TestLoadIDFileDigestCoversContent(t *testing.T) {
+	path := t.TempDir() + "/ids.txt"
+	written, err := writeIDFile(path, "sequential", 4242, []any{int64(1), int64(2), int64(3)})
+	if err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	_, read, err := loadIDFile(path, "sequential")
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if written != read {
+		t.Fatalf("writer digest %s, reader digest %s", written, read)
+	}
+
+	other := t.TempDir() + "/ids.txt"
+	if _, err := writeIDFile(other, "sequential", 4242, []any{int64(1), int64(2), int64(4)}); err != nil {
+		t.Fatalf("write second: %v", err)
+	}
+	_, changed, err := loadIDFile(other, "sequential")
+	if err != nil {
+		t.Fatalf("load second: %v", err)
+	}
+	if changed == read {
+		t.Fatal("a different target set produced the same digest")
 	}
 }

@@ -13,14 +13,17 @@ import (
 // Hardcoded Cassandra config for remote deployments. Matches the
 // single-node and local-cluster compose files: same cluster name and
 // DC so keyspace replication maps (`'dc1': RF`) are interoperable.
+// defaultRemoteCassandraImage is the canonical image reference, kept in
+// lockstep with docker/docker-compose.cassandra.yml and the cluster compose
+// file. It is a floating tag and is pulled per host before each docker run
+// (see Start), so a registry update mid-campaign would silently change the
+// engine version. ClusterConfig.CassandraImage overrides it, which is how a
+// campaign pins a digest and gets that pin recorded in its manifest.
+const defaultRemoteCassandraImage = "cassandra:5"
+
 const (
 	remoteClusterCassandraName = "UUIDBenchCluster"
 	remoteClusterDC            = "dc1"
-
-	// remoteCassandraImage is the canonical image tag, kept in lockstep
-	// with docker/docker-compose.cassandra.yml and the cluster compose
-	// file. Pulled per host before each docker run (see Start).
-	remoteCassandraImage = "cassandra:5"
 
 	// remoteContainerName is the Docker container name used on each
 	// Taurus host. Each host runs at most one Cassandra container, so a
@@ -110,6 +113,7 @@ type RemoteClusterBackend struct {
 	newGen string // CASSANDRA HEAP_NEWSIZE, e.g. "2G" — Taurus-sized default
 	cpus   string // docker run --cpus value, e.g. "8"
 	memory string // docker run --memory value, e.g. "32g"
+	image  string // Cassandra image reference; a digest pins the engine version for a campaign
 
 	// nodeReadyBudget / pollInterval tune the per-node
 	// "wait until nodetool status on the seed reports this node as UN"
@@ -151,6 +155,7 @@ func NewRemoteCluster(cfg ClusterConfig) *RemoteClusterBackend {
 		newGen:          stringOr(cfg.CassandraNewGen, "2G"),
 		cpus:            stringOr(cfg.CassandraCPUs, "8"),
 		memory:          stringOr(cfg.CassandraMemory, "32g"),
+		image:           stringOr(cfg.CassandraImage, defaultRemoteCassandraImage),
 		nodeReadyBudget: defaultNodeReadyBudget,
 		pollInterval:    defaultPollInterval,
 	}
@@ -228,12 +233,12 @@ func (b *RemoteClusterBackend) Start() error {
 		// egress at all (e.g. an air-gapped HPC allocation where the image
 		// was pre-provisioned). In those cases we proceed with the local
 		// image; we only abort when the image is also absent locally.
-		if out, err := b.ssh.Exec(host, "docker", "pull", remoteCassandraImage); err != nil {
-			if _, ierr := b.ssh.Exec(host, "docker", "image", "inspect", remoteCassandraImage); ierr != nil {
+		if out, err := b.ssh.Exec(host, "docker", "pull", b.image); err != nil {
+			if _, ierr := b.ssh.Exec(host, "docker", "image", "inspect", b.image); ierr != nil {
 				rollback()
 				return fmt.Errorf("pull image on node %d (%s): %w (output: %s); image also not present locally: %v", i, host, err, strings.TrimSpace(out), ierr)
 			}
-			fmt.Printf("Warning: docker pull failed on %s (%v) but %s is present locally; continuing with the local image\n", host, err, remoteCassandraImage)
+			fmt.Printf("Warning: docker pull failed on %s (%v) but %s is present locally; continuing with the local image\n", host, err, b.image)
 		}
 
 		runArgs := []string{
@@ -264,7 +269,7 @@ func (b *RemoteClusterBackend) Start() error {
 			// heap is eligible for swap, which is especially bad on
 			// memory-constrained or oversubscribed hosts.
 			"--ulimit", "memlock=-1:-1",
-			remoteCassandraImage,
+			b.image,
 			// CMD override: apply the batch-threshold sed dance, then
 			// exec the standard entrypoint. See remoteCassandraStartCmd.
 			"bash", "-c", remoteCassandraStartCmd,

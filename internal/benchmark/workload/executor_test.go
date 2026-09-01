@@ -1,6 +1,7 @@
 package workload
 
 import (
+	"slices"
 	"strings"
 	"testing"
 )
@@ -172,4 +173,66 @@ func TestExecuteNativeRequiresBinaryPath(t *testing.T) {
 	if !strings.Contains(err.Error(), "native mode requires BinaryPath") {
 		t.Errorf("expected explicit native-mode error, got: %v", err)
 	}
+}
+
+func TestBuildExecArgsReadSetHandoff(t *testing.T) {
+	insert := buildExecArgs(ExecutorConfig{
+		DBType:     "cassandra",
+		Op:         "insert",
+		KeyType:    "uuidv7",
+		NumRecords: 1000,
+		IDFile:     "/tmp/read-set.txt",
+		SampleSize: 100,
+		SampleSeed: 4242,
+	})
+	for _, want := range [][2]string{
+		{"--id-file", "/tmp/read-set.txt"},
+		{"--sample-size", "100"},
+		{"--sample-seed", "4242"},
+	} {
+		if !hasArgPair(insert, want[0], want[1]) {
+			t.Errorf("insert args missing %s %s: %v", want[0], want[1], insert)
+		}
+	}
+
+	// The read phase only needs the path; sample-size and sample-seed describe
+	// how the insert drew the set and would be noise on the reader.
+	read := buildExecArgs(ExecutorConfig{
+		DBType:  "cassandra",
+		Op:      "read",
+		KeyType: "uuidv7",
+		NumOps:  100,
+		IDFile:  "/tmp/read-set.txt",
+	})
+	if !hasArgPair(read, "--id-file", "/tmp/read-set.txt") {
+		t.Errorf("read args missing --id-file: %v", read)
+	}
+	for _, unwanted := range []string{"--sample-size", "--sample-seed"} {
+		if slices.Contains(read, unwanted) {
+			t.Errorf("read args should not carry %s: %v", unwanted, read)
+		}
+	}
+}
+
+// An empty IDFile is the bridge arm: the workload binary falls back to the
+// legacy partition-head fetch, so no flag may be emitted at all.
+func TestBuildExecArgsOmitsReadSetWhenUnset(t *testing.T) {
+	args := buildExecArgs(ExecutorConfig{
+		DBType:  "cassandra",
+		Op:      "read",
+		KeyType: "uuidv4",
+		NumOps:  100,
+	})
+	if slices.Contains(args, "--id-file") {
+		t.Errorf("expected no --id-file, got %v", args)
+	}
+}
+
+func hasArgPair(args []string, flag, value string) bool {
+	for i := 0; i < len(args)-1; i++ {
+		if args[i] == flag && args[i+1] == value {
+			return true
+		}
+	}
+	return false
 }

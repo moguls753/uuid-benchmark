@@ -8,7 +8,11 @@ import (
 // cluster. The runner owns metric-capture timing (CaptureMetricsBeforeAll
 // + MeasureMetricsAll); this method is purely the workload execution.
 // See internal/runner/cassandra.go for the surrounding capture pattern.
-func (c *CassandraBenchmarker) InsertRecords(keyType string, numRecords, batchSize, connections int, connString string, execMode workload.ExecutionMode, consistency string) (*workload.WorkloadResult, error) {
+// idFile, sampleSize and sampleSeed are the read-set handoff: when idFile is
+// non-empty the insert draws sampleSize target ids uniformly over insert order
+// and writes them there for the following read or update phase. Passing an
+// empty idFile keeps the insert unchanged.
+func (c *CassandraBenchmarker) InsertRecords(keyType string, numRecords, batchSize, connections int, connString string, execMode workload.ExecutionMode, consistency, idFile string, sampleSize int, sampleSeed int64) (*workload.WorkloadResult, error) {
 	cfg := workload.ExecutorConfig{
 		Mode:             execMode,
 		DBType:           "cassandra",
@@ -20,6 +24,9 @@ func (c *CassandraBenchmarker) InsertRecords(keyType string, numRecords, batchSi
 		ConnectionString: connString,
 		NumBuckets:       c.cfg.NumBuckets,
 		Consistency:      consistency,
+		IDFile:           idFile,
+		SampleSize:       sampleSize,
+		SampleSeed:       sampleSeed,
 	}
 	if execMode == workload.ExecutionModeContainer {
 		cfg.ContainerName = ContainerName

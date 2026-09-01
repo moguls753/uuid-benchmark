@@ -19,6 +19,13 @@ type IOStats struct {
 	ReadOps    uint64
 	WriteOps   uint64
 	Timestamp  time.Time
+	// Fields counts the recognized counters this snapshot was built from.
+	// Zero means the cgroup file was empty or unparseable, which yields the
+	// same all-zero struct as a container that genuinely did no I/O. The
+	// consumer needs the two apart: a zero read_iops is a real and common
+	// result in the cached regime, so a dropped measurement must not be able
+	// to enter the analysis wearing that value.
+	Fields int
 }
 
 // IOMetrics represents calculated I/O metrics over a time period
@@ -27,6 +34,11 @@ type IOMetrics struct {
 	WriteIOPS         float64
 	ReadThroughputMB  float64
 	WriteThroughputMB float64
+	// Valid is false when the four values above are zero because the
+	// measurement was dropped rather than because no I/O happened: an empty
+	// or unparseable io.stat on either side, a counter regression, or a
+	// non-positive window. Callers must not report the numbers without it.
+	Valid bool
 }
 
 // NodeRef identifies a Cassandra node for IO metrics collection.
@@ -103,6 +115,7 @@ func GetClusterIOStats(refs []NodeRef, sshUser, sshKey string) (*IOStats, error)
 		total.WriteBytes += stats.WriteBytes
 		total.ReadOps += stats.ReadOps
 		total.WriteOps += stats.WriteOps
+		total.Fields += stats.Fields
 	}
 	return total, nil
 }
@@ -126,6 +139,13 @@ func GetClusterIOStats(refs []NodeRef, sshUser, sshKey string) (*IOStats, error)
 func CalculateIOMetrics(start, end *IOStats) IOMetrics {
 	duration := end.Timestamp.Sub(start.Timestamp).Seconds()
 	if duration <= 0 {
+		return IOMetrics{}
+	}
+	// No recognized counter on either side means the cgroup file was empty or
+	// unparseable. The resulting zeros are indistinguishable from a container
+	// that did no I/O, so the measurement is marked invalid instead.
+	if start.Fields == 0 || end.Fields == 0 {
+		fmt.Fprintf(os.Stderr, "Warning: I/O snapshot held no recognized counters (before=%d fields, after=%d fields); measurement dropped\n", start.Fields, end.Fields)
 		return IOMetrics{}
 	}
 
@@ -161,6 +181,9 @@ func CalculateIOMetrics(start, end *IOStats) IOMetrics {
 		WriteIOPS:         writeOps / duration,
 		ReadThroughputMB:  readBytes / duration / (1024 * 1024),
 		WriteThroughputMB: writeBytes / duration / (1024 * 1024),
+		// A regression means at least one counter was clamped, so the numbers
+		// understate by an unknown amount. Reported as dropped, not as data.
+		Valid: len(regressions) == 0,
 	}
 }
 
@@ -212,12 +235,16 @@ func parseIOStatContent(content string) (*IOStats, error) {
 			switch parts[0] {
 			case "rbytes":
 				stats.ReadBytes += value
+				stats.Fields++
 			case "wbytes":
 				stats.WriteBytes += value
+				stats.Fields++
 			case "rios":
 				stats.ReadOps += value
+				stats.Fields++
 			case "wios":
 				stats.WriteOps += value
+				stats.Fields++
 			}
 		}
 	}

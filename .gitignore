@@ -38,3 +38,24 @@ package-lock.json
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# Never in this public repo: contains the Taurus login and internal planning
+docs/plans/handoff-remote-session-recovery.md
+docs/paper-context.md
+
+# Run manifests and per-run logs. The flag dump inside them carries -ssh-user
+# and the node addresses, which is the same login the two files above are kept
+# out for. They belong to the paper repo's data directory, scrubbed.
+*.meta.json
+*.runs.jsonl
+*.meta.json.*.bak
+*.runs.jsonl.*.bak
+
+# Build artifact. The orchestrator compiles the workload binary into a temp
+# directory at startup; the copy in the repo root is never the one that runs.
+workload
+
+# June 2026 measurement data. Lives in the paper repo; comes back here
+# curated for the artifact release, not as loose files in the root.
+cassandra_*.csv
+results-single-node-new-schema*.csv

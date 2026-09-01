@@ -30,6 +30,20 @@ var logicalMetricOrder = []string{
 	"p50_latency_us",
 	"p95_latency_us",
 	"p99_latency_us",
+	// Phase timings: t_insert_s is the dataset bootstrap that precedes a read
+	// or update measurement, t_fetch_s the time spent asking the database for
+	// target ids. t_fetch_s is zero whenever the read set was drawn during the
+	// insert, which is the check that the measured I/O window holds nothing
+	// but the workload.
+	"t_insert_s",
+	"t_fetch_s",
+	"insert_failed",
+	// Operation outcome: throughput counts attempts, so the success rate has
+	// to be exported with it.
+	"attempted",
+	"succeeded",
+	"failed",
+	"not_found",
 	// Cache & index quality
 	"cache_hit_ratio",
 	"index_hit_ratio",
@@ -46,6 +60,9 @@ var logicalMetricOrder = []string{
 	"write_iops",
 	"read_throughput_mb",
 	"write_throughput_mb",
+	// 1 when the cgroup window was captured, 0 when it was not. The four
+	// columns above are zero in both cases.
+	"io_valid",
 }
 
 // orderedMetricKeys returns metric keys present in m, ordered by logicalMetricOrder.

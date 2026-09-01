@@ -82,8 +82,51 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 | `-cassandra-newgen` | `2G` | `HEAP_NEWSIZE` per remote Cassandra container (must be ≤ heap) |
 | `-cassandra-cpus` | `8` | `docker --cpus` per remote container (docker rejects values > host CPU count) |
 | `-cassandra-memory` | `32g` | `docker --memory` per remote container |
+| `-campaign-seed` | `0` | Seed for key-type execution order and read-set sampling. `0` keeps the historical fixed order; any other value randomises the order per repetition (randomised block design) and is recorded in `<output>.meta.json` |
+| `-head-sampling` | `false` | Cassandra: select read/update targets with the legacy per-partition-head fetch instead of drawing them uniformly during the insert. Bridge arm only |
+| `-single-node` | `false` | Allow a `remote-cluster` run with exactly one node. Without it a single-entry `-nodes` list is rejected as a likely typo |
+| `-cassandra-image` | `cassandra:5` | Image reference for `remote-cluster` mode. The default is a floating tag re-pulled before every container start; pin a digest for a multi-day campaign and it is recorded in `<output>.meta.json` |
 
 **UUID Types Tested:** Sequential integer (BIGSERIAL/AUTO_INCREMENT/bigint), UUIDv1, UUIDv4, UUIDv7, ULID (non-monotonic), ULID (monotonic)
+
+### Read/Update Target Selection (Cassandra)
+
+The read and update scenarios need a set of existing ids to look up. Until
+2026-09 that set was fetched from the database right before the timed loop
+(`SELECT id FROM bench WHERE bucket = ? PER PARTITION LIMIT k`), which returns
+the clustering-smallest ids per partition. That rule means different things per
+key type: for every time-ordered type it selects the oldest rows, which sit
+densely in old compacted SSTables and had just been warmed by the fetch itself,
+while for UUIDv4 it selects rows spread across the whole dataset. The measured
+difference therefore covered the key type and the sampler together, and no
+decomposition is possible after the fact (the fetch also ran inside the I/O
+snapshot window, with its duration unrecorded).
+
+The insert phase now draws the target set instead: `num-ops` distinct insert
+positions are drawn uniformly from `[0, num-records)` in one global draw, split
+across the writer threads by their record ranges (a fixed share per thread
+would give rows unequal inclusion probability whenever the threads own
+different numbers of rows), and the ids generated at those positions are
+collected, shuffled (seeded) and written to an id file that the read or update
+phase loads. Only ids whose insert batch returned without error become targets.
+Both phases digest the file independently and the runner compares the two
+digests, so a read set that changed between them fails the run. That
+makes the selection uniform over all rows and independent of key type, removes
+the fetch from the measured window (`t_fetch_s` is 0 by construction), and
+removes the pre-warming of exactly the rows about to be measured. The shuffle
+matters on its own: in insert order a time-ordered key type would be read in
+disk order.
+
+`-head-sampling` restores the old fetch for the bridge arm that measures how
+large the difference between the two samplers actually is. The dataset
+bootstrap in the read and update scenarios runs at
+`runner.PrepInsertConnections` writers (8); it is data preparation, not a
+measurement, and at one writer it dominated the campaign's wall-clock time.
+
+Per-run provenance lands in `<output>.meta.json` (commit, working-tree state,
+md5 of both binaries, full flag dump, campaign seed, per-run seeds and
+execution order) and every finished run is appended to `<output>.runs.jsonl`
+as it completes.
 
 ## Cluster Modes (Cassandra)
 

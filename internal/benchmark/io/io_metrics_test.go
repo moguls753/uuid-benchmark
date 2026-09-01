@@ -138,6 +138,7 @@ func TestCalculateIOMetricsClampsUnderflow(t *testing.T) {
 		ReadOps:    100,
 		WriteOps:   200,
 		Timestamp:  now,
+		Fields:     4,
 	}
 	end := &IOStats{
 		// Every counter is SMALLER than start — the underflow scenario.
@@ -146,6 +147,7 @@ func TestCalculateIOMetricsClampsUnderflow(t *testing.T) {
 		ReadOps:    1,
 		WriteOps:   2,
 		Timestamp:  now.Add(5 * time.Second),
+		Fields:     4,
 	}
 	got := CalculateIOMetrics(start, end)
 	if got.ReadIOPS != 0 || got.WriteIOPS != 0 ||
@@ -168,13 +170,15 @@ func TestCalculateIOMetricsClampsPartialUnderflow(t *testing.T) {
 		ReadOps:    50, // <- start has 50, end has 0 → regresses
 		WriteOps:   100,
 		Timestamp:  now,
+		Fields:     4,
 	}
 	end := &IOStats{
-		ReadBytes:  200,                     // delta 100 (valid)
-		WriteBytes: 3 * 1024 * 1024,         // delta 2 MiB (valid)
-		ReadOps:    0,                       // regression
-		WriteOps:   300,                     // delta 200 (valid)
+		ReadBytes:  200,             // delta 100 (valid)
+		WriteBytes: 3 * 1024 * 1024, // delta 2 MiB (valid)
+		ReadOps:    0,               // regression
+		WriteOps:   300,             // delta 200 (valid)
 		Timestamp:  now.Add(2 * time.Second),
+		Fields:     4,
 	}
 	got := CalculateIOMetrics(start, end)
 	if got.ReadIOPS != 0 {
@@ -195,18 +199,20 @@ func TestCalculateIOMetricsHappyPath(t *testing.T) {
 	t.Parallel()
 	now := time.Now()
 	start := &IOStats{
-		ReadBytes:  1024 * 1024,         // 1 MiB
-		WriteBytes: 2 * 1024 * 1024,     // 2 MiB
+		ReadBytes:  1024 * 1024,     // 1 MiB
+		WriteBytes: 2 * 1024 * 1024, // 2 MiB
 		ReadOps:    100,
 		WriteOps:   200,
 		Timestamp:  now,
+		Fields:     4,
 	}
 	end := &IOStats{
-		ReadBytes:  3 * 1024 * 1024,     // delta 2 MiB
-		WriteBytes: 6 * 1024 * 1024,     // delta 4 MiB
-		ReadOps:    300,                 // delta 200
-		WriteOps:   600,                 // delta 400
+		ReadBytes:  3 * 1024 * 1024, // delta 2 MiB
+		WriteBytes: 6 * 1024 * 1024, // delta 4 MiB
+		ReadOps:    300,             // delta 200
+		WriteOps:   600,             // delta 400
 		Timestamp:  now.Add(2 * time.Second),
+		Fields:     4,
 	}
 	got := CalculateIOMetrics(start, end)
 	if got.ReadIOPS != 100 {
@@ -242,5 +248,76 @@ func TestNodeRefHostClassification(t *testing.T) {
 	// any future rephrasing of the error must update both sites.
 	if !strings.Contains(err.Error(), errNoCgroupLocal) {
 		t.Errorf("expected local-path error containing %q, got: %v", errNoCgroupLocal, err)
+	}
+}
+
+// A zero read_iops is a real and common result in the cached regime, so a
+// dropped measurement must not be able to enter the analysis wearing that
+// value. These are the three ways the counters can come out zero without a
+// measurement having happened.
+func TestCalculateIOMetricsMarksDroppedMeasurements(t *testing.T) {
+	base := time.Now()
+	full := func(r, w uint64, at time.Time) *IOStats {
+		return &IOStats{ReadBytes: r, WriteBytes: w, ReadOps: r, WriteOps: w, Fields: 4, Timestamp: at}
+	}
+
+	ok := CalculateIOMetrics(full(100, 100, base), full(200, 200, base.Add(time.Second)))
+	if !ok.Valid {
+		t.Fatal("a clean window should be valid")
+	}
+	if ok.ReadIOPS != 100 {
+		t.Fatalf("ReadIOPS = %v, want 100", ok.ReadIOPS)
+	}
+
+	// Genuinely idle: counters present, nothing moved. Valid, and zero.
+	idle := CalculateIOMetrics(full(100, 100, base), full(100, 100, base.Add(time.Second)))
+	if !idle.Valid || idle.ReadIOPS != 0 {
+		t.Fatalf("an idle window should be valid and zero, got valid=%v iops=%v", idle.Valid, idle.ReadIOPS)
+	}
+
+	empty := &IOStats{Timestamp: base.Add(time.Second)}
+	if m := CalculateIOMetrics(full(100, 100, base), empty); m.Valid {
+		t.Error("an unparseable after-snapshot should be invalid")
+	}
+	if m := CalculateIOMetrics(&IOStats{Timestamp: base}, full(200, 200, base.Add(time.Second))); m.Valid {
+		t.Error("an unparseable before-snapshot should be invalid")
+	}
+
+	regressed := CalculateIOMetrics(full(500, 500, base), full(100, 100, base.Add(time.Second)))
+	if regressed.Valid {
+		t.Error("a counter regression should be invalid")
+	}
+	if regressed.ReadIOPS != 0 {
+		t.Errorf("a regression must still clamp to 0, got %v", regressed.ReadIOPS)
+	}
+
+	if m := CalculateIOMetrics(full(100, 100, base), full(200, 200, base)); m.Valid {
+		t.Error("a zero-length window should be invalid")
+	}
+}
+
+func TestParseIOStatContentCountsRecognizedFields(t *testing.T) {
+	stats, err := parseIOStatContent("8:0 rbytes=1 wbytes=2 rios=3 wios=4\n")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if stats.Fields != 4 {
+		t.Errorf("Fields = %d, want 4", stats.Fields)
+	}
+
+	none, err := parseIOStatContent("")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if none.Fields != 0 {
+		t.Errorf("empty input: Fields = %d, want 0", none.Fields)
+	}
+
+	junk, err := parseIOStatContent("8:0 nonsense=1 rbytes=notanumber\n")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if junk.Fields != 0 {
+		t.Errorf("unparseable input: Fields = %d, want 0", junk.Fields)
 	}
 }

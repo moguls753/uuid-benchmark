@@ -163,3 +163,66 @@ func TestClusterConfigValidateErrorContext(t *testing.T) {
 		})
 	}
 }
+
+// The node-count anchor of the correction campaign runs one remote host on
+// purpose. It must not be pushed onto local-single, which would additionally
+// move the workload into the container and remove the network path, turning a
+// one-variable contrast into a bundle.
+func TestValidateAllowsAcknowledgedSingleNodeRemote(t *testing.T) {
+	cfg := ClusterConfig{
+		Mode:              ModeRemoteCluster,
+		ContactPoints:     []string{"taurus2"},
+		Hostnames:         []string{"taurus2"},
+		SSHUser:           "someone",
+		ReplicationFactor: 1,
+		Consistency:       ConsistencyLocalOne,
+		Keyspace:          "uuid_benchmark",
+		NumBuckets:        1000,
+		SingleNode:        true,
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Fatalf("acknowledged single-node remote cluster rejected: %v", err)
+	}
+}
+
+// Without the acknowledgement a one-entry list is still a typo until proven
+// otherwise.
+func TestValidateRejectsUnacknowledgedSingleNodeRemote(t *testing.T) {
+	cfg := ClusterConfig{
+		Mode:              ModeRemoteCluster,
+		ContactPoints:     []string{"taurus2"},
+		Hostnames:         []string{"taurus2"},
+		SSHUser:           "someone",
+		ReplicationFactor: 1,
+		Consistency:       ConsistencyLocalOne,
+		Keyspace:          "uuid_benchmark",
+		NumBuckets:        1000,
+	}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected a one-host remote cluster to be rejected without -single-node")
+	}
+}
+
+// A pinned digest has to reach the container start, otherwise a registry
+// update can swap the engine version mid-campaign.
+func TestRemoteClusterUsesConfiguredImage(t *testing.T) {
+	pinned := "cassandra@sha256:0123456789abcdef"
+	b := NewRemoteCluster(ClusterConfig{
+		Mode:           ModeRemoteCluster,
+		Hostnames:      []string{"h1", "h2"},
+		SSHUser:        "someone",
+		CassandraImage: pinned,
+	})
+	if b.image != pinned {
+		t.Fatalf("image %q, want %q", b.image, pinned)
+	}
+
+	fallback := NewRemoteCluster(ClusterConfig{
+		Mode:      ModeRemoteCluster,
+		Hostnames: []string{"h1", "h2"},
+		SSHUser:   "someone",
+	})
+	if fallback.image != defaultRemoteCassandraImage {
+		t.Fatalf("image %q, want the default %q", fallback.image, defaultRemoteCassandraImage)
+	}
+}

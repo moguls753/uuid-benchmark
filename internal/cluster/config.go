@@ -99,14 +99,30 @@ const (
 // fields are only consulted in ModeRemoteCluster.
 type ClusterConfig struct {
 	Mode              Mode
-	ContactPoints     []string    // hostnames or IPs to pass to gocql
-	Hostnames         []string    // SSH hostnames (RemoteCluster only); equal to ContactPoints when on private DNS
-	SSHUser           string      // RemoteCluster only
-	SSHKeyPath        string      // RemoteCluster only; optional — empty falls back to ssh-agent or default key locations
+	ContactPoints     []string // hostnames or IPs to pass to gocql
+	Hostnames         []string // SSH hostnames (RemoteCluster only); equal to ContactPoints when on private DNS
+	SSHUser           string   // RemoteCluster only
+	SSHKeyPath        string   // RemoteCluster only; optional — empty falls back to ssh-agent or default key locations
 	ReplicationFactor int
 	Consistency       Consistency // CQL consistency level; one of the Consistency* constants
 	Keyspace          string
 	NumBuckets        int // number of partition buckets for the bench table; controls Cassandra distribution granularity
+
+	// SingleNode acknowledges a one-host remote cluster. Without it a
+	// single-entry -nodes list is rejected as a likely typo; with it the
+	// campaign's node-count anchor can run over the same code path as the
+	// three-node arms.
+	SingleNode bool
+
+	// HeadSampling restores the pre-2026-09 read/update target selection:
+	// the clustering-smallest ids per partition, fetched from the database
+	// right before the timed loop. That selection means "the oldest rows" for
+	// every time-ordered key type and "an arbitrary spread of rows" for
+	// UUIDv4, so it measures the key type and the sampler together. The
+	// default (false) draws the targets uniformly over insert order instead.
+	// Kept because the bridge arm of the correction campaign runs both
+	// samplers under otherwise identical conditions to size that difference.
+	HeadSampling bool
 
 	// Cassandra-process resource sizing. Currently only consumed by
 	// RemoteClusterBackend (LocalSingle and LocalCluster pin their own
@@ -121,6 +137,12 @@ type ClusterConfig struct {
 	CassandraNewGen string // HEAP_NEWSIZE (must be ≤ heap or Cassandra refuses to start)
 	CassandraCPUs   string // docker run --cpus (strict: rejected if > host cpu count)
 	CassandraMemory string // docker run --memory (soft: docker accepts even > host RAM)
+	// CassandraImage overrides the default image reference. The default is
+	// a floating tag that is re-pulled before every container start, so a
+	// registry update during a multi-day campaign would swap the engine
+	// version unnoticed and unprovably. Pinning a digest here closes that,
+	// and because the value arrives as a flag it lands in the run manifest.
+	CassandraImage string
 }
 
 // DefaultLocalSingle returns a sensible single-node baseline for the paper-
@@ -182,12 +204,20 @@ func (c ClusterConfig) Validate() error {
 		if len(c.Hostnames) == 0 {
 			return errors.New("SSH hostnames required for remote cluster")
 		}
-		// Reject < 2 hostnames: a single-host "cluster" is almost always
-		// a misconfiguration (trailing-comma split, etc.) and silently
-		// degrades to a single-node deployment without the operator
-		// knowing. Point them at local-single explicitly.
-		if len(c.Hostnames) < 2 {
-			return errors.New("remote-cluster requires at least 2 hostnames; for a single host use -cluster-mode=local-single")
+		// Reject < 2 hostnames unless the operator said so explicitly: a
+		// single-host "cluster" is almost always a misconfiguration
+		// (trailing-comma split, etc.) and silently degrades to a
+		// single-node deployment without the operator knowing.
+		//
+		// SingleNode opens it deliberately, for the node-count anchor of
+		// the correction campaign. That arm has to differ from the
+		// three-node arms in node count and replication only, so it needs
+		// the remote path (workload native, CQL over the network,
+		// per-node cgroup capture) rather than local-single, which would
+		// additionally switch the workload into the container and drop
+		// the network entirely.
+		if len(c.Hostnames) < 2 && !c.SingleNode {
+			return errors.New("remote-cluster requires at least 2 hostnames; pass -single-node for a deliberate one-node run, or use -cluster-mode=local-single")
 		}
 		// Reject empty hostnames in the slice — usually a trailing or
 		// double comma in the -nodes flag. Without this guard, the
