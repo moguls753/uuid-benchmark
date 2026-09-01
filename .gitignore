@@ -48,6 +48,11 @@ docs/paper-context.md
 # out for. They belong to the paper repo's data directory, scrubbed.
 *.meta.json
 *.runs.jsonl
+# Campaign console logs at the repo root. logs/ stays tracked: those are the
+# thesis-era run logs. Without this the campaign's own log makes every
+# manifest report a dirty working tree, which is the one thing that field
+# exists to rule out.
+/*.log
 *.meta.json.*.bak
 *.runs.jsonl.*.bak
 
