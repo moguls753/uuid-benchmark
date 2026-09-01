@@ -90,6 +90,22 @@ func cleanupReadSet(mode workload.ExecutionMode, path string) {
 	}
 }
 
+// reportInsertLosses prints what the bootstrap lost and why, right when it
+// happens. The count alone leaves the cause unrecoverable once the container
+// is torn down, which is exactly where the first campaign run left us.
+func reportInsertLosses(insert *workload.WorkloadResult) {
+	if insert.Errors == 0 {
+		return
+	}
+	fmt.Printf("!  Dataset bootstrap lost %d rows. Distinct errors:\n", insert.Errors)
+	for _, text := range insert.ErrorSamples {
+		fmt.Printf("     %s\n", text)
+	}
+	if len(insert.ErrorSamples) == 0 {
+		fmt.Println("     (none captured)")
+	}
+}
+
 // countsFrom converts the workload binary's tallies into the result struct.
 // Attempted is the binary's own op count rather than the requested number so a
 // short run is visible instead of being papered over.
@@ -287,6 +303,7 @@ func CassandraReadPerformance(keyType string, numRecords, numReads int, cfg clus
 	result.InsertDuration = insertResult.Duration
 	result.InsertFailed = insertResult.Errors
 	result.IDFileSHA256 = insertResult.IDFileSHA256
+	reportInsertLosses(insertResult)
 	fmt.Printf("Inserted %d records in %s\n", numRecords, insertResult.Duration)
 
 	fmt.Println("Measuring fragmentation...")
@@ -402,6 +419,7 @@ func CassandraUpdatePerformance(keyType string, numRecords, numUpdates, batchSiz
 	result.InsertDuration = insertResult.Duration
 	result.InsertFailed = insertResult.Errors
 	result.IDFileSHA256 = insertResult.IDFileSHA256
+	reportInsertLosses(insertResult)
 	fmt.Printf("Inserted %d records\n", numRecords)
 
 	// Fail loud — see insert path.

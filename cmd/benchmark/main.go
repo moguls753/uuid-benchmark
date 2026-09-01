@@ -645,7 +645,7 @@ func runScenario[R any](
 			if stat, ok := runMetrics["io_valid"]; ok && len(stat.Values) > 0 && stat.Values[0] < 1 {
 				fmt.Printf("\n!  Run %d of %s: the I/O window was not captured; throughput and latency stand, the I/O endpoint is void\n", i+1, strings.ToUpper(keyType))
 			}
-			if reason := invalidReason(runMetrics); reason != "" {
+			if reason := invalidReason(runMetrics, recordCount); reason != "" {
 				consecutiveInvalid++
 				fmt.Printf("\n!! Run %d of %s is INVALID: %s\n", i+1, strings.ToUpper(keyType), reason)
 				if consecutiveInvalid >= 2 {
@@ -898,6 +898,11 @@ func ioValidMetric(valid []bool) statistics.Stats {
 	return statistics.Calculate(out)
 }
 
+// bootstrapLossLimit is the share of the dataset the bootstrap may lose before
+// a run counts as invalid. Same 0.1 % as the operation-level rule, so the two
+// thresholds cannot disagree about what "broken" means.
+const bootstrapLossLimit = 0.001
+
 // invalidReason judges a finished run against the same counters the analysis
 // protocol uses, and returns why it is unusable or "" if it is fine. Exporting
 // the counters is not enough on its own: a cluster that degrades at hour 30
@@ -908,7 +913,7 @@ func ioValidMetric(valid []bool) statistics.Stats {
 // carries its primary numbers and only loses the I/O endpoint. It is reported
 // through the io_valid column and warned about, but it must not count towards
 // the abort, or a run of capture failures would throw away good measurements.
-func invalidReason(metrics map[string]statistics.Stats) string {
+func invalidReason(metrics map[string]statistics.Stats, recordCount int) string {
 	value := func(name string) (float64, bool) {
 		stat, ok := metrics[name]
 		if !ok || len(stat.Values) == 0 {
@@ -917,8 +922,14 @@ func invalidReason(metrics map[string]statistics.Stats) string {
 		return stat.Values[0], true
 	}
 
-	if failed, ok := value("insert_failed"); ok && failed > 0 {
-		return fmt.Sprintf("the dataset bootstrap lost %.0f rows", failed)
+	// A rate, not any loss at all. The dataset is 50M rows; a few thousand
+	// missing changes nothing a read measurement can see, and the first
+	// campaign run showed that treating every lost batch as fatal would
+	// invalidate runs that are physically fine and abort the campaign.
+	if failed, ok := value("insert_failed"); ok && failed > 0 && recordCount > 0 {
+		if rate := failed / float64(recordCount); rate >= bootstrapLossLimit {
+			return fmt.Sprintf("the dataset bootstrap lost %.0f of %d rows (%.3f %%)", failed, recordCount, rate*100)
+		}
 	}
 	attempted, ok := value("attempted")
 	if !ok || attempted <= 0 {

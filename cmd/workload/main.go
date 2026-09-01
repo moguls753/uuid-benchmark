@@ -54,9 +54,14 @@ type Result struct {
 	// lives in a container or a temp dir and is gone by the time anyone
 	// looks at the CSV.
 	IDFileSHA256 string `json:"id_file_sha256,omitempty"`
-	InsertOps    int    `json:"insert_ops,omitempty"`
-	ReadOps      int    `json:"read_ops,omitempty"`
-	UpdateOps    int    `json:"update_ops,omitempty"`
+	// ErrorSamples holds a few distinct error strings from the run. Counting
+	// failures without keeping their text leaves "why did 3000 rows not make
+	// it" unanswerable once the container is gone, which is the position the
+	// first campaign run put us in.
+	ErrorSamples []string `json:"error_samples,omitempty"`
+	InsertOps    int      `json:"insert_ops,omitempty"`
+	ReadOps      int      `json:"read_ops,omitempty"`
+	UpdateOps    int      `json:"update_ops,omitempty"`
 }
 
 // payload is a fixed-size byte slice to simulate realistic row sizes
@@ -1226,6 +1231,7 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 	var wg sync.WaitGroup
 	allLatencies := make([][]int64, threads)
 	sampled := make([][]any, threads)
+	errorSamples := make([][]string, threads)
 	var totalErrors atomic.Int64
 
 	// One draw over all rows, then split by writer range. Drawing per thread
@@ -1295,6 +1301,7 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 					// in it, and reporting one failure out of numRecords would
 					// describe a dead run as 99.9 % healthy.
 					totalErrors.Add(int64(batchEnd - i))
+					errorSamples[threadID] = keepDistinct(errorSamples[threadID], err.Error())
 					continue
 				}
 				// Only rows that were actually written become read targets.
@@ -1330,6 +1337,12 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 	for _, l := range allLatencies {
 		merged = append(merged, l...)
 	}
+	var samples []string
+	for _, part := range errorSamples {
+		for _, text := range part {
+			samples = keepDistinct(samples, text)
+		}
+	}
 
 	p50, p95, p99 := calculatePercentiles(merged)
 
@@ -1341,6 +1354,7 @@ func cassandraInsert(session *gocql.Session, keyType string, numRecords, batchSi
 		TotalOps:     numRecords,
 		DurationMs:   duration.Milliseconds(),
 		Errors:       int(totalErrors.Load()),
+		ErrorSamples: samples,
 		IDFileSHA256: idFileSum,
 	}, nil
 }
@@ -1627,6 +1641,23 @@ func cassandraMixed(session *gocql.Session, keyType string, numOps, threads, ins
 		UpdateOps:  int(totalUpdates.Load()),
 	}, nil
 }
+
+// keepDistinct appends text unless it is already present, and stops growing at
+// maxErrorSamples. A run that fails the same way ten thousand times needs to
+// say so once, and a run that fails in several ways needs to show each.
+func keepDistinct(seen []string, text string) []string {
+	if len(seen) >= maxErrorSamples {
+		return seen
+	}
+	for _, existing := range seen {
+		if existing == text {
+			return seen
+		}
+	}
+	return append(seen, text)
+}
+
+const maxErrorSamples = 5
 
 // targetIDs returns the read/update target set and the time spent asking the
 // database for it. With an id file the set was drawn during the insert

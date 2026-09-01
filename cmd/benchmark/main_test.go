@@ -174,15 +174,15 @@ func TestInvalidReasonMatchesTheProtocolRules(t *testing.T) {
 		"attempted": one(100000), "failed": one(0), "not_found": one(0),
 		"insert_failed": one(0), "io_valid": one(1),
 	}
-	if reason := invalidReason(healthy); reason != "" {
+	if reason := invalidReason(healthy, 50_000_000); reason != "" {
 		t.Fatalf("healthy run rejected: %s", reason)
 	}
 
 	for name, metrics := range map[string]map[string]statistics.Stats{
-		"bootstrap lost rows": {"attempted": one(100000), "insert_failed": one(100), "io_valid": one(1)},
+		"bootstrap lost rows": {"attempted": one(100000), "insert_failed": one(60000), "io_valid": one(1)},
 		"error rate at 0.1 %": {"attempted": one(100000), "failed": one(60), "not_found": one(40), "insert_failed": one(0), "io_valid": one(1)},
 	} {
-		if invalidReason(metrics) == "" {
+		if invalidReason(metrics, 50_000_000) == "" {
 			t.Errorf("%s: expected the run to be rejected", name)
 		}
 	}
@@ -193,7 +193,7 @@ func TestInvalidReasonMatchesTheProtocolRules(t *testing.T) {
 		"attempted": one(100000), "failed": one(0), "not_found": one(0),
 		"insert_failed": one(0), "io_valid": one(0),
 	}
-	if reason := invalidReason(ioFailed); reason != "" {
+	if reason := invalidReason(ioFailed, 50_000_000); reason != "" {
 		t.Fatalf("a failed I/O capture must not invalidate the run: %s", reason)
 	}
 
@@ -202,12 +202,12 @@ func TestInvalidReasonMatchesTheProtocolRules(t *testing.T) {
 		"attempted": one(100000), "failed": one(99), "not_found": one(0),
 		"insert_failed": one(0), "io_valid": one(1),
 	}
-	if reason := invalidReason(borderline); reason != "" {
+	if reason := invalidReason(borderline, 50_000_000); reason != "" {
 		t.Fatalf("99 of 100000 is below the threshold, got: %s", reason)
 	}
 
 	// Scenarios that export no counters at all must not be judged.
-	if reason := invalidReason(map[string]statistics.Stats{"throughput": one(42)}); reason != "" {
+	if reason := invalidReason(map[string]statistics.Stats{"throughput": one(42)}, 50_000_000); reason != "" {
 		t.Fatalf("uncounted scenario rejected: %s", reason)
 	}
 }
@@ -243,5 +243,36 @@ func TestBuildClusterConfigSingleNodeDefaultsToRFOne(t *testing.T) {
 	}
 	if explicit.ReplicationFactor != 1 {
 		t.Errorf("explicit RF = %d, want 1", explicit.ReplicationFactor)
+	}
+}
+
+// The dataset is 50M rows. A few thousand missing changes nothing a read
+// measurement can see, and treating any loss as fatal would invalidate
+// physically sound runs and abort the campaign after two of them.
+func TestInvalidReasonToleratesSmallBootstrapLosses(t *testing.T) {
+	one := func(v float64) statistics.Stats { return statistics.Calculate([]float64{v}) }
+	with := func(lost float64) map[string]statistics.Stats {
+		return map[string]statistics.Stats{
+			"attempted": one(100000), "failed": one(0), "not_found": one(0),
+			"insert_failed": one(lost), "io_valid": one(1),
+		}
+	}
+
+	// What the first campaign run actually lost: 3000 of 50M, 0.006 %.
+	if reason := invalidReason(with(3000), 50_000_000); reason != "" {
+		t.Fatalf("3000 of 50M must stay valid, got: %s", reason)
+	}
+	// Just under the 0.1 % limit.
+	if reason := invalidReason(with(49_999), 50_000_000); reason != "" {
+		t.Fatalf("49999 of 50M is below the limit, got: %s", reason)
+	}
+	// At the limit.
+	if invalidReason(with(50_000), 50_000_000) == "" {
+		t.Fatal("50000 of 50M reaches 0.1 % and must be rejected")
+	}
+	// Without a record count the rule cannot fire; the operation-level rules
+	// still apply.
+	if reason := invalidReason(with(3000), 0); reason != "" {
+		t.Fatalf("no record count means no rate rule, got: %s", reason)
 	}
 }

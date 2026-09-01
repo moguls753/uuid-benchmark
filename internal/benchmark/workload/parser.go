@@ -23,25 +23,29 @@ type WorkloadResult struct {
 	// IDFileSHA256 fingerprints the read set an insert wrote, empty when the
 	// run did not write one.
 	IDFileSHA256 string
+	// ErrorSamples holds a few distinct error strings from the run, empty when
+	// nothing failed.
+	ErrorSamples []string
 	InsertOps    int
 	ReadOps      int
 	UpdateOps    int
 }
 
 type rawResult struct {
-	Throughput   float64 `json:"throughput"`
-	LatencyP50   int64   `json:"latency_p50_us"`
-	LatencyP95   int64   `json:"latency_p95_us"`
-	LatencyP99   int64   `json:"latency_p99_us"`
-	TotalOps     int     `json:"total_ops"`
-	DurationMs   int64   `json:"duration_ms"`
-	Errors       int     `json:"errors"`
-	NotFound     int     `json:"not_found"`
-	FetchMs      int64   `json:"fetch_ms"`
-	IDFileSHA256 string  `json:"id_file_sha256"`
-	InsertOps    int     `json:"insert_ops"`
-	ReadOps      int     `json:"read_ops"`
-	UpdateOps    int     `json:"update_ops"`
+	Throughput   float64  `json:"throughput"`
+	LatencyP50   int64    `json:"latency_p50_us"`
+	LatencyP95   int64    `json:"latency_p95_us"`
+	LatencyP99   int64    `json:"latency_p99_us"`
+	TotalOps     int      `json:"total_ops"`
+	DurationMs   int64    `json:"duration_ms"`
+	Errors       int      `json:"errors"`
+	NotFound     int      `json:"not_found"`
+	FetchMs      int64    `json:"fetch_ms"`
+	IDFileSHA256 string   `json:"id_file_sha256"`
+	ErrorSamples []string `json:"error_samples"`
+	InsertOps    int      `json:"insert_ops"`
+	ReadOps      int      `json:"read_ops"`
+	UpdateOps    int      `json:"update_ops"`
 }
 
 // ParseResult parses JSON output from the workload binary.
@@ -62,6 +66,7 @@ func ParseResult(output string) (*WorkloadResult, error) {
 		NotFound:      raw.NotFound,
 		FetchDuration: time.Duration(raw.FetchMs) * time.Millisecond,
 		IDFileSHA256:  raw.IDFileSHA256,
+		ErrorSamples:  raw.ErrorSamples,
 		InsertOps:     raw.InsertOps,
 		ReadOps:       raw.ReadOps,
 		UpdateOps:     raw.UpdateOps,
