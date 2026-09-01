@@ -57,5 +57,5 @@ workload
 
 # June 2026 measurement data. Lives in the paper repo; comes back here
 # curated for the artifact release, not as loose files in the root.
-cassandra_*.csv
-results-single-node-new-schema*.csv
+/cassandra_*.csv
+/results-single-node-new-schema*.csv
