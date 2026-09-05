@@ -1,0 +1,229 @@
+{
+  "commit": "47d4871eca52371187410d0c19c29d80a15f99bf",
+  "working_tree_dirty": false,
+  "orchestrator_md5": "5f8c487f03c470e6730a495bbd5f5a0f",
+  "workload_md5": "dc0a3ae30e2f3cbfe808da47e85a24f7",
+  "flags": {
+    "batch-size": "100",
+    "campaign-seed": "20260904",
+    "cassandra-cpus": "8",
+    "cassandra-heap": "2G",
+    "cassandra-image": "cassandra@sha256:755db0086160b6898e890959343dec1544ff27e7fa8ecc955c2f4b28c40a2f1a",
+    "cassandra-memory": "4g",
+    "cassandra-newgen": "512M",
+    "cluster-mode": "remote-cluster",
+    "cluster-nodes": "3",
+    "connections": "1",
+    "consistency": "local_one",
+    "database": "cassandra",
+    "head-sampling": "true",
+    "nodes": "132.176.10.132,132.176.10.78,132.176.10.88",
+    "num-buckets": "50000",
+    "num-ops": "100000",
+    "num-records": "50000000",
+    "num-runs": "3",
+    "output": "nachlauf_a4_bridge_head_50m_4g_n3.csv",
+    "replication-factor": "0",
+    "scenario": "read-performance",
+    "single-node": "false",
+    "ssh-key": "/home/aaeirack/.ssh/id_rsa",
+    "ssh-user": "aaeirack"
+  },
+  "effective_cluster": {
+    "consistency": "local_one",
+    "head_sampling": "true",
+    "image": "cassandra@sha256:755db0086160b6898e890959343dec1544ff27e7fa8ecc955c2f4b28c40a2f1a",
+    "mode": "remote-cluster",
+    "node_count": "3",
+    "nodes": "132.176.10.132,132.176.10.78,132.176.10.88",
+    "num_buckets": "50000",
+    "replication_factor": "3"
+  },
+  "campaign_seed": 20260904,
+  "prep_insert_connections": 8,
+  "measured_connections_read_update": 1,
+  "started": "2026-09-04T14:08:38.068816472+02:00",
+  "updated": "2026-09-05T07:27:00.211603549+02:00",
+  "runs": [
+    {
+      "scenario": "read_performance",
+      "key_type": "ulid_monotonic",
+      "run": 1,
+      "order_index": 0,
+      "sample_seed": 5035595489675841238,
+      "order_seed": 4012854256452589869,
+      "started": "2026-09-04T14:08:38.103176828+02:00",
+      "seconds": 2539.438419918
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv7",
+      "run": 1,
+      "order_index": 1,
+      "sample_seed": 3184119469964760525,
+      "order_seed": 4012854256452589869,
+      "started": "2026-09-04T14:51:03.575599009+02:00",
+      "seconds": 2739.152480016
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv4",
+      "run": 1,
+      "order_index": 2,
+      "sample_seed": 1311588495452496748,
+      "order_seed": 4012854256452589869,
+      "started": "2026-09-04T15:36:48.907024526+02:00",
+      "seconds": 8218.52603279
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv1",
+      "run": 1,
+      "order_index": 3,
+      "sample_seed": 8662464742167111531,
+      "order_seed": 4012854256452589869,
+      "started": "2026-09-04T17:53:53.306801081+02:00",
+      "seconds": 2735.202477338
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "ulid",
+      "run": 1,
+      "order_index": 4,
+      "sample_seed": 2513332843086169493,
+      "order_seed": 4012854256452589869,
+      "started": "2026-09-04T18:39:34.713445104+02:00",
+      "seconds": 2619.370749242
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "sequential",
+      "run": 1,
+      "order_index": 5,
+      "sample_seed": 1042082562994256794,
+      "order_seed": 4012854256452589869,
+      "started": "2026-09-04T19:23:20.261213093+02:00",
+      "seconds": 2730.360613352
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv4",
+      "run": 2,
+      "order_index": 0,
+      "sample_seed": 1311589594964124959,
+      "order_seed": 4012853156940961658,
+      "started": "2026-09-04T20:08:56.618036235+02:00",
+      "seconds": 7401.16846479
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "ulid_monotonic",
+      "run": 2,
+      "order_index": 1,
+      "sample_seed": 5035596589187469449,
+      "order_seed": 4012853156940961658,
+      "started": "2026-09-04T22:12:23.651796396+02:00",
+      "seconds": 2691.369462546
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "sequential",
+      "run": 2,
+      "order_index": 2,
+      "sample_seed": 1042083662505885005,
+      "order_seed": 4012853156940961658,
+      "started": "2026-09-04T22:57:21.092908546+02:00",
+      "seconds": 2463.139728086
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv7",
+      "run": 2,
+      "order_index": 3,
+      "sample_seed": 3184118370453132314,
+      "order_seed": 4012853156940961658,
+      "started": "2026-09-04T23:38:30.28199706+02:00",
+      "seconds": 2777.598200889
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv1",
+      "run": 2,
+      "order_index": 4,
+      "sample_seed": 8662463642655483320,
+      "order_seed": 4012853156940961658,
+      "started": "2026-09-05T00:24:54.099185999+02:00",
+      "seconds": 2851.520834871
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "ulid",
+      "run": 2,
+      "order_index": 5,
+      "sample_seed": 2513331743574541282,
+      "order_seed": 4012853156940961658,
+      "started": "2026-09-05T01:12:31.761146481+02:00",
+      "seconds": 2682.298750757
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv7",
+      "run": 3,
+      "order_index": 0,
+      "sample_seed": 3184117270941504103,
+      "order_seed": 4012852057429333447,
+      "started": "2026-09-05T01:57:20.094614314+02:00",
+      "seconds": 2796.309745181
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "ulid_monotonic",
+      "run": 3,
+      "order_index": 1,
+      "sample_seed": 5035593290652584816,
+      "order_seed": 4012852057429333447,
+      "started": "2026-09-05T02:44:02.531277091+02:00",
+      "seconds": 2658.075680766
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "ulid",
+      "run": 3,
+      "order_index": 2,
+      "sample_seed": 2513330644062913071,
+      "order_seed": 4012852057429333447,
+      "started": "2026-09-05T03:28:26.822798835+02:00",
+      "seconds": 2780.177285951
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "sequential",
+      "run": 3,
+      "order_index": 3,
+      "sample_seed": 1042080363971000372,
+      "order_seed": 4012852057429333447,
+      "started": "2026-09-05T04:14:53.061905853+02:00",
+      "seconds": 2606.851478678
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv1",
+      "run": 3,
+      "order_index": 4,
+      "sample_seed": 8662466941190367953,
+      "order_seed": 4012852057429333447,
+      "started": "2026-09-05T04:58:26.297610472+02:00",
+      "seconds": 2620.180817877
+    },
+    {
+      "scenario": "read_performance",
+      "key_type": "uuidv4",
+      "run": 3,
+      "order_index": 5,
+      "sample_seed": 1311590694475753170,
+      "order_seed": 4012852057429333447,
+      "started": "2026-09-05T05:42:12.668160399+02:00",
+      "seconds": 6287.542626735
+    }
+  ]
+}
