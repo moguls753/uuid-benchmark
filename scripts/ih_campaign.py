@@ -36,7 +36,9 @@ def utc():
     return datetime.now(timezone.utc).isoformat()
 
 
-def schedule(mode, seed, engines, preload=100000, ops=200000):
+def schedule(mode, seed, engines, preload=100000, ops=200000, *, skip_pilot=False):
+    if skip_pilot and mode != "full":
+        raise ValueError("--skip-pilot requires full mode")
     rng = random.Random(seed)
     runs = []
     def add(stage, engine, block, scheme):
@@ -54,7 +56,8 @@ def schedule(mode, seed, engines, preload=100000, ops=200000):
                 rng.shuffle(schemes)
                 for scheme in schemes:
                     add("main", engine, block, scheme)
-    return runs
+    # Generate then filter: skipping pilots must not change the main order/seeds.
+    return [r for r in runs if r["stage"] != "pilot"] if skip_pilot else runs
 
 
 def positive_seconds(value):
@@ -267,6 +270,18 @@ def evaluate_pilot(campaign, accepted, runs, deadline):
     return assessment
 
 
+def main_start_gate(campaign, accepted, runs, deadline, *, skip_pilot=False):
+    if not skip_pilot:
+        return evaluate_pilot(campaign, accepted, runs, deadline)
+    if accepted or any(r["stage"] != "main" for r in runs):
+        raise ValueError("pilot bypass must start a fresh main-only campaign")
+    # Explicit operator override, never disguise a bypass as a passed gate.
+    assessment = dict(passed=False, skipped=True, reason="operator requested --skip-pilot",
+                      budget_assessed=False, per_run_validation_required=True, recorded=utc())
+    write_json(campaign / "pilot-gate.json", assessment)
+    return assessment
+
+
 def summary(rows):
     main = [r for r in rows if r["stage"] == "main"]
     groups = {}
@@ -325,7 +340,7 @@ def source_snapshot(dest):
         p = Path(name)
         if not name or p.is_absolute() or ".." in p.parts:
             continue
-        allowed = name in ("go.mod", "go.sum") or (p.parts[0] in ("cmd", "internal") and p.suffix == ".go") or (p.parts[0] == "docker" and (p.suffix in (".yml", ".sql") or p.name.startswith("Dockerfile"))) or name in ("scripts/ih_campaign.py", "docs/plans/ih-rerun.md", "docs/plans/ih-corrected-implementation.md")
+        allowed = name in ("go.mod", "go.sum") or (p.parts[0] in ("cmd", "internal") and p.suffix == ".go") or (p.parts[0] == "docker" and (p.suffix in (".yml", ".sql") or p.name.startswith("Dockerfile"))) or name in ("scripts/ih_campaign.py", "scripts/ih_repeat.py", "docs/plans/ih-rerun.md", "docs/plans/ih-corrected-implementation.md")
         if not allowed or not (ROOT / p).is_file() or (ROOT / p).is_symlink():
             continue
         target = dest / p
@@ -467,6 +482,8 @@ def run_one(spec, campaign, snapshot, image, resolved, commands, binary, ordinal
         verify_owned(info, project)
         commands.run(compose + ["down", "--volumes"], timeout=120)
         r.update({k: spec[k] for k in ("run_id", "stage", "block")})
+        if "source_campaign" in spec:
+            r.update(source_campaign=spec["source_campaign"], source_run_id=spec["source_run_id"])
         r.update(wall_started=started, wall_ended=utc(), wall_seconds=time.monotonic()-begin)
         validate_timing(r, wall=True)
         write_json(run_dir / "accepted.json", r)
@@ -504,6 +521,12 @@ def execute_campaign(args, runs):
     commands = Commands(commands_dir, args.timeout_hours * 3600)
     accepted = []
     try:
+        repeat = getattr(args, "repeat", None)
+        if repeat:
+            sources = {f["path"]: f["sha256"] for f in files
+                       if Path(f["path"]).parts[0] in ("cmd", "internal", "docker") or f["path"] in ("go.mod", "go.sum")}
+            if sources != repeat["measurement_sources"]:
+                raise ValueError("measurement source/schema/config changed; refuse same-protocol repeat")
         host = host_info()
         if host["free_bytes"] < 20 * 1024**3:
             raise RuntimeError("less than 20 GiB free")
@@ -511,7 +534,9 @@ def execute_campaign(args, runs):
             raise RuntimeError("no online external power supply")
         images, resolved = {}, {}
         for engine in args.engines:
-            image = json.loads(commands.run(["docker", "image", "inspect", IMAGES[engine]]).stdout)[0]
+            repeat = getattr(args, "repeat", None)
+            image_ref = repeat["images"][engine]["Id"] if repeat else IMAGES[engine]
+            image = json.loads(commands.run(["docker", "image", "inspect", image_ref]).stdout)[0]
             images[engine] = {k: image.get(k) for k in ("Id", "RepoDigests", "Architecture", "Os")}
             if image["Architecture"] != platform.machine().replace("x86_64", "amd64").replace("aarch64", "arm64"):
                 raise ValueError("image/host architecture mismatch")
@@ -524,6 +549,9 @@ def execute_campaign(args, runs):
         (campaign / "source.diff").write_bytes(diff)
         manifest = dict(protocol=PROTOCOL, created=utc(), campaign=args.campaign, mode=args.mode,
                         base_revision=base, files=files, images=images, host=host, schedule=runs,
+                        repeat=getattr(args, "repeat", None),
+                        skip_pilot=args.skip_pilot,
+                        pilot_policy="operator-requested bypass; full-size pilot and budget gate NOT performed" if args.skip_pilot else "required for full mode",
                         order_seed=args.seed, order_rng="Python random.Random/MT19937; stored order is authoritative",
                         python=sys.version, timeout_hours=args.timeout_hours, host_ready_confirmed=True,
                         command=sys.argv, payload="PG: decode(repeat('41',1024),'hex'); others: cryptographic random 1024-byte fixed payload per phase",
@@ -540,22 +568,34 @@ def execute_campaign(args, runs):
         commands.run(["docker", "version"])
         commands.run(["docker", "compose", "version"])
         binary = campaign / "workload"
-        build_env = dict(commands.env, CGO_ENABLED="0", GOOS="linux")
-        commands.run(["go", "build", "-o", str(binary), "./cmd/workload/main.go"], cwd=snapshot, env=build_env)
-        commands.run(["go", "build", "-o", str(campaign / "uuid-benchmark"), "./cmd/benchmark/main.go"], cwd=snapshot, env=build_env)
+        repeat = getattr(args, "repeat", None)
+        if repeat:
+            # Reuse the exact archived binaries, not a newly compiled workload.
+            for name, digest in repeat["binaries"].items():
+                original = Path(repeat["source_directory"]) / name
+                target = campaign / name
+                shutil.copyfile(original, target)
+                if hashlib.sha256(target.read_bytes()).hexdigest() != digest:
+                    raise ValueError("archived binary changed since repeat selection")
+                target.chmod(0o700)
+        else:
+            build_env = dict(commands.env, CGO_ENABLED="0", GOOS="linux")
+            commands.run(["go", "build", "-o", str(binary), "./cmd/workload/main.go"], cwd=snapshot, env=build_env)
+            commands.run(["go", "build", "-o", str(campaign / "uuid-benchmark"), "./cmd/benchmark/main.go"], cwd=snapshot, env=build_env)
         commands.run(["go", "version", "-m", str(binary)])
         commands.run(["go", "version", "-m", str(campaign / "uuid-benchmark")])
         token = secrets.token_hex(8)
         for i, spec in enumerate(runs):
             if spec["stage"] == "main" and not any(r["stage"] == "main" for r in accepted):
-                evaluate_pilot(campaign, accepted, runs, commands.deadline)
+                main_start_gate(campaign, accepted, runs, commands.deadline, skip_pilot=args.skip_pilot)
             print(f"{i+1}/{len(runs)}: {spec['run_id']}", flush=True)
             accepted.append(run_one(spec, campaign, snapshot, images[spec["engine"]]["Id"], resolved[spec["engine"]], commands, binary, i, token))
         export_csv(campaign / "runs.csv", accepted)
         verify_csv(campaign / "runs.csv", accepted)
         if args.mode == "full":
             export_csv(campaign / "summary.csv", summary(accepted))
-        write_json(campaign / "complete.json", dict(ended=utc(), runs=len(accepted), mode=args.mode))
+        write_json(campaign / "complete.json", dict(ended=utc(), runs=len(accepted), mode=args.mode,
+                                                   skip_pilot=args.skip_pilot))
     except BaseException as exc:
         export_csv(campaign / "partial-runs.csv", accepted)
         write_json(campaign / "failed.json", dict(ended=utc(), accepted_runs=len(accepted), error=str(exc).replace(commands.password, "<redacted>")))
@@ -571,18 +611,23 @@ def main():
     p.add_argument("--ops", type=int, default=200000)
     p.add_argument("--campaign", default="ih-corrected-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     p.add_argument("--timeout-hours", type=float, default=12)
+    p.add_argument("--skip-pilot", action="store_true", help="Explicit full-mode protocol deviation: skip pilots and pilot budget gate, retain all per-run checks")
     p.add_argument("--execute", action="store_true")
     p.add_argument("--host-ready", action="store_true", help="Confirm mains power, inhibited suspend, quiet host; no other benchmark")
     args = p.parse_args()
+    if args.skip_pilot and args.mode != "full":
+        p.error("--skip-pilot is only allowed with --mode=full")
     if args.mode != "smoke" and (args.preload, args.ops, args.engines) != (100000, 200000, ENGINES):
         p.error("pilot/full require all four engines in protocol order, preload=100000 and ops=200000")
     if args.preload <= 0 or args.preload % 100 or args.ops <= 0 or not (0 < args.timeout_hours <= 48) or len(set(args.engines)) != len(args.engines):
         p.error("invalid counts, timeout or duplicate engines")
     if not args.campaign.startswith("ih-corrected-") or not all(c.isalnum() or c in "-_" for c in args.campaign):
         p.error("campaign must be a plain ih-corrected-* directory name")
-    runs = schedule(args.mode, args.seed, args.engines, args.preload, args.ops)
+    runs = schedule(args.mode, args.seed, args.engines, args.preload, args.ops, skip_pilot=args.skip_pilot)
+    if args.skip_pilot:
+        print("WARNING: explicit pilot/budget-gate bypass; per-run correctness checks remain mandatory.", file=sys.stderr)
     if not args.execute:
-        print(json.dumps(dict(mode=args.mode, campaign=args.campaign, runs=runs), indent=2))
+        print(json.dumps(dict(mode=args.mode, campaign=args.campaign, skip_pilot=args.skip_pilot, runs=runs), indent=2))
         return
     if not args.host_ready:
         p.error("execution requires --host-ready; review protocol/order before starting")

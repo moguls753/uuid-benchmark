@@ -88,6 +88,40 @@ class CampaignTests(unittest.TestCase):
         execute.assert_not_called()
         self.assertEqual(len(json.loads(out.getvalue())["runs"]), 8)
 
+    def test_explicit_pilot_bypass_keeps_main_order_and_counts(self):
+        original = ih.schedule("full", 42, ih.ENGINES)
+        bypass = ih.schedule("full", 42, ih.ENGINES, skip_pilot=True)
+        self.assertEqual(bypass, original[8:])
+        self.assertEqual(len(bypass), 125)
+        with mock.patch.object(sys, "argv", ["ih_campaign.py", "--mode=full", "--skip-pilot", "--seed=42"]), mock.patch.object(ih, "execute_campaign") as execute, mock.patch("sys.stdout", new_callable=io.StringIO) as out, mock.patch("sys.stderr", new_callable=io.StringIO) as warning:
+            ih.main()
+        execute.assert_not_called()
+        self.assertTrue(json.loads(out.getvalue())["skip_pilot"])
+        self.assertEqual(json.loads(out.getvalue())["runs"], bypass)
+        self.assertIn("bypass", warning.getvalue())
+        for mode in ("smoke", "pilot"):
+            with self.assertRaises(ValueError):
+                ih.schedule(mode, 42, ih.ENGINES, skip_pilot=True)
+
+    def test_bypass_records_not_passed_and_default_still_requires_gate(self):
+        runs = ih.schedule("full", 42, ih.ENGINES, skip_pilot=True)
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            with mock.patch.object(ih, "evaluate_pilot", side_effect=ValueError("pilots required")) as gate:
+                with self.assertRaisesRegex(ValueError, "pilots required"):
+                    ih.main_start_gate(d, [], runs, 0)
+                gate.assert_called_once()
+                gate.reset_mock()
+                assessment = ih.main_start_gate(d, [], runs, 0, skip_pilot=True)
+                gate.assert_not_called()
+            self.assertFalse(assessment["passed"])
+            self.assertTrue(assessment["skipped"])
+            self.assertTrue(assessment["per_run_validation_required"])
+            self.assertFalse(assessment["budget_assessed"])
+            self.assertEqual(json.loads((d/"pilot-gate.json").read_text()), assessment)
+            with self.assertRaises(ValueError):
+                ih.main_start_gate(d, [{}], runs, 0, skip_pilot=True)
+
     def test_full_cannot_shrink(self):
         with mock.patch.object(sys, "argv", ["ih_campaign.py", "--mode=full", "--seed=1", "--preload=100"]), mock.patch("sys.stderr", new_callable=io.StringIO):
             with self.assertRaises(SystemExit):

@@ -47,6 +47,20 @@ Before successful cleanup, every run's result JSON/CSV, versions, container conf
 
 Full mode runs **all eight pilots first**. The explicit pilot gate reopens all acceptance exports, revalidates the evidence inventory, requested and actual counters, actual reads, cardinalities, finite phase durations and timestamp order, throughput reconciliation, and complete lifecycle wallclock. It writes and reads back `pilot-runs.csv` **before** any main run. The predeclared budget rule is **2 × slowest complete pilot wallclock of each engine × its planned main-run count, summed across engines, plus 600 seconds reserve**. This must fit the remaining overall deadline. It is conservative planning, not a runtime guarantee (non-piloted schemes may be slower). Insufficient budget writes `pilot-gate.json` with `passed:false` and stops. Missing/inconsistent evidence or failed exports never produce a passed gate. `passed:true` is written only after every check succeeds. The main sequence is five independently shuffled scheme blocks per engine (35 MongoDB + 90 other runs). Pilot/smoke are never included in the five-run summary. Main summaries report all five raw throughputs, median and 100 × median / new Sequential median, without significance decisions or exclusions. No automatic paper integration.
 
+## Explicit operator override: no pilots
+
+After the successful small smoke test, the operator explicitly requested starting the overnight main series without full-size pilots. `--mode=full --skip-pilot` implements this **documented deviation** from the original rerun plan. The default remains pilot-gated.
+
+The flag skips the eight full-size pilots and the pilot-derived budget assessment. It does not change the 125 main-run configurations, order or seeds. It does not weaken per-run counters, read-hit/cardinality/timing/evidence validation, failure handling or the overall timeout. A failed main run still stops the campaign; errors are never ignored to finish overnight.
+
+The manifest and completion marker record `skip_pilot:true`. `pilot-gate.json` explicitly records `passed:false`, `skipped:true` and `budget_assessed:false`; it is not evidence of a successful pilot. The flag is rejected for smoke/pilot modes and cannot resume an existing campaign. Without full-size pilots, runtime and full-scale integration remain unverified before the first main run.
+
+## Explicit repeats after documented external-load overlap
+
+`scripts/ih_repeat.py` selects named main-run IDs from a completed campaign. It requires an explicit reason, preserves original block/seed/parameters and order, and records `stage=repeat` plus source campaign/run identities. It pins the original image IDs and reuses the exact archived binaries; changed Go/module/schema/Docker inputs are rejected. All per-run validity/evidence/cleanup checks remain active. The default is planning only; execution requires `--execute --host-ready`.
+
+The operator requested three repeats after paper-build command windows were found to overlap PostgreSQL block 5 monotonic ULID, PostgreSQL block 5 UUIDv4 and MySQL block 1 ULID. This is a documented selective-repeat deviation based on external activity timestamps, **not** exclusion by measured throughput. Original campaigns are never modified. The repeat campaign produces its own `runs.csv`, not an n=5 summary or a silently merged replacement. Any later paper integration must retain original/repeat provenance and state the selection rule.
+
 ## Offline validation
 
 ```bash
