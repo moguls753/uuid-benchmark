@@ -22,6 +22,12 @@ engine ranking is presented.
 - Graphical marks have scheme labels, text alternatives and exact-value tables.
   UUIDv4 additionally uses diamonds. Local table scrolling does not overflow the page.
 
+The raw corrected-IH campaigns are archived outside this repository under
+`../benchmark-results-archiv/`. The builder accepts `--ih-results PATH` and checks
+the former `results/` location before the sibling archive. Only the location is
+discovered; the selected campaign and validation rules are unchanged. Published
+source snapshots under `docs/data/sources/` remain self-contained.
+
 ## Selected sources — no automatic discovery
 
 The dashboard includes exactly the paper's selected configurations:
@@ -32,7 +38,7 @@ The dashboard includes exactly the paper's selected configurations:
 | single-read | Same historical collection | Four engines; 100K, 1M, 10M; throughput and process-window block-read rate. |
 | single-update | Same historical collection | Four engines; 1M/10M; throughput. |
 | single-ru | Selected rows of `*_1m_all_1conn_raw.csv` | 500K **preload**, not the archived RecordCount=1M metadata; throughput. |
-| single-ih | `results/ih-corrected-consolidated-20261006T060522Z/` | 125 selected runs, five per engine/scheme; 100K preload; successful-operation throughput and per-run latency percentiles. |
+| single-ih | `../benchmark-results-archiv/ih-corrected-consolidated-20261006T060522Z/` (local archive; override with `--ih-results`) | 125 selected runs, five per engine/scheme; 100K preload; successful-operation throughput and per-run latency percentiles. |
 | A1–A5 | Paper `data/nachlauf_a*.csv.runs.jsonl` | Precise primary run logs, not two-decimal raw CSV exports. A4 has n=3; the others n=5. |
 
 Each series has `experiment`, `database`, `scale`, `metric`, `keyType`, `values`,

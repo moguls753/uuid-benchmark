@@ -54,7 +54,7 @@ def digest(payload):
     return hashlib.sha256(payload).hexdigest()
 
 
-def build(paper, output):
+def build(paper, output, ih_results=None):
     sys.path.insert(0, str(paper / 'scripts'))
     inserts = importlib.import_module('part_one_insert')
     reads = importlib.import_module('part_one_reads')
@@ -64,7 +64,10 @@ def build(paper, output):
     gn = importlib.import_module('gen_numbers')
     gate = importlib.import_module('check_validity')
     laptop = ROOT / 'results/laptop'
-    selected = ROOT / 'results' / IH
+    selected = ih_results or ROOT / 'results' / IH
+    if ih_results is None and not selected.is_dir():
+        selected = ROOT.parent / 'benchmark-results-archiv' / IH
+    require(selected.is_dir(), 'Corrected IH evidence missing; supply --ih-results PATH')
     # These gates reject ambiguous sources, incomplete groups and invalid evidence.
     ins = inserts.load_inserts(laptop)
     rd = reads.load_reads(laptop)
@@ -258,5 +261,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--paper-root', type=Path, required=True)
     parser.add_argument('--output', type=Path, default=ROOT/'docs/data')
+    parser.add_argument('--ih-results', type=Path, help='Corrected IH evidence directory; defaults to results/ or the sibling benchmark-results-archiv/')
     args = parser.parse_args()
-    build(args.paper_root.resolve(), args.output.resolve())
+    build(args.paper_root.resolve(), args.output.resolve(), args.ih_results.resolve() if args.ih_results else None)

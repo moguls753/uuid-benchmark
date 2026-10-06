@@ -129,6 +129,20 @@ def main():
             expect(page.locator('#content h1')).to_have_text('Data & methods')
             assert page.locator('.source-list a').count()>5
             if args.screenshots: page.screenshot(path=str(args.screenshots/'desktop-methods.png'),full_page=True)
+            assert page.evaluate('document.documentElement.scrollHeight <= 768'), 'Data default view must fit a desktop screen'
+            expect(page.locator('[data-action="download"]')).to_be_visible()
+            expect(page.locator('.table-actions a[download]')).to_be_visible()
+            assert page.locator('.details-table tbody tr').count()==6
+            for disclosure in page.locator('.data-disclosures > details').all():
+                disclosure.locator(':scope > summary').click()
+                assert disclosure.get_attribute('open') is not None
+                check_overflow(page)
+                disclosure.locator(':scope > summary').click()
+            with page.expect_download() as data_download:
+                page.locator('[data-action="download"]').click()
+            with open(data_download.value.path()) as handle:
+                data_rows=list(csv.DictReader(handle))
+            assert len(data_rows)==30 and all(r['experiment']=='A1' for r in data_rows)
             # Invalid input is escaped/normalized, and archived deep links migrate.
             page.goto(base+'#view=explorer&experiment=invalid&metric=%3Cscript%3E&db=other&scale=100m');ready(page)
             assert page.locator('#select-experiment').input_value()=='A1'

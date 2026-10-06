@@ -305,6 +305,44 @@ code { font: .85em var(--mono); overflow-wrap: anywhere; }
   .chart-panels .plot-svg { height: auto; }
   .mini-comparison { height: auto; min-height: 48px; }
 }
+/* Data uses the same compact controls; documentation opens below the values. */
+#content[data-view="data"] .filters-band { padding-block: 12px; }
+#content[data-view="data"] .filters-band > .wrap { display: grid; grid-template-columns: 1.8fr 1fr .7fr 1.2fr 1.1fr 1.3fr; gap: 10px 14px; align-items: end; }
+#content[data-view="data"] .filters, #content[data-view="data"] .filter-secondary { display: contents; }
+#content[data-view="data"] .field { font: 10px/1.4 var(--mono); }
+#content[data-view="data"] .field select { font: 11px var(--mono); padding: 6px 8px; min-height: 36px; }
+#content[data-view="data"] .context { padding-block: 8px; display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; }
+#content[data-view="data"] .context-line { margin: 0; gap: 6px 18px; font-size: 10px; }
+#content[data-view="data"] .details-table { padding-block: 0 12px; border-top: 0; }
+#content[data-view="data"] .details-table > details > summary { font: 600 17px/1.5 var(--serif); margin-bottom: 0; }
+#content[data-view="data"] .table-actions { gap: 16px; margin-bottom: 8px; }
+#content[data-view="data"] .table-actions p { flex-basis: 100%; font-size: 11px; }
+#content[data-view="data"] .table-actions button { margin-left: 0; min-height: 36px; font-size: 11px; }
+#content[data-view="data"] .table-actions a { font-size: 11px; margin: 0; }
+#content[data-view="data"] .details-table .table-scroll { max-height: 290px; overflow: auto; }
+#content[data-view="data"] .details-table th, #content[data-view="data"] .details-table td { padding: 6px 10px; font-size: 11px; line-height: 1.5; }
+#content[data-view="data"] .details-table thead { position: sticky; top: 0; background: var(--wash); }
+#content[data-view="data"] .details-table tbody tr:hover { background: var(--wash); }
+#content[data-view="data"] .details-table caption { font-size: 11px; padding-bottom: 8px; }
+.data-disclosures > details { border-top: 1px solid var(--rule); }
+.data-disclosures > details > summary { font-size: 11px; min-height: 36px; padding-block: 8px; }
+.data-disclosures > details[open] > summary { margin-bottom: 0; background: var(--wash); }
+.data-definition { padding-block: 12px 20px; font-size: 13px; }
+.data-disclosures .section { padding-block: 20px; }
+.data-disclosures h2 { font-size: 21px; }
+.data-disclosures h3 { font-size: 17px; }
+@media (max-width: 1100px) and (min-width: 701px) {
+  #content[data-view="data"] .filters-band > .wrap { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 700px) {
+  #content[data-view="data"] .filters-band > .wrap { display: block; }
+  #content[data-view="data"] .filters { display: grid; }
+  #content[data-view="data"] .filter-secondary { display: flex; }
+  #content[data-view="data"] .field select, #content[data-view="data"] .table-actions button { min-height: 44px; }
+  #content[data-view="data"] .table-actions a { min-height: 44px; display: inline-flex; align-items: center; }
+  #content[data-view="data"] .details-table .table-scroll { max-height: 360px; }
+  .data-disclosures > details > summary { min-height: 44px; padding-block: 12px; }
+}
 @media print {
   .masthead-inner { min-height: auto; padding-block: 16px; }
   .navigation, .filter-actions, .section-tools, .footer, button { display: none; }
