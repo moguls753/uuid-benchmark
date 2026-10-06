@@ -53,12 +53,13 @@ def main():
             assert page.locator('.finding').count()==4
             assert page.locator('.database-entry').count()==4
             assert page.locator('svg.plot-svg:visible').count()==0
-            assert page.evaluate('document.documentElement.scrollHeight <= 768'), 'Summary must fit a desktop screen'
             for card in page.locator('.finding').all():
                 assert 'view=explorer' in card.get_attribute('href')
             if args.screenshots:
                 args.screenshots.mkdir(parents=True,exist_ok=True)
                 page.screenshot(path=str(args.screenshots/'desktop-summary.png'),full_page=True)
+            assert page.evaluate('document.documentElement.scrollHeight <= 768'), 'Summary must fit a desktop screen'
+            assert page.locator('.mini-comparison').count()==4
             page.locator('.additional-results > summary').click()
             assert page.locator('svg.plot-svg:visible').count()==5
             assert '3.48' in page.locator('#content').inner_text()
@@ -96,7 +97,7 @@ def main():
             page.locator('#select-experiment').select_option('single-ih')
             assert page.locator('#select-scale').input_value()=='100k'
             page.locator('#select-db').select_option('mongodb')
-            page.locator('details summary').click()
+            page.locator('.details-table summary').click()
             assert page.locator('table tbody tr').count()==7
             with page.expect_download() as download:
                 page.locator('[data-action="download"]').click()
@@ -117,6 +118,13 @@ def main():
             assert page.locator('svg.plot-svg').count()==3
             page.goto(base+'#view=explorer&experiment=A1&metric=throughput');ready(page)
             if args.screenshots: page.screenshot(path=str(args.screenshots/'desktop-explorer.png'),full_page=True)
+            assert page.evaluate('document.documentElement.scrollHeight <= 768'), 'Explorer must fit a desktop screen'
+            page.locator('.condition-details > summary').click()
+            expect(page.locator('.condition-details p').first).to_be_visible()
+            page.locator('.condition-details > summary').click()
+            page.locator('.contrast details > summary').click()
+            expect(page.locator('.contrast details p').first).to_be_visible()
+            page.locator('.contrast details > summary').click()
             page.locator('nav [data-view="data"]').click()
             expect(page.locator('#content h1')).to_have_text('Data & methods')
             assert page.locator('.source-list a').count()>5

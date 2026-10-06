@@ -82,6 +82,13 @@ function panel({title, meta, exp, db='cassandra', scale='50m', metric='throughpu
   return `<figure class="plot-panel"><h3>${esc(title)}</h3><p class="plot-meta">${esc(meta)}</p>${dotplot(entries,unit,{normalized,max,label:`${title}, ${data.metrics[metric].label}`})}<figcaption class="chart-caption">${esc(caption)}</figcaption>${showLink ? link('Inspect runs & methods', {view:'explorer',experiment:exp,db,scale,metric,mode:'keys',reference:normalized?'sequential':'absolute'},'plot-link') : ''}</figure>`;
 }
 
+function miniComparison(patch) {
+  const keys = patch.experiment === 'A1' || patch.metric === 'fragmentation' ? ['UUIDV7','UUIDV4'] : ['SEQUENTIAL','UUIDV4'];
+  const entries = keys.map(key => series(patch.experiment,patch.db,patch.scale,patch.metric).find(e=>e.keyType===key));
+  const max = Math.max(...entries.map(e=>e.median));
+  const unit = data.metrics[patch.metric].unit;
+  return `<svg class="mini-comparison" viewBox="0 0 240 58" role="img" aria-label="${esc(entries.map(e=>`${LABELS[e.keyType]}: ${number(e.median)} ${unit}`).join('; '))}">${entries.map((e,i)=>`<text x="0" y="${14+i*23}">${e.keyType==='SEQUENTIAL'?'Seq.':LABELS[e.keyType]}</text><rect x="76" y="${5+i*23}" width="${max>0?e.median/max*108:0}" height="10" fill="${COLORS[e.keyType]}"/><text x="240" y="${14+i*23}" text-anchor="end">${axisNumber(e.median)}</text>`).join('')}<text x="240" y="57" text-anchor="end">${esc(unit)}</text></svg>`;
+}
 function summary() {
   const target = (experiment, db, scale, metric='throughput') => ({view:'explorer',experiment,db,scale,metric,mode:'keys',reference:'absolute'});
   const pgPenalty = (1 - medianFor('single-insert','postgres','1m','throughput','UUIDV4') / medianFor('single-insert','postgres','1m','throughput','SEQUENTIAL')) * 100;
@@ -95,8 +102,8 @@ function summary() {
   ];
   const architectures = {postgres:'B-tree / heap-organized',mysql:'Clustered B-tree (InnoDB)',mongodb:'WiredTiger B-tree index',cassandra:'LSM-tree / SSTables'};
   return `<section class="summary-meta"><div class="wrap">Medians · 5 runs per configuration (A4: 3) · Separate single-node and cluster experiments ${link('Methods', {view:'data'}, 'inline-link')}</div></section>
-  <section class="wrap compact-section"><h1>Key findings</h1><div class="finding-grid">${findings.map(([title,value,description,meta,patch])=>`<a class="finding" href="${esc(url(patch))}"><h2>${title}</h2><strong>${value}</strong><p>${description}</p><small>${meta}</small></a>`).join('')}</div></section>
-  <section class="database-band"><div class="wrap compact-section"><h2>Databases tested</h2><div class="database-grid">${Object.entries(DBS).map(([db,label])=>`<a class="database-entry" href="${esc(url(target('single-insert',db,'1m')))}"><h3>${label}</h3><p>${architectures[db]}</p><span>Explore</span></a>`).join('')}</div></div></section>
+  <section class="wrap compact-section"><h1>Key findings</h1><div class="finding-grid">${findings.map(([title,value,description,meta,patch])=>`<a class="finding" href="${esc(url(patch))}"><h2>${title}</h2><strong>${value}</strong><p>${description}</p><small>${meta}</small>${miniComparison(patch)}</a>`).join('')}</div></section>
+  <section class="database-band"><div class="wrap compact-section"><h2>Databases tested</h2><div class="database-grid">${Object.entries(DBS).map(([db,label])=>`<a class="database-entry" data-db="${db}" href="${esc(url(target('single-insert',db,'1m')))}"><h3>${label}</h3><p>${architectures[db]}</p><span>Explore</span></a>`).join('')}</div></div></section>
   <section class="wrap compact-section key-section"><h2>Key types tested</h2>${legend()}</section>
   <details class="additional-results"><summary class="wrap">More results: Cassandra memory budgets, PostgreSQL indexes, workload comparisons</summary>${detailedFindings()}</details>`;
 }
@@ -153,11 +160,11 @@ function validateState() {
 }
 function filters() {
   const opts = available();
-  return `<section class="filters-band" aria-label="Evidence filters"><div class="wrap"><div class="filters">${field('Experiment', 'experiment', data.experiments.map(e=>[e.id,e.label]))}${field('Database','db',opts.dbs.map(db=>[db,DBS[db]]))}${field('Rows / preload','scale',opts.scales.map(s=>[s,s.toUpperCase()]))}${field('Measurement','metric',(state.mode==='engines'?['throughput']:opts.metrics).map(m=>[m,data.metrics[m].label]))}</div><div class="filter-secondary">${field('Compare','mode',opts.modes)}${state.metric==='throughput'&&state.mode!=='engines'?field('Reference','reference',[['absolute','Absolute values'],['sequential','Sequential median = 100%']]):''}<div class="filter-actions"><button type="button" data-action="copy">Copy view link</button>${link(state.view==='data'?'Open chart':'Open data & methods',{view:state.view==='data'?'explorer':'data'},'action-link')}</div></div></div></section>`;
+  return `<section class="filters-band" aria-label="Evidence filters"><div class="wrap"><div class="filters">${field('Experiment', 'experiment', data.experiments.map(e=>[e.id,e.label]))}${field('Database','db',opts.dbs.map(db=>[db,DBS[db]]))}${field('Rows / preload','scale',opts.scales.map(s=>[s,s.toUpperCase()]))}${field('Measurement','metric',(state.mode==='engines'?['throughput']:opts.metrics).map(m=>[m,data.metrics[m].label]))}</div><div class="filter-secondary">${field('Compare','mode',opts.modes)}${state.metric==='throughput'&&state.mode!=='engines'?field('Reference','reference',[['absolute','Absolute values'],['sequential','Sequential median = 100%']]):''}${state.view==='data'?`<div class="filter-actions"><button type="button" data-action="copy">Copy view link</button>${link('Open chart',{view:'explorer'},'action-link')}</div>`:''}</div></div></section>`;
 }
 function context() {
   const e = experiment();
-  return `<section class="wrap context" aria-label="Experimental conditions"><div class="context-line"><span>${esc(e.section)}</span><span>${esc(e.family==='cluster' ? e.rows+' rows' : ['single-ih','single-ru'].includes(e.id) ? state.scale.toUpperCase()+' preload rows' : state.mode==='scales' ? e.rows+' rows' : state.scale.toUpperCase()+' rows')}</span><span>${e.memory} / container</span><span>${e.nodes} node${e.nodes===1?'':'s'}${e.rf?' / RF'+e.rf:''}</span><span>${e.clients} ${e.clients===1?'client':'writers'}</span><span>n=${e.n} / scheme</span></div><p>${esc(e.note)}</p>${e.family==='cluster'?`<p class="small">Heap / new generation: ${esc(e.heap)} · 8 CPUs per container · 50,000 buckets · LOCAL_ONE · ${esc(e.sampler)}.</p>`:`<p class="small">Ryzen 7 7840U workstation · NVMe · 4 CPUs per container · ${esc(e.sampler)}. Host throughput is not compared with the HDD cluster campaign.</p>`}</section>`;
+  return `<section class="wrap context" aria-label="Experimental conditions"><div class="context-line"><span>${esc(e.section)}</span><span>${esc(e.family==='cluster' ? e.rows+' rows' : ['single-ih','single-ru'].includes(e.id) ? state.scale.toUpperCase()+' preload rows' : state.mode==='scales' ? e.rows+' rows' : state.scale.toUpperCase()+' rows')}</span><span>${e.memory} / container</span><span>${e.nodes} node${e.nodes===1?'':'s'}${e.rf?' / RF'+e.rf:''}</span><span>${e.clients} ${e.clients===1?'client':'writers'}</span><span>n=${e.n} / scheme</span></div><details class="condition-details"><summary>Conditions &amp; sampling</summary><p>${esc(e.note)}</p>${e.family==='cluster'?`<p class="small">Heap / new generation: ${esc(e.heap)} · 8 CPUs per container · 50,000 buckets · LOCAL_ONE · ${esc(e.sampler)}.</p>`:`<p class="small">Ryzen 7 7840U workstation · NVMe · 4 CPUs per container · ${esc(e.sampler)}. Host throughput is not compared with the HDD cluster campaign.</p>`}</details></section>`;
 }
 function currentGroups() {
   if (state.mode==='engines') return Object.keys(DBS).filter(db=>series(state.experiment,db,state.scale,state.metric).length).map(db=>({db,scale:state.scale,title:DBS[db]}));
@@ -169,7 +176,9 @@ function explorerCharts() {
   const normalized=state.reference==='sequential';
   const max=niceMax(Math.max(...groups.flatMap(g=>normalize(series(state.experiment,g.db,g.scale,state.metric),normalized).flatMap(e=>e.values)),normalized?100:0)*1.07);
   const plots=groups.map(g=>panel({title:g.title,meta:`${g.scale.toUpperCase()} ${experiment().id==='single-ih'||experiment().id==='single-ru'?'preload':'rows'} · n=${experiment().n} · ${data.metrics[state.metric].label}`,exp:state.experiment,db:g.db,scale:g.scale,metric:state.metric,normalized,max,showLink:false,caption:normalized?'Each run divided by the Sequential median in its own configuration. This is not a paired-run ratio.':'Points: individual runs. Ticks: medians. Values are descriptive unless a contrast is reported below.'})).join('');
-  return `<section class="wrap explorer-chart"><div class="section-heading"><div><h2>${esc(data.metrics[state.metric].label)}</h2><p>${groups.length>1?'Shared axis across these panels. ':''}${normalized?'Normalized within each engine and dataset size; not an absolute engine-speed comparison.':'Absolute values within this experiment.'}</p></div>${plotKey()}</div><p class="metric-description">${esc(data.metrics[state.metric].note)}</p>${groups.length>1?`<div class="plot-grid ${groups.length===4?'four':groups.length===2?'two':''}">${plots}</div>`:plots}${contrast()}</section>`;
+  const stats=contrast();
+  const basis=state.metric==='throughput' ? (state.experiment==='single-ih'?'Successful operations / s':'Attempted operations / s') : data.metrics[state.metric].unit;
+  return `<section class="wrap explorer-chart"><div class="section-heading"><div><h2>${esc(data.metrics[state.metric].label)}</h2><p>${esc(basis)}${normalized?' · Sequential median = 100%':''}${groups.length>1?' · Shared axis':''}${state.metric==='throughput'&&['A1','A2','A3','A4'].includes(state.experiment)?' · Includes no-row responses':''}</p></div>${plotKey()}<button class="copy-chart" type="button" data-action="copy">Copy link</button></div><div class="chart-workspace${stats?' has-contrast':''}"><div class="chart-panels">${groups.length>1?`<div class="plot-grid ${groups.length===4?'four':groups.length===2?'two':''}">${plots}</div>`:plots}</div>${stats}</div><details class="measurement-details"><summary>Measurement definition${state.experiment==='A2'?' · I/O exclusion':''}</summary><p class="metric-description">${esc(data.metrics[state.metric].note)}${normalized?' Each run is divided by the Sequential median in its own configuration; ratios are not paired.':''}</p></details></section>`;
 }
 function contrast() {
   const exp=state.experiment;
@@ -179,7 +188,7 @@ function contrast() {
   if (!c && !(mean&&state.metric==='throughput')) return '';
   let primary=c?`<div><h3>UUIDv4 / UUIDv7</h3><div class="contrast-values">${number(c.ratio,3)} <span class="small">ratio of medians</span></div><p>95% bootstrap interval [${number(c.ci[0],3)}, ${number(c.ci[1],3)}].<br>Exact ${c.sided} rank-sum p = ${number(c.p,5)}.</p></div>`:`<div><h3>UUIDv4 versus UUIDv7</h3><div class="contrast-values">${signed(mean.difference)}%</div><p>Relative difference of mean throughput.<br>95% Welch interval [${signed(mean.ci[0])}%, ${signed(mean.ci[1])}%].</p></div>`;
   const secondary=c&&state.metric!=='throughput';
-  return `<aside class="contrast" aria-label="Paper statistical contrast">${primary}<div><p>${c?`For ${state.metric==='throughput'?'throughput, below 1':'latency and I/O, above 1'} means UUIDv4 is worse. 10,000 percentile-bootstrap resamples (seed 20260905). Intervals describe the ratio of medians, not the spread of individual runs.`:'The difference is divided by the two groups’ combined observed mean, not the UUIDv7 mean. The interval spans both a deficit and a small advantage for UUIDv4; similar observed medians do not establish equivalence.'}</p><p>${secondary?'Supporting endpoint: the four supporting endpoints use a Bonferroni threshold of 0.0125. These related measurements are not independent confirmations.':'Throughput is the primary endpoint. Small sample sizes limit precision; no equivalence conclusion is established.'}</p>${exp==='A2'&&state.metric==='throughput'?`<p>Relative mean-throughput difference: ${signed(mean.difference)}%, Welch 95% interval [${signed(mean.ci[0])}%, ${signed(mean.ci[1])}%], divided by the combined mean. No significant difference is not equivalence. A mean-difference interval and a median-ratio interval estimate different quantities.</p>`:''}</div></aside>`;
+  return `<aside class="contrast" aria-label="Paper statistical contrast">${primary}${exp==='A2'?'<p>No significant throughput difference; equivalence is not established.</p>':''}<details><summary>Statistical method</summary><p>${c?`For ${state.metric==='throughput'?'throughput, below 1':'latency and I/O, above 1'} means UUIDv4 is worse. 10,000 percentile-bootstrap resamples (seed 20260905). Intervals describe the ratio of medians, not the spread of individual runs.`:'The difference is divided by the two groups’ combined observed mean, not the UUIDv7 mean. The interval spans both a deficit and a small advantage for UUIDv4; similar observed medians do not establish equivalence.'}</p><p>${secondary?'Supporting endpoint: the four supporting endpoints use a Bonferroni threshold of 0.0125. These related measurements are not independent confirmations.':'Throughput is the primary endpoint. Small sample sizes limit precision; no equivalence conclusion is established.'}</p>${exp==='A2'&&state.metric==='throughput'?`<p>Relative mean-throughput difference: ${signed(mean.difference)}%, Welch 95% interval [${signed(mean.ci[0])}%, ${signed(mean.ci[1])}%], divided by the combined mean. No significant difference is not equivalence. A mean-difference interval and a median-ratio interval estimate different quantities.</p>`:''}</details></aside>`;
 }
 function selectedEntries() {
   return currentGroups().flatMap(g=>series(state.experiment,g.db,g.scale,state.metric));
@@ -215,12 +224,13 @@ function experimentMatrix() {
 function render({focusControl=null, focusMain=false}={}) {
   const expanded = content.querySelector('.additional-results')?.open || ['clusterMetric','pgMetric','matrixDb'].some(key => state[key] !== DEFAULT[key]);
   validateState();
+  content.dataset.view=state.view;
   document.querySelectorAll('[data-view]').forEach(a=>{
     a.href=url({view:a.dataset.view});
     if (a.dataset.view===state.view) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
   });
   if (state.view==='summary') content.innerHTML=summary();
-  else if (state.view==='explorer') content.innerHTML=`<div class="wrap explorer-intro"><h1>Explorer</h1></div>${filters()}${context()}${explorerCharts()}${table()}${linkToSources()}`;
+  else if (state.view==='explorer') content.innerHTML=`<h1 class="sr-only">Explorer</h1>${filters()}${context()}${explorerCharts()}${table()}`;
   else content.innerHTML=`<div class="wrap methods-intro"><h1>Data &amp; methods</h1></div>${filters()}${context()}${table(true)}${sources()}${experimentMatrix()}${methods()}`;
   document.title=`UUID Benchmark — ${state.view==='summary'?'Paper evidence':state.view==='explorer'?experiment().label:'Data & methods'}`;
   if (state.view==='summary' && expanded) content.querySelector('.additional-results').open=true;
@@ -229,7 +239,6 @@ function render({focusControl=null, focusMain=false}={}) {
   if (focusControl) document.getElementById(`select-${focusControl}`)?.focus();
   if (focusMain) document.querySelector('#main').focus({preventScroll:true});
 }
-function linkToSources() { return `<div class="wrap" style="padding-bottom:28px">${link('Source files, hashes and methodological limits',{view:'data'})}</div>`; }
 function readURL() {
   const p=new URLSearchParams(location.hash.slice(1));
   state={...DEFAULT};
