@@ -1,0 +1,349 @@
+{
+  "commit": "6d26ec2fe57e5ae457c7daddfb91023b82a938fc",
+  "working_tree_dirty": false,
+  "orchestrator_md5": "5f8c487f03c470e6730a495bbd5f5a0f",
+  "workload_md5": "dc0a3ae30e2f3cbfe808da47e85a24f7",
+  "flags": {
+    "batch-size": "100",
+    "campaign-seed": "20260905",
+    "cassandra-cpus": "8",
+    "cassandra-heap": "2G",
+    "cassandra-image": "cassandra@sha256:755db0086160b6898e890959343dec1544ff27e7fa8ecc955c2f4b28c40a2f1a",
+    "cassandra-memory": "4g",
+    "cassandra-newgen": "512M",
+    "cluster-mode": "remote-cluster",
+    "cluster-nodes": "3",
+    "connections": "8",
+    "consistency": "local_one",
+    "database": "cassandra",
+    "head-sampling": "false",
+    "nodes": "<scrubbed>",
+    "num-buckets": "50000",
+    "num-ops": "10000",
+    "num-records": "50000000",
+    "num-runs": "5",
+    "output": "nachlauf_a5_insert_50m_4g_n5.csv",
+    "replication-factor": "0",
+    "scenario": "insert-performance",
+    "single-node": "false",
+    "ssh-key": "<scrubbed>",
+    "ssh-user": "<scrubbed>"
+  },
+  "effective_cluster": {
+    "consistency": "local_one",
+    "head_sampling": "false",
+    "image": "cassandra@sha256:755db0086160b6898e890959343dec1544ff27e7fa8ecc955c2f4b28c40a2f1a",
+    "mode": "remote-cluster",
+    "node_count": "3",
+    "nodes": "<scrubbed>",
+    "num_buckets": "50000",
+    "replication_factor": "3"
+  },
+  "campaign_seed": 20260905,
+  "prep_insert_connections": 8,
+  "measured_connections_read_update": 1,
+  "started": "2026-09-06T14:51:34.378975491+02:00",
+  "updated": "2026-09-07T02:58:26.32044938+02:00",
+  "runs": [
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv4",
+      "run": 1,
+      "order_index": 0,
+      "sample_seed": 6348849800560282350,
+      "order_seed": 7191399051127113269,
+      "started": "2026-09-06T14:51:34.416053966+02:00",
+      "seconds": 1467.536802239
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv7",
+      "run": 1,
+      "order_index": 1,
+      "sample_seed": 5724754905924434179,
+      "order_seed": 7191399051127113269,
+      "started": "2026-09-06T15:16:08.782299936+02:00",
+      "seconds": 1458.430829361
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv1",
+      "run": 1,
+      "order_index": 2,
+      "sample_seed": 246268896233672165,
+      "order_seed": 7191399051127113269,
+      "started": "2026-09-06T15:40:34.702021441+02:00",
+      "seconds": 1425.291384204
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid_monotonic",
+      "run": 1,
+      "order_index": 3,
+      "sample_seed": 3792830637108592256,
+      "order_seed": 7191399051127113269,
+      "started": "2026-09-06T16:04:26.498681052+02:00",
+      "seconds": 1437.401297812
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid",
+      "run": 1,
+      "order_index": 4,
+      "sample_seed": 4575621318692273483,
+      "order_seed": 7191399051127113269,
+      "started": "2026-09-06T16:28:31.142223801+02:00",
+      "seconds": 1443.783975836
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "sequential",
+      "run": 1,
+      "order_index": 5,
+      "sample_seed": 4783681013856280264,
+      "order_seed": 7191399051127113269,
+      "started": "2026-09-06T16:52:42.742493181+02:00",
+      "seconds": 1395.534614311
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid",
+      "run": 2,
+      "order_index": 0,
+      "sample_seed": 4575620219180645272,
+      "order_seed": 7191397951615485058,
+      "started": "2026-09-06T17:16:05.63562705+02:00",
+      "seconds": 1442.034060849
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv1",
+      "run": 2,
+      "order_index": 1,
+      "sample_seed": 246267796722043954,
+      "order_seed": 7191397951615485058,
+      "started": "2026-09-06T17:40:14.155245242+02:00",
+      "seconds": 1430.4852548
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv7",
+      "run": 2,
+      "order_index": 2,
+      "sample_seed": 5724753806412805968,
+      "order_seed": 7191397951615485058,
+      "started": "2026-09-06T18:04:12.051974668+02:00",
+      "seconds": 1423.597366924
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid_monotonic",
+      "run": 2,
+      "order_index": 3,
+      "sample_seed": 3792831736620220467,
+      "order_seed": 7191397951615485058,
+      "started": "2026-09-06T18:28:02.276175652+02:00",
+      "seconds": 1469.680917818
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv4",
+      "run": 2,
+      "order_index": 4,
+      "sample_seed": 6348850900071910561,
+      "order_seed": 7191397951615485058,
+      "started": "2026-09-06T18:52:38.596466056+02:00",
+      "seconds": 1464.0397053
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "sequential",
+      "run": 2,
+      "order_index": 5,
+      "sample_seed": 4783682113367908475,
+      "order_seed": 7191397951615485058,
+      "started": "2026-09-06T19:17:09.345458605+02:00",
+      "seconds": 1451.379199172
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid",
+      "run": 3,
+      "order_index": 0,
+      "sample_seed": 4575623517715529905,
+      "order_seed": 7191396852103856847,
+      "started": "2026-09-06T19:41:27.446029171+02:00",
+      "seconds": 1429.134294957
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv4",
+      "run": 3,
+      "order_index": 1,
+      "sample_seed": 6348847601537025928,
+      "order_seed": 7191396852103856847,
+      "started": "2026-09-06T20:05:23.112092731+02:00",
+      "seconds": 1438.054666713
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv1",
+      "run": 3,
+      "order_index": 2,
+      "sample_seed": 246266697210415743,
+      "order_seed": 7191396852103856847,
+      "started": "2026-09-06T20:29:27.676948222+02:00",
+      "seconds": 1377.765167549
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv7",
+      "run": 3,
+      "order_index": 3,
+      "sample_seed": 5724757104947690601,
+      "order_seed": 7191396852103856847,
+      "started": "2026-09-06T20:52:31.775000974+02:00",
+      "seconds": 1389.940118438
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "sequential",
+      "run": 3,
+      "order_index": 4,
+      "sample_seed": 4783683212879536686,
+      "order_seed": 7191396852103856847,
+      "started": "2026-09-06T21:15:49.439057324+02:00",
+      "seconds": 1392.035076926
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid_monotonic",
+      "run": 3,
+      "order_index": 5,
+      "sample_seed": 3792832836131848678,
+      "order_seed": 7191396852103856847,
+      "started": "2026-09-06T21:39:09.16515525+02:00",
+      "seconds": 1429.472265076
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv4",
+      "run": 4,
+      "order_index": 0,
+      "sample_seed": 6348848701048654139,
+      "order_seed": 7191395752592228636,
+      "started": "2026-09-06T22:03:06.022882204+02:00",
+      "seconds": 1486.627790009
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid",
+      "run": 4,
+      "order_index": 1,
+      "sample_seed": 4575622418203901694,
+      "order_seed": 7191395752592228636,
+      "started": "2026-09-06T22:27:59.617313511+02:00",
+      "seconds": 1482.721028496
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv1",
+      "run": 4,
+      "order_index": 2,
+      "sample_seed": 246265597698787532,
+      "order_seed": 7191395752592228636,
+      "started": "2026-09-06T22:52:49.625414932+02:00",
+      "seconds": 1420.45972207
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "sequential",
+      "run": 4,
+      "order_index": 3,
+      "sample_seed": 4783684312391164897,
+      "order_seed": 7191395752592228636,
+      "started": "2026-09-06T23:16:37.129529638+02:00",
+      "seconds": 1438.468317343
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid_monotonic",
+      "run": 4,
+      "order_index": 4,
+      "sample_seed": 3792833935643476889,
+      "order_seed": 7191395752592228636,
+      "started": "2026-09-06T23:40:42.317026406+02:00",
+      "seconds": 1467.496655162
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv7",
+      "run": 4,
+      "order_index": 5,
+      "sample_seed": 5724756005436062390,
+      "order_seed": 7191395752592228636,
+      "started": "2026-09-07T00:05:16.370157163+02:00",
+      "seconds": 1466.878929222
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv4",
+      "run": 5,
+      "order_index": 0,
+      "sample_seed": 6348854198606795194,
+      "order_seed": 7191394653080600425,
+      "started": "2026-09-07T00:29:50.431823+02:00",
+      "seconds": 1486.842714071
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv1",
+      "run": 5,
+      "order_index": 1,
+      "sample_seed": 246264498187159321,
+      "order_seed": 7191394653080600425,
+      "started": "2026-09-07T00:54:44.54024908+02:00",
+      "seconds": 1459.764731766
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "sequential",
+      "run": 5,
+      "order_index": 2,
+      "sample_seed": 4783685411902793108,
+      "order_seed": 7191394653080600425,
+      "started": "2026-09-07T01:19:10.92119688+02:00",
+      "seconds": 1459.935133764
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "uuidv7",
+      "run": 5,
+      "order_index": 3,
+      "sample_seed": 5724759303970947023,
+      "order_seed": 7191394653080600425,
+      "started": "2026-09-07T01:43:37.228713466+02:00",
+      "seconds": 1476.769961165
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid_monotonic",
+      "run": 5,
+      "order_index": 4,
+      "sample_seed": 3792835035155105100,
+      "order_seed": 7191394653080600425,
+      "started": "2026-09-07T02:08:20.757176481+02:00",
+      "seconds": 1498.408022127
+    },
+    {
+      "scenario": "insert_performance",
+      "key_type": "ulid",
+      "run": 5,
+      "order_index": 5,
+      "sample_seed": 4575625716738786327,
+      "order_seed": 7191394653080600425,
+      "started": "2026-09-07T02:33:25.775597759+02:00",
+      "seconds": 1500.544666011
+    }
+  ]
+}

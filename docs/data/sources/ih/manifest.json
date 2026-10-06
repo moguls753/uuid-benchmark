@@ -1,0 +1,19 @@
+{
+  "kind": "derived-consolidated-view",
+  "protocol": "ih-fixed-preload-v1",
+  "created": "2026-10-06T06:05:35.152491+00:00",
+  "original_campaign": "ih-corrected-night-20261005T223549Z",
+  "repeat_campaign": "ih-corrected-repeat-20261006T055537Z",
+  "runs": 125,
+  "original_runs_selected": 122,
+  "repeat_runs_selected": 3,
+  "groups": 25,
+  "runs_per_group": 5,
+  "source_pilot_skipped": true,
+  "selection_rule": "Exactly the three explicitly authorized build-overlap repeats replace their analytical slots; no selection by measured throughput",
+  "results": "runs.csv",
+  "summary": "summary.csv",
+  "provenance": "selection.json",
+  "definition": "descriptive medians and 100 * scheme median / selected Sequential median within engine",
+  "caveat": "An explicitly consolidated cross-campaign view, not a fresh uninterrupted 125-run campaign or proof of zero background load"
+}

@@ -48,6 +48,18 @@ docs/paper-context.md
 # out for. They belong to the paper repo's data directory, scrubbed.
 *.meta.json
 *.runs.jsonl
+# Explicitly selected, sanitized Pages evidence snapshots only. Raw operational
+# manifests/logs elsewhere remain ignored. build_evidence.py validates/scrubs these.
+!/docs/data/sources/cluster/nachlauf_a1_read_50m_4g_n5.csv.meta.json
+!/docs/data/sources/cluster/nachlauf_a1_read_50m_4g_n5.csv.runs.jsonl
+!/docs/data/sources/cluster/nachlauf_a2_read_50m_32g_n5.csv.meta.json
+!/docs/data/sources/cluster/nachlauf_a2_read_50m_32g_n5.csv.runs.jsonl
+!/docs/data/sources/cluster/nachlauf_a3_read_50m_4g_single_n5.csv.meta.json
+!/docs/data/sources/cluster/nachlauf_a3_read_50m_4g_single_n5.csv.runs.jsonl
+!/docs/data/sources/cluster/nachlauf_a4_bridge_head_50m_4g_n3.csv.meta.json
+!/docs/data/sources/cluster/nachlauf_a4_bridge_head_50m_4g_n3.csv.runs.jsonl
+!/docs/data/sources/cluster/nachlauf_a5_insert_50m_4g_n5.csv.meta.json
+!/docs/data/sources/cluster/nachlauf_a5_insert_50m_4g_n5.csv.runs.jsonl
 # Campaign console logs at the repo root. logs/ stays tracked: those are the
 # thesis-era run logs. Without this the campaign's own log makes every
 # manifest report a dirty working tree, which is the one thing that field
