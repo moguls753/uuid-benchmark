@@ -66,6 +66,41 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 - `mixed-read-update` - 50% read, 50% update (YCSB Workload A)
 - `all` - Runs all scenarios sequentially (comprehensive benchmark)
 
+## Corrected Insert-Heavy (IH)
+
+The corrected single-client IH protocol is an opt-in path, separate from
+`-scenario=mixed-insert-heavy`. It verifies a fixed preload target pool, fresh
+inserts, successful reads and final cardinality. Cassandra IH uses **bucket 1**
+throughout, RF1, LOCAL_ONE and STCS; the normal Cassandra workloads retain
+hash-based buckets and their configured consistency and sampling. Setting
+`-num-buckets=1` is not an IH substitute: it hashes every ID to bucket 0.
+
+The Python launcher defaults to planning only (Python 3.10+):
+
+```bash
+python3 -B scripts/ih_campaign.py --mode=full --seed=42
+python3 -B scripts/ih_repeat.py --help
+```
+
+Executing a campaign additionally requires `--execute --host-ready`, a quiet
+host and locally available database images. Full mode normally requires pilots;
+`--skip-pilot` explicitly records a bypass, never a passed pilot gate. Repeats
+require named source runs and a reason, reuse archived binaries, and reject
+changed measurement sources. The consolidated code therefore cannot silently
+repeat a pre-consolidation campaign as if its source were unchanged.
+
+Offline checks (no database measurements):
+
+```bash
+go test -count=1 ./...
+python3 -B -m unittest discover -s scripts -p 'test_ih*.py'
+```
+
+Cassandra adapter tests cover all six key types, fixed-partition preload,
+unbounded target/count scans, reads, inserts and error handling. The dedicated
+preload uses batches of 100 and stops on the first failed batch. These checks
+are not evidence of historical binary identity or identical measured behavior.
+
 ## Multi-Node Cassandra
 
 Cassandra supports three deployment modes via `-cluster-mode`. PostgreSQL, MySQL, and MongoDB are always single-node — this section only applies to `-database=cassandra`.

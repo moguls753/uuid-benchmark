@@ -25,6 +25,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gocql/gocql"
 	"github.com/google/uuid"
+	"github.com/moguls753/uuid-benchmark/internal/ih"
 	"github.com/oklog/ulid/v2"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -89,7 +90,44 @@ func main() {
 	idFile := flag.String("id-file", "", "Target-id file (Cassandra only). On --op=insert the run samples --sample-size ids uniformly over insert order, shuffles them and writes them here. On --op=read/update the ids are read from here instead of being fetched from the database.")
 	sampleSize := flag.Int("sample-size", 0, "Number of ids to sample during insert (requires --id-file on --op=insert)")
 	sampleSeed := flag.Int64("sample-seed", 0, "Seed for the id sample and its shuffle (requires --id-file on --op=insert)")
+	seed := flag.Uint64("seed", 1, "Corrected IH operation seed (not UUID entropy)")
+	artifactDir := flag.String("artifact-dir", "/tmp/ih", "Corrected IH pgbench evidence directory")
 	flag.Parse()
+
+	if *op == "ih-corrected" || *op == "ih-ready" {
+		// Keep campaign credentials out of recorded commands and result files.
+		if value := os.Getenv("IH_CONNECTION_STRING"); value != "" {
+			*connString = value
+		}
+	}
+	if *op == "ih-ready" {
+		if err := correctedReady(*dbType, *connString); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
+	if *op == "ih-corrected" {
+		cfg := ih.Config{Engine: *dbType, Scheme: *keyType, Preload: int64(*numRecords), Operations: int64(*numOps), Seed: *seed}
+		if *threads != 1 || *batchSize != 100 {
+			log.Fatal("corrected IH requires --threads=1 --batch-size=100")
+		}
+		if err := cfg.Validate(); err != nil {
+			log.Fatal(err)
+		}
+		var result *ih.Result
+		if *dbType == "postgres" {
+			result = ih.RunPostgres(cfg, *connString, *artifactDir)
+		} else {
+			result = runCorrectedIH(cfg, *connString)
+		}
+		if err := json.NewEncoder(os.Stdout).Encode(result); err != nil {
+			log.Fatal(err)
+		}
+		if !result.Valid {
+			os.Exit(1)
+		}
+		return
+	}
 
 	if *dbType == "" || *op == "" || *keyType == "" {
 		log.Fatal("--db-type, --op, and --key-type are required")
@@ -1974,6 +2012,373 @@ func queryBucketIDs(session *gocql.Session, keyType string, bucket, perBucketLim
 
 	if err := iter.Close(); err != nil {
 		return ids, err
+	}
+	return ids, nil
+}
+
+func correctedReady(engine, conn string) error {
+	switch engine {
+	case "mysql", "postgres":
+		db, err := sql.Open(engine, conn)
+		if err != nil {
+			return err
+		}
+		defer db.Close()
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		return db.PingContext(ctx)
+	case "mongodb":
+		client, err := mongo.Connect(options.Client().ApplyURI(conn))
+		if err != nil {
+			return err
+		}
+		defer client.Disconnect(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		return client.Ping(ctx, nil)
+	case "cassandra":
+		cluster := gocql.NewCluster(conn)
+		cluster.Timeout = 2 * time.Second
+		cluster.ConnectTimeout = 2 * time.Second
+		session, err := cluster.CreateSession()
+		if err != nil {
+			return err
+		}
+		session.Close()
+		return nil
+	default:
+		return fmt.Errorf("unknown engine %q", engine)
+	}
+}
+
+// runCorrectedIH is deliberately separate from historical mixed/RU paths.
+// Fresh schema creation fails rather than dropping any existing data.
+func runCorrectedIH(c ih.Config, conn string) *ih.Result {
+	failure := func(err error) *ih.Result { r := ih.NewResult(c); r.Finish(err); return r }
+	ctx := context.Background()
+	var counter atomic.Int64
+	kg := newKeyGenerator(c.Scheme, &counter)
+	b := ih.Backend{Prepare: func(max int64) error { counter.Store(max); _, err := crand.Read(payload); return err }}
+	checkPreload := func(r *Result, err error) error {
+		if err != nil {
+			return err
+		}
+		if r.Errors != 0 || int64(r.TotalOps) != c.Preload {
+			return fmt.Errorf("preload failed: %+v", r)
+		}
+		return nil
+	}
+	toKey := func(v any) ih.Key {
+		k := ih.Key{Value: v, Token: fmt.Sprintf("%T:%v", v, v)}
+		if n, ok := v.(int64); ok {
+			k.Sequential = n
+		}
+		return k
+	}
+	switch c.Engine {
+	case "mysql":
+		db, err := sql.Open("mysql", conn)
+		if err != nil {
+			return failure(err)
+		}
+		defer db.Close()
+		db.SetMaxOpenConns(1)
+		db.SetMaxIdleConns(1)
+		typ := "BINARY(16)"
+		if c.Scheme == "sequential" {
+			typ = "BIGINT AUTO_INCREMENT"
+		}
+		table := "bench_" + c.Scheme
+		if _, err = db.Exec(fmt.Sprintf("CREATE TABLE %s (id %s PRIMARY KEY, data BLOB, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP) ENGINE=InnoDB", table, typ)); err != nil {
+			return failure(err)
+		}
+		b.Preload = func() error { return checkPreload(mysqlInsert(db, table, c.Scheme, int(c.Preload), 100, 1)) }
+		b.IDs = func() ([]ih.Key, error) {
+			rows, err := db.Query("SELECT id FROM " + table)
+			if err != nil {
+				return nil, err
+			}
+			defer rows.Close()
+			var ids []ih.Key
+			for rows.Next() {
+				if c.Scheme == "sequential" {
+					var id int64
+					if err := rows.Scan(&id); err != nil {
+						return nil, err
+					}
+					ids = append(ids, toKey(id))
+				} else {
+					var id []byte
+					if err := rows.Scan(&id); err != nil {
+						return nil, err
+					}
+					ids = append(ids, toKey(append([]byte(nil), id...)))
+				}
+			}
+			return ids, rows.Err()
+		}
+		b.Count = func() (int64, ih.Range, error) {
+			var n int64
+			var extent ih.Range
+			query := "SELECT COUNT(*) FROM " + table
+			if c.Scheme == "sequential" {
+				query = "SELECT COUNT(*), COALESCE(MIN(id),0), COALESCE(MAX(id),0) FROM " + table
+				err := db.QueryRow(query).Scan(&n, &extent.Min, &extent.Max)
+				return n, extent, err
+			}
+			err := db.QueryRow(query).Scan(&n)
+			return n, extent, err
+		}
+		b.Insert = func() (int64, error) {
+			var r sql.Result
+			var err error
+			if c.Scheme == "sequential" {
+				r, err = db.Exec("INSERT INTO "+table+" (data) VALUES (?)", payload)
+			} else {
+				r, err = db.Exec("INSERT INTO "+table+" (id,data) VALUES (?,?)", kg.generateMySQLKey(), payload)
+			}
+			if err != nil {
+				return 0, err
+			}
+			n, err := r.RowsAffected()
+			if err != nil {
+				return 0, err
+			}
+			if n != 1 {
+				return 0, fmt.Errorf("insert affected %d rows", n)
+			}
+			if c.Scheme == "sequential" {
+				return r.LastInsertId()
+			}
+			return 0, nil
+		}
+		b.Read = func(id any) error {
+			var readID any
+			var data []byte
+			err := db.QueryRow("SELECT id,data FROM "+table+" WHERE id=?", id).Scan(&readID, &data)
+			if err == sql.ErrNoRows {
+				return ih.ErrReadMiss
+			}
+			return err
+		}
+	case "mongodb":
+		client, err := mongo.Connect(options.Client().ApplyURI(conn).SetRetryWrites(false).SetRetryReads(false).SetMaxPoolSize(1))
+		if err != nil {
+			return failure(err)
+		}
+		defer client.Disconnect(ctx)
+		db := client.Database("uuid_benchmark")
+		if err := db.CreateCollection(ctx, "bench"); err != nil {
+			return failure(err)
+		}
+		coll := db.Collection("bench")
+		b.Preload = func() error { return checkPreload(mongoInsert(ctx, coll, c.Scheme, int(c.Preload), 100, 1)) }
+		b.IDs = func() ([]ih.Key, error) {
+			cur, err := coll.Find(ctx, bson.D{}, options.Find().SetProjection(bson.D{{Key: "_id", Value: 1}}))
+			if err != nil {
+				return nil, err
+			}
+			defer cur.Close(ctx)
+			var ids []ih.Key
+			for cur.Next(ctx) {
+				var doc bson.M
+				if err := cur.Decode(&doc); err != nil {
+					return nil, err
+				}
+				id, ok := doc["_id"]
+				if !ok {
+					return nil, fmt.Errorf("missing _id")
+				}
+				ids = append(ids, toKey(id))
+			}
+			return ids, cur.Err()
+		}
+		b.Count = func() (int64, ih.Range, error) {
+			n, err := coll.CountDocuments(ctx, bson.D{})
+			extent := ih.Range{}
+			if err != nil || c.Scheme != "sequential" {
+				return n, extent, err
+			}
+			for _, direction := range []int{1, -1} {
+				var doc struct {
+					ID int64 `bson:"_id"`
+				}
+				err = coll.FindOne(ctx, bson.D{}, options.FindOne().SetSort(bson.D{{Key: "_id", Value: direction}}).SetProjection(bson.D{{Key: "_id", Value: 1}})).Decode(&doc)
+				if err != nil {
+					return n, extent, err
+				}
+				if direction == 1 {
+					extent.Min = doc.ID
+				} else {
+					extent.Max = doc.ID
+				}
+			}
+			return n, extent, nil
+		}
+		b.Insert = func() (int64, error) {
+			id := kg.generateMongoKey()
+			_, err := coll.InsertOne(ctx, bson.D{{Key: "_id", Value: id}, {Key: "data", Value: payload}})
+			if n, ok := id.(int64); ok {
+				return n, err
+			}
+			return 0, err
+		}
+		b.Read = func(id any) error {
+			var doc bson.M
+			err := coll.FindOne(ctx, bson.D{{Key: "_id", Value: id}}).Decode(&doc)
+			if err == mongo.ErrNoDocuments {
+				return ih.ErrReadMiss
+			}
+			return err
+		}
+	case "cassandra":
+		cluster := gocql.NewCluster(conn)
+		cluster.Consistency = gocql.LocalOne
+		cluster.NumConns = 1
+		cluster.Timeout = 30 * time.Second
+		cluster.ConnectTimeout = 30 * time.Second
+		cluster.RetryPolicy = &gocql.SimpleRetryPolicy{NumRetries: 0}
+		session, err := cluster.CreateSession()
+		if err != nil {
+			return failure(err)
+		}
+		defer session.Close()
+		if err := session.Query("CREATE KEYSPACE uuid_benchmark WITH replication = {'class':'SimpleStrategy','replication_factor':1}").Exec(); err != nil {
+			return failure(err)
+		}
+		session.Close()
+		cluster.Keyspace = "uuid_benchmark"
+		session, err = cluster.CreateSession()
+		if err != nil {
+			return failure(err)
+		}
+		defer session.Close()
+		typ := map[string]string{"sequential": "bigint", "uuidv1": "timeuuid", "uuidv4": "uuid", "uuidv7": "uuid", "ulid": "blob", "ulid_monotonic": "blob"}[c.Scheme]
+		if err := session.Query("CREATE TABLE bench (bucket int,id " + typ + ",payload blob,PRIMARY KEY ((bucket),id)) WITH compaction = {'class':'SizeTieredCompactionStrategy'}").Exec(); err != nil {
+			return failure(err)
+		}
+		b = correctedCassandraBackend(c, ihCassandraSession{session}, kg, b, toKey)
+	default:
+		return failure(fmt.Errorf("unsupported corrected engine"))
+	}
+	return ih.Run(c, b)
+}
+
+// Corrected IH deliberately uses one fixed partition, not hash(id) % N.
+// In particular N=1 in the Multinode path means bucket=0, not bucket=1.
+const correctedIHCassandraBucket = 1
+
+// These narrow interfaces let offline tests exercise the actual IH batch,
+// query and verification paths without connecting to Cassandra.
+type ihCassandraDB interface {
+	NewBatch(gocql.BatchType) *gocql.Batch
+	ExecuteBatch(*gocql.Batch) error
+	IHQuery(string, ...any) ihCassandraQuery
+}
+
+type ihCassandraQuery interface {
+	Exec() error
+	Scan(...any) error
+	IHIter() ihCassandraIter
+}
+
+type ihCassandraIter interface {
+	Scan(...any) bool
+	Close() error
+}
+
+type ihCassandraSession struct{ *gocql.Session }
+type ihCassandraNativeQuery struct{ *gocql.Query }
+
+func (s ihCassandraSession) IHQuery(stmt string, args ...any) ihCassandraQuery {
+	return ihCassandraNativeQuery{s.Query(stmt, args...)}
+}
+
+func (q ihCassandraNativeQuery) IHIter() ihCassandraIter { return q.Iter() }
+
+func correctedCassandraBackend(c ih.Config, session ihCassandraDB, kg *keyGenerator, b ih.Backend, toKey func(any) ih.Key) ih.Backend {
+	b.Preload = func() error {
+		// A separate generator keeps the mixed sequential counter untouched
+		// until Prepare receives the verified preload maximum.
+		var counter atomic.Int64
+		preloadKeys := newKeyGenerator(c.Scheme, &counter)
+		for i := int64(0); i < c.Preload; i += 100 {
+			batch := session.NewBatch(gocql.UnloggedBatch)
+			for j := i; j < i+100 && j < c.Preload; j++ {
+				batch.Query(cassandraInsertQuery, correctedIHCassandraBucket, preloadKeys.generateCassandraKey(), payload)
+			}
+			if err := session.ExecuteBatch(batch); err != nil {
+				return fmt.Errorf("IH Cassandra preload: %w", err)
+			}
+		}
+		return nil
+	}
+	b.IDs = func() ([]ih.Key, error) {
+		ids, err := correctedCassandraIDs(session, c.Scheme)
+		if err != nil {
+			return nil, err
+		}
+		keys := make([]ih.Key, len(ids))
+		for i, id := range ids {
+			keys[i] = toKey(id)
+		}
+		return keys, nil
+	}
+	// Stream all IDs independently after mixed; COUNT(*) on a wide partition can time out.
+	b.Count = func() (int64, ih.Range, error) {
+		keys, err := b.IDs()
+		if err != nil {
+			return 0, ih.Range{}, err
+		}
+		extent, err := ih.VerifyTargets(keys, int64(len(keys)))
+		return int64(len(keys)), extent, err
+	}
+	b.Insert = func() (int64, error) {
+		id := kg.generateCassandraKey()
+		err := session.IHQuery(cassandraInsertQuery, correctedIHCassandraBucket, id, payload).Exec()
+		if n, ok := id.(int64); ok {
+			return n, err
+		}
+		return 0, err
+	}
+	b.Read = func(id any) error {
+		var data []byte
+		err := session.IHQuery(cassandraReadQuery, correctedIHCassandraBucket, id).Scan(&data)
+		if err == gocql.ErrNotFound {
+			return ih.ErrReadMiss
+		}
+		return err
+	}
+	return b
+}
+
+// Fetch the entire fixed partition. A bounded Multinode sampler cannot be
+// used here: both the initial target pool and the final count must be complete.
+func correctedCassandraIDs(session ihCassandraDB, keyType string) ([]any, error) {
+	iter := session.IHQuery("SELECT id FROM bench WHERE bucket = ?", correctedIHCassandraBucket).IHIter()
+	var ids []any
+	switch keyType {
+	case "sequential":
+		var id int64
+		for iter.Scan(&id) {
+			ids = append(ids, id)
+		}
+	case "uuidv1", "uuidv4", "uuidv7":
+		var id gocql.UUID
+		for iter.Scan(&id) {
+			ids = append(ids, id)
+		}
+	case "ulid", "ulid_monotonic":
+		var id []byte
+		for iter.Scan(&id) {
+			ids = append(ids, append([]byte(nil), id...))
+		}
+	default:
+		_ = iter.Close()
+		return nil, fmt.Errorf("correctedCassandraIDs: unknown keyType %q", keyType)
+	}
+	if err := iter.Close(); err != nil {
+		return nil, err
 	}
 	return ids, nil
 }
