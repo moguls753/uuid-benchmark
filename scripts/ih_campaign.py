@@ -36,7 +36,9 @@ def utc():
     return datetime.now(timezone.utc).isoformat()
 
 
-def schedule(mode, seed, engines, preload=100000, ops=200000):
+def schedule(mode, seed, engines, preload=100000, ops=200000, *, skip_pilot=False):
+    if skip_pilot and mode != "full":
+        raise ValueError("--skip-pilot requires full mode")
     rng = random.Random(seed)
     runs = []
     def add(stage, engine, block, scheme):
@@ -54,7 +56,8 @@ def schedule(mode, seed, engines, preload=100000, ops=200000):
                 rng.shuffle(schemes)
                 for scheme in schemes:
                     add("main", engine, block, scheme)
-    return runs
+    # Generate then filter: skipping pilots must not change the main order/seeds.
+    return [r for r in runs if r["stage"] != "pilot"] if skip_pilot else runs
 
 
 def positive_seconds(value):
@@ -264,6 +267,18 @@ def evaluate_pilot(campaign, accepted, runs, deadline):
     write_json(campaign / "pilot-gate.json", assessment)
     if not assessment["passed"]:
         raise ValueError("pilot budget gate failed; no main run started")
+    return assessment
+
+
+def main_start_gate(campaign, accepted, runs, deadline, *, skip_pilot=False):
+    if not skip_pilot:
+        return evaluate_pilot(campaign, accepted, runs, deadline)
+    if accepted or any(r["stage"] != "main" for r in runs):
+        raise ValueError("pilot bypass must start a fresh main-only campaign")
+    # Explicit operator override, never disguise a bypass as a passed gate.
+    assessment = dict(passed=False, skipped=True, reason="operator requested --skip-pilot",
+                      budget_assessed=False, per_run_validation_required=True, recorded=utc())
+    write_json(campaign / "pilot-gate.json", assessment)
     return assessment
 
 
@@ -524,6 +539,8 @@ def execute_campaign(args, runs):
         (campaign / "source.diff").write_bytes(diff)
         manifest = dict(protocol=PROTOCOL, created=utc(), campaign=args.campaign, mode=args.mode,
                         base_revision=base, files=files, images=images, host=host, schedule=runs,
+                        skip_pilot=args.skip_pilot,
+                        pilot_policy="operator-requested bypass; full-size pilot and budget gate NOT performed" if args.skip_pilot else "required for full mode",
                         order_seed=args.seed, order_rng="Python random.Random/MT19937; stored order is authoritative",
                         python=sys.version, timeout_hours=args.timeout_hours, host_ready_confirmed=True,
                         command=sys.argv, payload="PG: decode(repeat('41',1024),'hex'); others: cryptographic random 1024-byte fixed payload per phase",
@@ -548,14 +565,15 @@ def execute_campaign(args, runs):
         token = secrets.token_hex(8)
         for i, spec in enumerate(runs):
             if spec["stage"] == "main" and not any(r["stage"] == "main" for r in accepted):
-                evaluate_pilot(campaign, accepted, runs, commands.deadline)
+                main_start_gate(campaign, accepted, runs, commands.deadline, skip_pilot=args.skip_pilot)
             print(f"{i+1}/{len(runs)}: {spec['run_id']}", flush=True)
             accepted.append(run_one(spec, campaign, snapshot, images[spec["engine"]]["Id"], resolved[spec["engine"]], commands, binary, i, token))
         export_csv(campaign / "runs.csv", accepted)
         verify_csv(campaign / "runs.csv", accepted)
         if args.mode == "full":
             export_csv(campaign / "summary.csv", summary(accepted))
-        write_json(campaign / "complete.json", dict(ended=utc(), runs=len(accepted), mode=args.mode))
+        write_json(campaign / "complete.json", dict(ended=utc(), runs=len(accepted), mode=args.mode,
+                                                   skip_pilot=args.skip_pilot))
     except BaseException as exc:
         export_csv(campaign / "partial-runs.csv", accepted)
         write_json(campaign / "failed.json", dict(ended=utc(), accepted_runs=len(accepted), error=str(exc).replace(commands.password, "<redacted>")))
@@ -571,18 +589,23 @@ def main():
     p.add_argument("--ops", type=int, default=200000)
     p.add_argument("--campaign", default="ih-corrected-" + datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"))
     p.add_argument("--timeout-hours", type=float, default=12)
+    p.add_argument("--skip-pilot", action="store_true", help="Explicit full-mode protocol deviation: skip pilots and pilot budget gate, retain all per-run checks")
     p.add_argument("--execute", action="store_true")
     p.add_argument("--host-ready", action="store_true", help="Confirm mains power, inhibited suspend, quiet host; no other benchmark")
     args = p.parse_args()
+    if args.skip_pilot and args.mode != "full":
+        p.error("--skip-pilot is only allowed with --mode=full")
     if args.mode != "smoke" and (args.preload, args.ops, args.engines) != (100000, 200000, ENGINES):
         p.error("pilot/full require all four engines in protocol order, preload=100000 and ops=200000")
     if args.preload <= 0 or args.preload % 100 or args.ops <= 0 or not (0 < args.timeout_hours <= 48) or len(set(args.engines)) != len(args.engines):
         p.error("invalid counts, timeout or duplicate engines")
     if not args.campaign.startswith("ih-corrected-") or not all(c.isalnum() or c in "-_" for c in args.campaign):
         p.error("campaign must be a plain ih-corrected-* directory name")
-    runs = schedule(args.mode, args.seed, args.engines, args.preload, args.ops)
+    runs = schedule(args.mode, args.seed, args.engines, args.preload, args.ops, skip_pilot=args.skip_pilot)
+    if args.skip_pilot:
+        print("WARNING: explicit pilot/budget-gate bypass; per-run correctness checks remain mandatory.", file=sys.stderr)
     if not args.execute:
-        print(json.dumps(dict(mode=args.mode, campaign=args.campaign, runs=runs), indent=2))
+        print(json.dumps(dict(mode=args.mode, campaign=args.campaign, skip_pilot=args.skip_pilot, runs=runs), indent=2))
         return
     if not args.host_ready:
         p.error("execution requires --host-ready; review protocol/order before starting")
