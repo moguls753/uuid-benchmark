@@ -1,5 +1,5 @@
 Building workload binary for NoSQL databases...
-Workload binary built: /tmp/uuid-workload-3022877178/workload
+Workload binary built: /tmp/uuid-workload-2176949286/workload
 UUID Benchmark - Cassandra
 ======================================================================
 Database:     Cassandra
@@ -17,8 +17,8 @@ Testing SEQUENTIAL (5 runs)
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m15.342s
-Throughput: 73886.57 records/sec
+Inserted 10000000 records in 6m59.584s
+Throughput: 23833.10 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -28,8 +28,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m17.451s
-Throughput: 72753.14 records/sec
+Inserted 10000000 records in 6m49.094s
+Throughput: 24444.20 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -39,8 +39,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m15.886s
-Throughput: 73591.07 records/sec
+Inserted 10000000 records in 6m48.954s
+Throughput: 24452.61 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -50,8 +50,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m13.332s
-Throughput: 75000.51 records/sec
+Inserted 10000000 records in 7m3.801s
+Throughput: 23595.94 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -61,8 +61,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m12.155s
-Throughput: 75668.42 records/sec
+Inserted 10000000 records in 7m2.517s
+Throughput: 23667.65 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -75,8 +75,8 @@ Testing UUIDV4 (5 runs)
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m53.578s
-Throughput: 57610.90 records/sec
+Inserted 10000000 records in 9m51.991s
+Throughput: 16892.14 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -86,8 +86,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m54.392s
-Throughput: 57341.77 records/sec
+Inserted 10000000 records in 9m38.669s
+Throughput: 17281.02 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -97,8 +97,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m54.679s
-Throughput: 57247.59 records/sec
+Inserted 10000000 records in 9m33.426s
+Throughput: 17439.01 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -108,8 +108,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m59.128s
-Throughput: 55825.86 records/sec
+Inserted 10000000 records in 9m38.809s
+Throughput: 17276.84 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -119,8 +119,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m59.511s
-Throughput: 55706.77 records/sec
+Inserted 10000000 records in 10m7.171s
+Throughput: 16469.80 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -133,8 +133,8 @@ Testing UUIDV7 (5 runs)
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m19.083s
-Throughput: 71899.18 records/sec
+Inserted 10000000 records in 7m19.633s
+Throughput: 22746.22 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -144,8 +144,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m18.736s
-Throughput: 72079.32 records/sec
+Inserted 10000000 records in 7m26.776s
+Throughput: 22382.57 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -155,8 +155,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m19.786s
-Throughput: 71537.57 records/sec
+Inserted 10000000 records in 7m19.049s
+Throughput: 22776.48 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -166,8 +166,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m18.057s
-Throughput: 72433.34 records/sec
+Inserted 10000000 records in 7m15.885s
+Throughput: 22941.79 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -177,8 +177,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m15.88s
-Throughput: 73593.91 records/sec
+Inserted 10000000 records in 7m27.744s
+Throughput: 22334.18 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -191,8 +191,8 @@ Testing ULID (5 runs)
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m20.718s
-Throughput: 71063.78 records/sec
+Inserted 10000000 records in 7m43.298s
+Throughput: 21584.34 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -202,8 +202,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m19.954s
-Throughput: 71451.89 records/sec
+Inserted 10000000 records in 7m38.302s
+Throughput: 21819.66 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -213,8 +213,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m19.403s
-Throughput: 71734.17 records/sec
+Inserted 10000000 records in 7m50.999s
+Throughput: 21231.43 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -224,8 +224,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m20.153s
-Throughput: 71350.30 records/sec
+Inserted 10000000 records in 7m40.114s
+Throughput: 21733.74 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -235,8 +235,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m18.479s
-Throughput: 72212.98 records/sec
+Inserted 10000000 records in 7m27.217s
+Throughput: 22360.49 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -249,8 +249,8 @@ Testing ULID_MONOTONIC (5 runs)
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m16.492s
-Throughput: 73263.96 records/sec
+Inserted 10000000 records in 7m14.228s
+Throughput: 23029.35 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -260,8 +260,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m16.729s
-Throughput: 73137.19 records/sec
+Inserted 10000000 records in 7m15.877s
+Throughput: 22942.25 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -271,8 +271,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m16.889s
-Throughput: 73051.83 records/sec
+Inserted 10000000 records in 7m3.43s
+Throughput: 23616.64 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -282,8 +282,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m17.43s
-Throughput: 72764.03 records/sec
+Inserted 10000000 records in 7m2.75s
+Throughput: 23654.59 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -293,8 +293,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m16.943s
-Throughput: 73022.85 records/sec
+Inserted 10000000 records in 7m5.814s
+Throughput: 23484.43 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -307,8 +307,8 @@ Testing UUIDV1 (5 runs)
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m16.486s
-Throughput: 73267.50 records/sec
+Inserted 10000000 records in 7m11.692s
+Throughput: 23164.64 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -318,8 +318,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m16.352s
-Throughput: 73339.55 records/sec
+Inserted 10000000 records in 7m1.819s
+Throughput: 23706.85 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -329,8 +329,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m16.422s
-Throughput: 73301.76 records/sec
+Inserted 10000000 records in 6m57.547s
+Throughput: 23949.36 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -340,8 +340,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m17.148s
-Throughput: 72913.62 records/sec
+Inserted 10000000 records in 6m42.997s
+Throughput: 24814.07 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -351,8 +351,8 @@ done
 Waiting for Cassandra to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 2m15.077s
-Throughput: 74031.43 records/sec
+Inserted 10000000 records in 6m59.758s
+Throughput: 23823.22 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -367,23 +367,23 @@ Throughput (records/sec)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │    73887 │    74180 │     1157 │    72753 │    75668 │     1.6 │
-│ UUIDV4         │    57248 │    56747 │      906 │    55707 │    57611 │     1.6 │
-│ UUIDV7         │    72079 │    72309 │      788 │    71538 │    73594 │     1.1 │
-│ ULID           │    71452 │    71563 │      435 │    71064 │    72213 │     0.6 │
-│ ULID_MONOTONIC │    73052 │    73048 │      184 │    72764 │    73264 │     0.3 │
-│ UUIDV1         │    73302 │    73371 │      407 │    72914 │    74031 │     0.6 │
+│ SEQUENTIAL     │    23833 │    23999 │      419 │    23596 │    24453 │     1.7 │
+│ UUIDV4         │    17277 │    17072 │      392 │    16470 │    17439 │     2.3 │
+│ UUIDV7         │    22746 │    22636 │      265 │    22334 │    22942 │     1.2 │
+│ ULID           │    21734 │    21746 │      411 │    21231 │    22360 │     1.9 │
+│ ULID_MONOTONIC │    23484 │    23345 │      336 │    22942 │    23655 │     1.4 │
+│ UUIDV1         │    23823 │    23892 │      596 │    23165 │    24814 │     2.5 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      -22.5% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       -2.4% │   0.0283 │ Yes       │ * (p<0.05)    │
-│ SEQUENTIAL vs ULID           │       -3.3% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       -1.1% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       -0.8% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      -27.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -4.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       -8.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -1.5% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.9168 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 SSTable Count
@@ -436,23 +436,23 @@ Table Size (MB)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │    739.0 │    738.9 │      0.2 │    738.6 │    739.0 │     0.0 │
-│ UUIDV4         │    911.6 │    911.6 │      0.0 │    911.5 │    911.6 │     0.0 │
-│ UUIDV7         │    817.8 │    817.8 │      0.0 │    817.8 │    817.8 │     0.0 │
-│ ULID           │    827.5 │    827.5 │      0.1 │    827.4 │    827.6 │     0.0 │
-│ ULID_MONOTONIC │    780.0 │    780.0 │      0.0 │    780.0 │    780.0 │     0.0 │
-│ UUIDV1         │    747.7 │    747.7 │      0.0 │    747.7 │    747.7 │     0.0 │
+│ SEQUENTIAL     │    738.7 │    738.7 │      0.0 │    738.7 │    738.8 │     0.0 │
+│ UUIDV4         │    912.0 │    912.0 │      0.1 │    911.9 │    912.1 │     0.0 │
+│ UUIDV7         │    817.9 │    817.9 │      0.0 │    817.8 │    817.9 │     0.0 │
+│ ULID           │    826.2 │    826.2 │      0.0 │    826.2 │    826.3 │     0.0 │
+│ ULID_MONOTONIC │    779.8 │    779.7 │      0.0 │    779.7 │    779.8 │     0.0 │
+│ UUIDV1         │    747.0 │    747.0 │      0.0 │    747.0 │    747.1 │     0.0 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      +23.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV4         │      +23.5% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs UUIDV7         │      +10.7% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID           │      +12.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +11.8% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID_MONOTONIC │       +5.6% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │       +1.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +1.1% │   0.0090 │ No        │ No overlap    │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Index Size (MB)
@@ -482,50 +482,50 @@ Latency P99 (µs)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │     2142 │     2235 │      200 │     2058 │     2493 │     9.0 │
-│ UUIDV4         │     2768 │     2877 │      164 │     2754 │     3084 │     5.7 │
-│ UUIDV7         │     2090 │     2114 │       65 │     2054 │     2221 │     3.1 │
-│ ULID           │     2067 │     2094 │       63 │     2055 │     2206 │     3.0 │
-│ ULID_MONOTONIC │     2041 │     2037 │       12 │     2021 │     2050 │     0.6 │
-│ UUIDV1         │     2029 │     2029 │       13 │     2010 │     2043 │     0.6 │
+│ SEQUENTIAL     │     6397 │     6369 │      306 │     5931 │     6737 │     4.8 │
+│ UUIDV4         │     8458 │     8499 │      211 │     8288 │     8845 │     2.5 │
+│ UUIDV7         │     6315 │     6272 │      386 │     5824 │     6808 │     6.2 │
+│ ULID           │     6402 │     6460 │      280 │     6099 │     6829 │     4.3 │
+│ ULID_MONOTONIC │     6519 │     6430 │      230 │     6182 │     6654 │     3.6 │
+│ UUIDV1         │     6172 │     6166 │      408 │     5530 │     6600 │     6.6 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      +29.2% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       -2.4% │   0.4647 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │       -3.5% │   0.2506 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID_MONOTONIC │       -4.7% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │       -5.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV4         │      +32.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -1.3% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.1% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +1.9% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -3.5% │   0.4647 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Write IOPS
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      712 │      715 │       11 │      702 │      729 │     1.5 │
-│ UUIDV4         │      579 │      574 │        9 │      564 │      583 │     1.6 │
-│ UUIDV7         │      713 │      716 │        8 │      708 │      728 │     1.1 │
-│ ULID           │      709 │      710 │        4 │      705 │      716 │     0.6 │
-│ ULID_MONOTONIC │      717 │      717 │        2 │      714 │      719 │     0.3 │
-│ UUIDV1         │      714 │      715 │        4 │      710 │      721 │     0.6 │
+│ SEQUENTIAL     │       49 │       49 │        3 │       45 │       53 │     5.6 │
+│ UUIDV4         │       36 │       35 │        2 │       33 │       38 │     6.8 │
+│ UUIDV7         │       48 │       47 │        2 │       45 │       49 │     3.6 │
+│ ULID           │       48 │       47 │        3 │       44 │       51 │     5.7 │
+│ ULID_MONOTONIC │       48 │       48 │        1 │       47 │       49 │     2.5 │
+│ UUIDV1         │       48 │       47 │        3 │       43 │       50 │     7.2 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      -18.6% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       +0.2% │   0.9168 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │       -0.5% │   0.3472 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +0.6% │   0.6015 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       +0.3% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      -27.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -1.3% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -2.4% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -1.9% │   0.4647 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -2.2% │   0.3472 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Exporting results to CSV...
-  Statistical summary: /home/eike/dev/studium/uuid-benchmark/results/cassandra_10m_insert-performance_1conn.csv
-  Raw runs data: /home/eike/dev/studium/uuid-benchmark/results/cassandra_10m_insert-performance_1conn_raw.csv
+  Statistical summary: /home/aaeirack/uuid-benchmark/results/cassandra_10m_insert-performance_1conn.csv
+  Raw runs data: /home/aaeirack/uuid-benchmark/results/cassandra_10m_insert-performance_1conn_raw.csv
 
 All scenarios completed successfully!

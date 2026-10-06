@@ -1,0 +1,103 @@
+# Local 3-node Cassandra cluster for multi-node code-correctness validation.
+#
+# Purpose: laptop testing of multi-node code paths (ring formation,
+# multi-host metric aggregation, replication factor handling). NOT for
+# performance measurement — only cassandra-1 publishes 9042 to the host,
+# and gossip returns Docker-internal IPs that aren't reachable from the
+# host, so all queries route through cassandra-1 as coordinator. Real
+# perf numbers come from the remote-cluster mode on Taurus (Phase 4).
+#
+# Ephemeral by design: no named volumes are declared. Every
+# `docker compose down` wipes the cluster. Durability is not measured
+# here; correctness is.
+#
+# JMX (port 7199) is intentionally NOT published to the host. Multi-node
+# metric aggregation runs `nodetool` inside each container via
+# `docker exec`, so host-side JMX is unused. Publishing it would also
+# require unique host ports per service, which complicates the layout
+# without benefit.
+#
+# Each service shares a base anchor that includes the
+# batch_size_*_threshold sed override mirrored from
+# docker/docker-compose.cassandra.yml: the bucketed schema (multi-node
+# paper extension) sends ~108 KiB multi-partition unlogged batches
+# (100 rows × ~1044 bytes per row). Cassandra's default
+# batch_size_fail_threshold of 50 KiB rejects these. We raise the
+# threshold so the same batch sizing used across PG/MySQL/Mongo also
+# runs cleanly here. The leading `grep -q` guard fails loudly if a
+# future Cassandra release renames the YAML key (silent sed no-op
+# would otherwise quietly revert to the 50 KiB default and re-break
+# the bucketed-schema smoke test). See plan §"Schema Design
+# Methodology" for the full rationale.
+
+x-cassandra-base: &cassandra-base
+  image: cassandra:5
+  environment:
+    CASSANDRA_CLUSTER_NAME: UUIDBenchCluster
+    CASSANDRA_DC: dc1
+    CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    CASSANDRA_SEEDS: cassandra-1
+    MAX_HEAP_SIZE: 1G
+    HEAP_NEWSIZE: 256M
+    # auto_bootstrap=false skips the cross-node data-streaming dance new
+    # nodes do when joining. We always start with an empty cluster (no
+    # historical data on any node), so there is nothing to stream. The
+    # default `true` setting causes joiners to wait on streaming from
+    # cassandra-1 and slows convergence to 10+ minutes on memory-constrained
+    # laptops. With auto_bootstrap=false plus the serialized depends_on
+    # chain below, joiners take ownership of their token ranges and gossip
+    # cleanly with the seed before the next joiner starts. Production
+    # deployments that start with existing data would need `true`.
+    JVM_EXTRA_OPTS: "-Dcassandra.auto_bootstrap=false"
+  # Every node has the same gossip-running healthcheck so dependents can
+  # chain on `service_healthy`. The serialized cassandra-1 → cassandra-2 →
+  # cassandra-3 startup chain below relies on this.
+  healthcheck:
+    test: ["CMD-SHELL", "nodetool statusgossip | grep -q running"]
+    interval: 10s
+    timeout: 5s
+    retries: 30
+    start_period: 30s
+  command: >
+    bash -c "grep -q '^batch_size_fail_threshold' /etc/cassandra/cassandra.yaml || { echo 'batch_size_fail_threshold key missing — Cassandra layout changed' >&2; exit 99; } &&
+    sed -i 's/^batch_size_fail_threshold:.*/batch_size_fail_threshold: 200KiB/' /etc/cassandra/cassandra.yaml &&
+    sed -i 's/^batch_size_warn_threshold:.*/batch_size_warn_threshold: 100KiB/' /etc/cassandra/cassandra.yaml &&
+    exec docker-entrypoint.sh cassandra -f"
+  deploy:
+    resources:
+      limits:
+        cpus: '2'
+        memory: 2G
+  networks:
+    - benchmark_network
+
+services:
+  cassandra-1:
+    <<: *cassandra-base
+    container_name: uuid-bench-cassandra-1
+    ports:
+      - "9042:9042"  # CQL native transport (only seed exposes to host)
+
+  cassandra-2:
+    <<: *cassandra-base
+    container_name: uuid-bench-cassandra-2
+    depends_on:
+      cassandra-1:
+        condition: service_healthy
+
+  # Serialize after cassandra-2 (not just cassandra-1) so the two joiners
+  # never race to register tokens with the seed concurrently. Without this
+  # chain both joiners can claim tokens via gossip in interleaved order and
+  # end up in a split-brain state where each joiner sees the seed but not
+  # the other peer. The chain costs an extra minute of startup but yields
+  # a clean ring every time.
+  cassandra-3:
+    <<: *cassandra-base
+    container_name: uuid-bench-cassandra-3
+    depends_on:
+      cassandra-2:
+        condition: service_healthy
+
+networks:
+  benchmark_network:
+    driver: bridge

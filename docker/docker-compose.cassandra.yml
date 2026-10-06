@@ -13,6 +13,19 @@ services:
       - "7199:7199"  # JMX
     volumes:
       - cassandra_data:/var/lib/cassandra
+    # The bucketed schema (multi-node paper extension) sends ~108 KiB
+    # multi-partition unlogged batches (100 rows × ~1044 bytes per row).
+    # Cassandra's default batch_size_fail_threshold of 50 KiB rejects
+    # these. The thesis's bucket=1 design produced single-partition
+    # batches which are exempt from this limit; the bucketed schema
+    # makes them multi-partition. We raise the threshold so the same
+    # batch sizing used across PG/MySQL/Mongo also runs cleanly here.
+    # See plan §"Schema Design Methodology" for the full rationale.
+    command: >
+      bash -c "grep -q '^batch_size_fail_threshold' /etc/cassandra/cassandra.yaml || { echo 'batch_size_fail_threshold key missing — Cassandra layout changed' >&2; exit 99; } &&
+      sed -i 's/^batch_size_fail_threshold:.*/batch_size_fail_threshold: 200KiB/' /etc/cassandra/cassandra.yaml &&
+      sed -i 's/^batch_size_warn_threshold:.*/batch_size_warn_threshold: 100KiB/' /etc/cassandra/cassandra.yaml &&
+      exec docker-entrypoint.sh cassandra -f"
     deploy:
       resources:
         limits:

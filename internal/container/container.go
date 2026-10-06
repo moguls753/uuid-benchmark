@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"time"
 
-	"github.com/moguls753/uuid-benchmark/internal/benchmark/cassandra"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/mongodb"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/mysql"
 	"github.com/moguls753/uuid-benchmark/internal/benchmark/postgres"
@@ -35,12 +34,6 @@ var MongoDBConfig = Config{
 	Name:         "MongoDB",
 	ComposeFile:  "docker/docker-compose.mongo.yml",
 	WaitForReady: mongodb.WaitForReady,
-}
-
-var CassandraConfig = Config{
-	Name:         "Cassandra",
-	ComposeFile:  "docker/docker-compose.cassandra.yml",
-	WaitForReady: cassandra.WaitForReady,
 }
 
 // composeCmd returns the appropriate docker compose command.

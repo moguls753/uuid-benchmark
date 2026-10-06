@@ -15,8 +15,8 @@ Testing SEQUENTIAL (5 runs)
 Waiting for PostgreSQL to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 56m2.297321407s
-Throughput: 2974.59 records/sec
+Inserted 10000000 records in 56m11.190224872s
+Throughput: 2966.80 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -26,8 +26,8 @@ done
 Waiting for PostgreSQL to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 56m7.30652561s
-Throughput: 2970.21 records/sec
+Inserted 10000000 records in 55m43.920574808s
+Throughput: 2992.35 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -37,8 +37,8 @@ done
 Waiting for PostgreSQL to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
-Inserted 10000000 records in 55m44.531791277s
-Throughput: 2990.40 records/sec
+Inserted 10000000 records in 56m6.814439863s
+Throughput: 2970.70 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -48,3 +48,510 @@ done
 Waiting for PostgreSQL to initialize...
 Container ready
 Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 56m14.49055326s
+Throughput: 2963.93 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 56m40.286345683s
+Throughput: 2941.38 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV4 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 3h38m44.90271749s
+Throughput: 762.11 records/sec
+Measuring metrics...
+Warning: Could not count page splits: query page splits (LSN 0/1C52D50 to 3/56C46CB8): pq: requested WAL segment pg_wal/000000010000000000000001 has already been removed
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 3h33m31.058626109s
+Throughput: 780.77 records/sec
+Measuring metrics...
+Warning: Could not count page splits: query page splits (LSN 0/1C52D50 to 3/62BB4680): pq: requested WAL segment pg_wal/000000010000000000000001 has already been removed
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 3h32m18.869197722s
+Throughput: 785.03 records/sec
+Measuring metrics...
+Warning: Could not count page splits: query page splits (LSN 0/1C52D50 to 3/84C27018): pq: requested WAL segment pg_wal/000000010000000000000001 has already been removed
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 3h38m9.076369355s
+Throughput: 764.05 records/sec
+Measuring metrics...
+Warning: Could not count page splits: query page splits (LSN 0/1C52D50 to 3/31432370): pq: requested WAL segment pg_wal/000000010000000000000001 has already been removed
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 3h33m32.256094758s
+Throughput: 780.81 records/sec
+Measuring metrics...
+Warning: Could not count page splits: query page splits (LSN 0/1C52D50 to 3/61B12D58): pq: requested WAL segment pg_wal/000000010000000000000001 has already been removed
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV7 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 56m45.496160208s
+Throughput: 2936.92 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m52.883664874s
+Throughput: 2982.95 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m35.888343217s
+Throughput: 2998.14 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m33.637429979s
+Throughput: 3000.19 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 56m9.042757171s
+Throughput: 2968.74 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m22.154315642s
+Throughput: 3010.54 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m37.314795618s
+Throughput: 2996.89 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m30.688669581s
+Throughput: 3002.86 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 54m21.981112458s
+Throughput: 3066.35 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m25.273588812s
+Throughput: 3007.72 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID_MONOTONIC (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m28.355322433s
+Throughput: 3005.15 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m48.145994959s
+Throughput: 2987.22 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m17.778122256s
+Throughput: 3014.52 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m33.200143252s
+Throughput: 3000.63 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 55m25.516293459s
+Throughput: 3007.58 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV1 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 1h2m52.711896883s
+Throughput: 2650.99 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 1h8m34.106259569s
+Throughput: 2431.00 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 58m46.172105818s
+Throughput: 2836.75 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 1h1m15.884202671s
+Throughput: 2720.80 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh PostgreSQL container...
+Waiting for PostgreSQL to initialize...
+Container ready
+Inserting 10000000 records (connections=1, batch=100)...
+Inserted 10000000 records in 1h2m7.921138717s
+Throughput: 2683.11 records/sec
+Measuring metrics...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Insert Performance - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Throughput (records/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     2967 │     2967 │       18 │     2941 │     2992 │     0.6 │
+│ UUIDV4         │      781 │      775 │       11 │      762 │      785 │     1.4 │
+│ UUIDV7         │     2983 │     2977 │       26 │     2937 │     3000 │     0.9 │
+│ ULID           │     3008 │     3017 │       28 │     2997 │     3066 │     0.9 │
+│ ULID_MONOTONIC │     3005 │     3003 │       10 │     2987 │     3015 │     0.3 │
+│ UUIDV1         │     2683 │     2665 │      148 │     2431 │     2837 │     5.6 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -73.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.5% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +1.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +1.3% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       -9.6% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Page Splits
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │    27418 │    27418 │        0 │    27418 │    27418 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │    38502 │    38502 │        0 │    38502 │    38502 │     0.0 │
+│ ULID           │    49571 │    49571 │        0 │    49571 │    49571 │     0.0 │
+│ ULID_MONOTONIC │    49571 │    49571 │        0 │    49571 │    49571 │     0.0 │
+│ UUIDV1         │    51001 │    50890 │      218 │    50521 │    51042 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │     -100.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +40.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +80.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +80.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +86.0% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Leaf Fragmentation (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV4         │    49.78 │    49.77 │     0.03 │    49.72 │    49.81 │     0.1 │
+│ UUIDV7         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID           │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID_MONOTONIC │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV1         │    46.28 │    46.16 │     0.19 │    45.93 │    46.31 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Avg Leaf Density (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │    90.04 │    90.04 │     0.00 │    90.04 │    90.04 │     0.0 │
+│ UUIDV4         │    69.84 │    69.80 │     0.55 │    68.94 │    70.43 │     0.8 │
+│ UUIDV7         │    89.99 │    89.99 │     0.00 │    89.99 │    89.99 │     0.0 │
+│ ULID           │    90.09 │    90.09 │     0.00 │    90.09 │    90.09 │     0.0 │
+│ ULID_MONOTONIC │    90.09 │    90.09 │     0.00 │    90.09 │    90.09 │     0.0 │
+│ UUIDV1         │    68.02 │    68.18 │     0.29 │    67.98 │    68.67 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -22.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -0.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +0.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -24.5% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Table Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │  11163.8 │  11163.8 │      0.0 │  11163.8 │  11163.8 │     0.0 │
+│ UUIDV4         │  11163.8 │  11163.8 │      0.0 │  11163.8 │  11163.8 │     0.0 │
+│ UUIDV7         │  11163.8 │  11163.8 │      0.0 │  11163.8 │  11163.8 │     0.0 │
+│ ULID           │  11163.8 │  11163.8 │      0.0 │  11163.8 │  11163.8 │     0.0 │
+│ ULID_MONOTONIC │  11163.8 │  11163.8 │      0.0 │  11163.8 │  11163.8 │     0.0 │
+│ UUIDV1         │  11163.8 │  11163.8 │      0.0 │  11163.8 │  11163.8 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0947 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -0.0% │   0.2963 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.4034 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │    214.2 │    214.2 │      0.0 │    214.2 │    214.2 │     0.0 │
+│ UUIDV4         │    388.0 │    388.2 │      3.1 │    384.7 │    393.0 │     0.8 │
+│ UUIDV7         │    300.8 │    300.8 │      0.0 │    300.8 │    300.8 │     0.0 │
+│ ULID           │    387.3 │    387.3 │      0.0 │    387.3 │    387.3 │     0.0 │
+│ ULID_MONOTONIC │    387.3 │    387.3 │      0.0 │    387.3 │    387.3 │     0.0 │
+│ UUIDV1         │    398.5 │    397.6 │      1.7 │    394.7 │    398.8 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +81.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +40.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +80.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +80.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +86.0% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   158593 │   159803 │     4345 │   154909 │   164872 │     2.7 │
+│ UUIDV4         │   386014 │   386096 │     5079 │   380435 │   393924 │     1.3 │
+│ UUIDV7         │   163191 │   163774 │     2507 │   160723 │   166892 │     1.5 │
+│ ULID           │   158954 │   158945 │     2511 │   155640 │   162683 │     1.6 │
+│ ULID_MONOTONIC │   165515 │   164114 │     4920 │   155925 │   168726 │     3.0 │
+│ UUIDV1         │   184817 │   185986 │     2540 │   184040 │   189980 │     1.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │     +143.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +2.9% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.2% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +4.4% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │      +16.5% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      108 │      108 │        0 │      108 │      109 │     0.4 │
+│ UUIDV4         │      360 │      360 │        3 │      357 │      364 │     0.8 │
+│ UUIDV7         │      109 │      109 │        1 │      107 │      110 │     1.0 │
+│ ULID           │      109 │      110 │        2 │      109 │      113 │     1.6 │
+│ ULID_MONOTONIC │      110 │      110 │        2 │      109 │      113 │     1.6 │
+│ UUIDV1         │      126 │      126 │        5 │      118 │      131 │     3.7 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │     +232.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.3% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +1.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +1.3% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │      +16.6% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Exporting results to CSV...
+  Statistical summary: /home/aaeirack/uuid-benchmark/results/postgres_10m_insert-performance_1conn.csv
+  Raw runs data: /home/aaeirack/uuid-benchmark/results/postgres_10m_insert-performance_1conn_raw.csv
+
+All scenarios completed successfully!

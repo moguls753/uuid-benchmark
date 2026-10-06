@@ -18,6 +18,9 @@ func TestParseResult(t *testing.T) {
 			"total_ops": 100000,
 			"duration_ms": 8100,
 			"errors": 3,
+			"not_found": 7,
+			"fetch_ms": 1500,
+			"id_file_sha256": "deadbeef",
 			"insert_ops": 90000,
 			"read_ops": 5000,
 			"update_ops": 5000
@@ -74,4 +77,34 @@ func TestParseResult(t *testing.T) {
 			t.Fatal("expected error for empty string")
 		}
 	})
+}
+
+// The JSON tags on both sides of this boundary have to stay in step. A rename
+// in cmd/workload would otherwise zero not_found and fetch_ms in every CSV
+// without any error: only id_file_sha256 is backstopped, because an empty
+// digest makes the runner's read-set comparison fail loudly.
+func TestParseResultCarriesReadSetFields(t *testing.T) {
+	t.Parallel()
+
+	result, err := ParseResult(`{
+		"throughput": 100,
+		"total_ops": 1000,
+		"duration_ms": 10000,
+		"errors": 2,
+		"not_found": 5,
+		"fetch_ms": 2500,
+		"id_file_sha256": "abc123"
+	}`)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.NotFound != 5 {
+		t.Errorf("NotFound = %d, want 5", result.NotFound)
+	}
+	if result.FetchDuration != 2500*time.Millisecond {
+		t.Errorf("FetchDuration = %v, want 2.5s", result.FetchDuration)
+	}
+	if result.IDFileSHA256 != "abc123" {
+		t.Errorf("IDFileSHA256 = %q, want abc123", result.IDFileSHA256)
+	}
 }

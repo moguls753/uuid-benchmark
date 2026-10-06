@@ -1,5 +1,5 @@
 Building workload binary for NoSQL databases...
-Workload binary built: /tmp/uuid-workload-1900791435/workload
+Workload binary built: /tmp/uuid-workload-675566779/workload
 UUID Benchmark - MongoDB
 ======================================================================
 Database:     MongoDB
@@ -26,8 +26,8 @@ Testing SEQUENTIAL (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 25.574s
-Throughput: 39101.47 records/sec
+Inserted 1000000 records in 25.754s
+Throughput: 38827.41 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -37,8 +37,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 25.527s
-Throughput: 39173.73 records/sec
+Inserted 1000000 records in 25.462s
+Throughput: 39274.05 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -48,8 +48,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 25.238s
-Throughput: 39621.25 records/sec
+Inserted 1000000 records in 25.178s
+Throughput: 39716.27 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -59,8 +59,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 25.653s
-Throughput: 38980.45 records/sec
+Inserted 1000000 records in 25.672s
+Throughput: 38952.87 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -70,8 +70,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 25.447s
-Throughput: 39296.86 records/sec
+Inserted 1000000 records in 25.653s
+Throughput: 38980.30 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -84,8 +84,8 @@ Testing UUIDV4 (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 30.958s
-Throughput: 32301.61 records/sec
+Inserted 1000000 records in 30.452s
+Throughput: 32837.79 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -95,8 +95,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 30.684s
-Throughput: 32590.10 records/sec
+Inserted 1000000 records in 30.29s
+Throughput: 33013.84 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -106,8 +106,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 30.951s
-Throughput: 32308.48 records/sec
+Inserted 1000000 records in 31.243s
+Throughput: 32006.50 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -117,8 +117,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 30.503s
-Throughput: 32782.85 records/sec
+Inserted 1000000 records in 30.637s
+Throughput: 32639.77 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -128,8 +128,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 31.075s
-Throughput: 32179.41 records/sec
+Inserted 1000000 records in 30.847s
+Throughput: 32417.21 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -142,8 +142,8 @@ Testing UUIDV7 (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 28.928s
-Throughput: 34568.11 records/sec
+Inserted 1000000 records in 28.666s
+Throughput: 34884.49 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -153,8 +153,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 28.59s
-Throughput: 34976.83 records/sec
+Inserted 1000000 records in 28.005s
+Throughput: 35707.54 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -164,8 +164,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 28.45s
-Throughput: 35148.59 records/sec
+Inserted 1000000 records in 28.997s
+Throughput: 34486.31 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -175,8 +175,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 29.363s
-Throughput: 34055.77 records/sec
+Inserted 1000000 records in 28.411s
+Throughput: 35197.01 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -186,8 +186,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 28.953s
-Throughput: 34537.67 records/sec
+Inserted 1000000 records in 28.138s
+Throughput: 35538.75 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -200,8 +200,8 @@ Testing ULID (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 27.982s
-Throughput: 35736.50 records/sec
+Inserted 1000000 records in 28.293s
+Throughput: 35343.78 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -211,8 +211,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 27.72s
-Throughput: 36074.79 records/sec
+Inserted 1000000 records in 28.861s
+Throughput: 34647.89 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -222,8 +222,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 29.169s
-Throughput: 34281.87 records/sec
+Inserted 1000000 records in 29.091s
+Throughput: 34374.20 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -233,8 +233,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 28.18s
-Throughput: 35485.95 records/sec
+Inserted 1000000 records in 29.021s
+Throughput: 34457.67 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -244,8 +244,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 29.02s
-Throughput: 34458.10 records/sec
+Inserted 1000000 records in 28.574s
+Throughput: 34995.82 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -258,8 +258,8 @@ Testing ULID_MONOTONIC (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.427s
-Throughput: 37839.09 records/sec
+Inserted 1000000 records in 27.325s
+Throughput: 36596.23 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -269,8 +269,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 27.511s
-Throughput: 36348.59 records/sec
+Inserted 1000000 records in 26.615s
+Throughput: 37572.41 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -280,8 +280,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.63s
-Throughput: 37550.45 records/sec
+Inserted 1000000 records in 27.349s
+Throughput: 36564.18 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -291,8 +291,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.948s
-Throughput: 37107.71 records/sec
+Inserted 1000000 records in 26.842s
+Throughput: 37254.66 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -302,8 +302,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 27.06s
-Throughput: 36954.22 records/sec
+Inserted 1000000 records in 26.688s
+Throughput: 37469.73 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -316,8 +316,8 @@ Testing UUIDV1 (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 27.185s
-Throughput: 36784.46 records/sec
+Inserted 1000000 records in 27.208s
+Throughput: 36753.53 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -327,8 +327,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.772s
-Throughput: 37351.10 records/sec
+Inserted 1000000 records in 26.997s
+Throughput: 37040.77 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -338,8 +338,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.364s
-Throughput: 37930.00 records/sec
+Inserted 1000000 records in 26.23s
+Throughput: 38122.85 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -349,8 +349,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 27.204s
-Throughput: 36758.59 records/sec
+Inserted 1000000 records in 26.128s
+Throughput: 38272.44 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -360,8 +360,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.85s
-Throughput: 37243.72 records/sec
+Inserted 1000000 records in 27.112s
+Throughput: 36883.97 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -374,8 +374,8 @@ Testing OBJECTID (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.461s
-Throughput: 37790.31 records/sec
+Inserted 1000000 records in 25.902s
+Throughput: 38605.57 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -385,8 +385,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 25.954s
-Throughput: 38529.33 records/sec
+Inserted 1000000 records in 25.368s
+Throughput: 39418.68 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -396,8 +396,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 25.639s
-Throughput: 39002.02 records/sec
+Inserted 1000000 records in 26.495s
+Throughput: 37742.24 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -407,8 +407,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.688s
-Throughput: 37469.00 records/sec
+Inserted 1000000 records in 25.991s
+Throughput: 38474.55 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -418,8 +418,8 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records (connections=8, batch=100)...
-Inserted 1000000 records in 26.471s
-Throughput: 37776.09 records/sec
+Inserted 1000000 records in 26.374s
+Throughput: 37916.04 records/sec
 Measuring metrics...
 
 Cleaning up container...
@@ -434,50 +434,50 @@ Throughput (records/sec)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │    39174 │    39235 │      245 │    38980 │    39621 │     0.6 │
-│ UUIDV4         │    32308 │    32432 │      247 │    32179 │    32783 │     0.8 │
-│ UUIDV7         │    34568 │    34657 │      426 │    34056 │    35149 │     1.2 │
-│ ULID           │    35486 │    35207 │      795 │    34282 │    36075 │     2.3 │
-│ ULID_MONOTONIC │    37108 │    37160 │      574 │    36349 │    37839 │     1.5 │
-│ UUIDV1         │    37244 │    37214 │      481 │    36759 │    37930 │     1.3 │
-│ OBJECTID       │    37790 │    38113 │      632 │    37469 │    39002 │     1.7 │
+│ SEQUENTIAL     │    38980 │    39150 │      356 │    38827 │    39716 │     0.9 │
+│ UUIDV4         │    32640 │    32583 │      392 │    32006 │    33014 │     1.2 │
+│ UUIDV7         │    35197 │    35163 │      494 │    34486 │    35708 │     1.4 │
+│ ULID           │    34648 │    34764 │      403 │    34374 │    35344 │     1.2 │
+│ ULID_MONOTONIC │    37255 │    37091 │      481 │    36564 │    37572 │     1.3 │
+│ UUIDV1         │    37041 │    37415 │      724 │    36754 │    38272 │     1.9 │
+│ OBJECTID       │    38475 │    38431 │      661 │    37742 │    39419 │     1.7 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      -17.5% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │      -11.8% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID           │       -9.4% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       -5.3% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │       -4.9% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs OBJECTID       │       -3.5% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV4         │      -16.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -9.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      -11.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -4.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       -5.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       -1.3% │   0.0758 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Page Splits
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      162 │      162 │        1 │      162 │      164 │     0.6 │
-│ UUIDV4         │     1985 │     1991 │       51 │     1920 │     2043 │     2.5 │
+│ SEQUENTIAL     │      162 │      162 │        1 │      161 │      163 │     0.4 │
+│ UUIDV4         │     1991 │     1992 │       36 │     1942 │     2043 │     1.8 │
 │ UUIDV7         │      166 │      167 │        1 │      166 │      168 │     0.5 │
-│ ULID           │      166 │      167 │        1 │      166 │      168 │     0.5 │
-│ ULID_MONOTONIC │      166 │      166 │        0 │      166 │      167 │     0.3 │
-│ UUIDV1         │      166 │      167 │        1 │      166 │      169 │     0.8 │
-│ OBJECTID       │      165 │      165 │        0 │      164 │      165 │     0.3 │
+│ ULID           │      167 │      167 │        1 │      166 │      168 │     0.5 │
+│ ULID_MONOTONIC │      166 │      166 │        1 │      166 │      167 │     0.3 │
+│ UUIDV1         │      166 │      166 │        1 │      166 │      167 │     0.3 │
+│ OBJECTID       │      165 │      165 │        1 │      164 │      167 │     0.7 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │    +1125.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV4         │    +1129.0% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs UUIDV7         │       +2.5% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID           │       +2.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +3.1% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID_MONOTONIC │       +2.5% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs UUIDV1         │       +2.5% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs OBJECTID       │       +1.9% │   0.0122 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs OBJECTID       │       +1.9% │   0.0090 │ No        │ No overlap    │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Table Size (MB)
@@ -497,12 +497,12 @@ Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       +1.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV4         │       +1.1% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs UUIDV7         │       +1.1% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID           │       +1.1% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +1.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +1.0% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs UUIDV1         │       +1.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs OBJECTID       │       +0.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.0090 │ No        │ No overlap    │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Index Size (MB)
@@ -510,22 +510,22 @@ Index Size (MB)
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
 │ SEQUENTIAL     │     12.5 │     12.5 │      0.0 │     12.5 │     12.5 │     0.0 │
-│ UUIDV4         │     26.6 │     26.7 │      0.4 │     26.4 │     27.2 │     1.5 │
+│ UUIDV4         │     26.9 │     26.8 │      0.4 │     26.1 │     27.2 │     1.5 │
 │ UUIDV7         │     19.8 │     19.8 │      0.0 │     19.8 │     19.8 │     0.0 │
-│ ULID           │     19.8 │     19.8 │      0.0 │     19.8 │     19.8 │     0.0 │
+│ ULID           │     19.8 │     19.8 │      0.0 │     19.8 │     19.8 │     0.1 │
 │ ULID_MONOTONIC │     19.2 │     19.2 │      0.0 │     19.2 │     19.2 │     0.1 │
-│ UUIDV1         │     23.5 │     23.5 │      0.0 │     23.5 │     23.5 │     0.0 │
-│ OBJECTID       │     10.3 │     10.3 │      0.0 │     10.3 │     10.3 │     0.1 │
+│ UUIDV1         │     23.5 │     23.5 │      0.0 │     23.5 │     23.5 │     0.1 │
+│ OBJECTID       │     10.3 │     10.3 │      0.0 │     10.3 │     10.3 │     0.0 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │     +113.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │      +58.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV4         │     +115.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +58.4% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID           │      +58.6% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │      +54.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +54.1% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs UUIDV1         │      +88.2% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs OBJECTID       │      -17.7% │   0.0090 │ No        │ No overlap    │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
@@ -534,50 +534,50 @@ Latency P99 (µs)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │    75266 │    75212 │      533 │    74576 │    75726 │     0.7 │
-│ UUIDV4         │    80160 │    79990 │      497 │    79195 │    80519 │     0.6 │
-│ UUIDV7         │    75728 │    75612 │      518 │    74884 │    76270 │     0.7 │
-│ ULID           │    75498 │    75466 │      305 │    75098 │    75918 │     0.4 │
-│ ULID_MONOTONIC │    75340 │    75375 │      531 │    74894 │    76255 │     0.7 │
-│ UUIDV1         │    75259 │    75307 │      344 │    74938 │    75858 │     0.5 │
-│ OBJECTID       │    74861 │    74835 │      423 │    74346 │    75367 │     0.6 │
+│ SEQUENTIAL     │    75052 │    74911 │      480 │    74120 │    75332 │     0.6 │
+│ UUIDV4         │    79841 │    79795 │      257 │    79447 │    80124 │     0.3 │
+│ UUIDV7         │    75870 │    75830 │      260 │    75439 │    76165 │     0.3 │
+│ ULID           │    75766 │    76044 │      494 │    75622 │    76795 │     0.6 │
+│ ULID_MONOTONIC │    74983 │    75215 │      532 │    74816 │    76141 │     0.7 │
+│ UUIDV1         │    75454 │    75576 │      522 │    75164 │    76451 │     0.7 │
+│ OBJECTID       │    75086 │    75083 │      286 │    74760 │    75520 │     0.4 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       +6.5% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       +0.6% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │       +0.3% │   0.4647 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +0.1% │   0.6015 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.7540 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs OBJECTID       │       -0.5% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +6.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +1.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +1.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.1% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.5% │   0.0758 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.7540 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Write IOPS
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │       15 │       13 │        2 │       10 │       15 │    18.5 │
-│ UUIDV4         │       15 │       15 │        0 │       15 │       16 │     0.5 │
-│ UUIDV7         │       15 │       15 │        0 │       15 │       15 │     1.2 │
-│ ULID           │       15 │       15 │        0 │       15 │       16 │     1.4 │
-│ ULID_MONOTONIC │       15 │       15 │        0 │       15 │       15 │     1.2 │
-│ UUIDV1         │       15 │       15 │        0 │       15 │       15 │     0.7 │
-│ OBJECTID       │       15 │       15 │        0 │       15 │       15 │     0.8 │
+│ SEQUENTIAL     │       15 │       15 │        0 │       14 │       15 │     3.0 │
+│ UUIDV4         │       15 │       15 │        0 │       15 │       15 │     1.4 │
+│ UUIDV7         │       15 │       15 │        0 │       14 │       15 │     1.7 │
+│ ULID           │       15 │       15 │        0 │       14 │       15 │     2.3 │
+│ ULID_MONOTONIC │       14 │       14 │        1 │       14 │       15 │     3.7 │
+│ UUIDV1         │       14 │       14 │        1 │       14 │       15 │     3.7 │
+│ OBJECTID       │       15 │       15 │        0 │       14 │       15 │     2.0 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       +2.7% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       +1.8% │   0.0472 │ Yes       │ * (p<0.05)    │
-│ SEQUENTIAL vs ULID           │       +0.4% │   0.3472 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.4647 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.6015 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs OBJECTID       │       +1.1% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +1.7% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -1.9% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.4% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -4.9% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -4.3% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       -1.9% │   0.2506 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 [2/5] READ PERFORMANCE
@@ -589,12 +589,12 @@ Testing SEQUENTIAL (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 32.798s
+Inserted 1000000 records in 32.647s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m1.817s
-Read throughput: 3235.35 ops/sec
+Completed 200000 reads in 1m1.838s
+Read throughput: 3234.25 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -604,12 +604,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 32.979s
+Inserted 1000000 records in 32.628s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m1.987s
-Read throughput: 3226.45 ops/sec
+Completed 200000 reads in 1m2.125s
+Read throughput: 3219.31 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -619,12 +619,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 32.877s
+Inserted 1000000 records in 32.926s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m3.299s
-Read throughput: 3159.57 ops/sec
+Completed 200000 reads in 1m2.487s
+Read throughput: 3200.62 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -634,12 +634,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 33.338s
+Inserted 1000000 records in 32.968s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m0.662s
-Read throughput: 3296.91 ops/sec
+Completed 200000 reads in 1m0.14s
+Read throughput: 3325.54 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -649,12 +649,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 32.901s
+Inserted 1000000 records in 32.726s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m1.272s
-Read throughput: 3264.12 ops/sec
+Completed 200000 reads in 1m2.344s
+Read throughput: 3207.96 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -667,12 +667,12 @@ Testing UUIDV4 (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 41.604s
+Inserted 1000000 records in 40.795s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m17.315s
-Read throughput: 2586.79 ops/sec
+Completed 200000 reads in 1m14.372s
+Read throughput: 2689.16 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -682,12 +682,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 40.889s
+Inserted 1000000 records in 41.551s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m15.283s
-Read throughput: 2656.62 ops/sec
+Completed 200000 reads in 1m17.222s
+Read throughput: 2589.92 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -697,12 +697,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 40.654s
+Inserted 1000000 records in 41.139s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.096s
-Read throughput: 2699.17 ops/sec
+Completed 200000 reads in 1m15.529s
+Read throughput: 2647.96 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -712,12 +712,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 40.851s
+Inserted 1000000 records in 40.902s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m16.529s
-Read throughput: 2613.37 ops/sec
+Completed 200000 reads in 1m17.313s
+Read throughput: 2586.87 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -727,12 +727,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 40.504s
+Inserted 1000000 records in 41.306s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m16.754s
-Read throughput: 2605.72 ops/sec
+Completed 200000 reads in 1m15.823s
+Read throughput: 2637.70 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -745,12 +745,12 @@ Testing UUIDV7 (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 36.868s
+Inserted 1000000 records in 36.682s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m15.936s
-Read throughput: 2633.78 ops/sec
+Completed 200000 reads in 1m14.098s
+Read throughput: 2699.12 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -760,12 +760,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 36.68s
+Inserted 1000000 records in 36.817s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m13.972s
-Read throughput: 2703.71 ops/sec
+Completed 200000 reads in 1m15.604s
+Read throughput: 2645.34 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -775,12 +775,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 36.966s
+Inserted 1000000 records in 36.651s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.938s
-Read throughput: 2668.85 ops/sec
+Completed 200000 reads in 1m15.774s
+Read throughput: 2639.39 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -790,12 +790,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 36.799s
+Inserted 1000000 records in 36.472s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.999s
-Read throughput: 2666.67 ops/sec
+Completed 200000 reads in 1m16.356s
+Read throughput: 2619.30 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -805,12 +805,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 36.83s
+Inserted 1000000 records in 36.537s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.99s
-Read throughput: 2667.01 ops/sec
+Completed 200000 reads in 1m15.294s
+Read throughput: 2656.25 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -823,12 +823,12 @@ Testing ULID (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 37.351s
+Inserted 1000000 records in 37.02s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.288s
-Read throughput: 2692.22 ops/sec
+Completed 200000 reads in 1m16.024s
+Read throughput: 2630.74 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -838,12 +838,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 37.345s
+Inserted 1000000 records in 37.454s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.985s
-Read throughput: 2667.18 ops/sec
+Completed 200000 reads in 1m14.52s
+Read throughput: 2683.81 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -853,12 +853,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 37.57s
+Inserted 1000000 records in 37.196s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.326s
-Read throughput: 2690.84 ops/sec
+Completed 200000 reads in 1m14.756s
+Read throughput: 2675.36 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -868,12 +868,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 37.967s
+Inserted 1000000 records in 37.204s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.379s
-Read throughput: 2688.90 ops/sec
+Completed 200000 reads in 1m16.94s
+Read throughput: 2599.43 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -883,12 +883,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 37.451s
+Inserted 1000000 records in 37.184s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m13.005s
-Read throughput: 2739.52 ops/sec
+Completed 200000 reads in 1m14.388s
+Read throughput: 2688.58 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -901,12 +901,12 @@ Testing ULID_MONOTONIC (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 34.563s
+Inserted 1000000 records in 34.406s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m15.92s
-Read throughput: 2634.35 ops/sec
+Completed 200000 reads in 1m13.293s
+Read throughput: 2728.77 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -916,12 +916,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 34.82s
+Inserted 1000000 records in 34.468s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m15.09s
-Read throughput: 2663.46 ops/sec
+Completed 200000 reads in 1m13.165s
+Read throughput: 2733.52 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -931,12 +931,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 34.625s
+Inserted 1000000 records in 34.798s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m16.61s
-Read throughput: 2610.61 ops/sec
+Completed 200000 reads in 1m15.295s
+Read throughput: 2656.21 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -946,12 +946,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 34.431s
+Inserted 1000000 records in 34.537s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m15.312s
-Read throughput: 2655.60 ops/sec
+Completed 200000 reads in 1m14.995s
+Read throughput: 2666.82 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -961,12 +961,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 34.596s
+Inserted 1000000 records in 34.762s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m15.973s
-Read throughput: 2632.49 ops/sec
+Completed 200000 reads in 1m15.659s
+Read throughput: 2643.42 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -979,12 +979,12 @@ Testing UUIDV1 (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 34.093s
+Inserted 1000000 records in 34.069s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m13.342s
-Read throughput: 2726.95 ops/sec
+Completed 200000 reads in 1m13.954s
+Read throughput: 2704.38 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -994,12 +994,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 34.157s
+Inserted 1000000 records in 34.043s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m15.03s
-Read throughput: 2665.57 ops/sec
+Completed 200000 reads in 1m13.666s
+Read throughput: 2714.93 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1009,12 +1009,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 33.902s
+Inserted 1000000 records in 33.676s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.28s
-Read throughput: 2692.50 ops/sec
+Completed 200000 reads in 1m15.829s
+Read throughput: 2637.50 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1024,12 +1024,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 33.865s
+Inserted 1000000 records in 34.679s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m15.35s
-Read throughput: 2654.25 ops/sec
+Completed 200000 reads in 1m13.443s
+Read throughput: 2723.19 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1039,12 +1039,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 34.168s
+Inserted 1000000 records in 34.335s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m14.324s
-Read throughput: 2690.91 ops/sec
+Completed 200000 reads in 1m15.744s
+Read throughput: 2640.46 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1057,12 +1057,12 @@ Testing OBJECTID (5 runs)
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 33.265s
+Inserted 1000000 records in 32.799s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m1.778s
-Read throughput: 3237.38 ops/sec
+Completed 200000 reads in 1m1.675s
+Read throughput: 3242.77 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1072,12 +1072,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 33.277s
+Inserted 1000000 records in 33.06s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m2.835s
-Read throughput: 3182.91 ops/sec
+Completed 200000 reads in 1m2.194s
+Read throughput: 3215.74 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1087,12 +1087,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 32.859s
+Inserted 1000000 records in 32.643s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m4.983s
-Read throughput: 3077.72 ops/sec
+Completed 200000 reads in 1m0.446s
+Read throughput: 3308.70 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1102,12 +1102,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 33.004s
+Inserted 1000000 records in 32.891s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m0.588s
-Read throughput: 3300.97 ops/sec
+Completed 200000 reads in 57.224s
+Read throughput: 3495.03 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1117,12 +1117,12 @@ done
 Waiting for MongoDB to initialize...
 Container ready
 Inserting 1000000 records to create index...
-Inserted 1000000 records in 32.779s
+Inserted 1000000 records in 33.214s
 Measuring fragmentation...
 Index fragmentation: 0.00%
 Running 200000 point lookups...
-Completed 200000 reads in 1m0.971s
-Read throughput: 3280.20 ops/sec
+Completed 200000 reads in 1m3.321s
+Read throughput: 3158.47 ops/sec
 Measuring buffer pool hit ratios...
 
 Cleaning up container...
@@ -1137,25 +1137,25 @@ Read Throughput (ops/sec)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │     3235 │     3236 │       51 │     3160 │     3297 │     1.6 │
-│ UUIDV4         │     2613 │     2632 │       45 │     2587 │     2699 │     1.7 │
-│ UUIDV7         │     2667 │     2668 │       25 │     2634 │     2704 │     0.9 │
-│ ULID           │     2691 │     2696 │       27 │     2667 │     2740 │     1.0 │
-│ ULID_MONOTONIC │     2634 │     2639 │       21 │     2611 │     2663 │     0.8 │
-│ UUIDV1         │     2691 │     2686 │       28 │     2654 │     2727 │     1.0 │
-│ OBJECTID       │     3237 │     3216 │       89 │     3078 │     3301 │     2.8 │
+│ SEQUENTIAL     │     3219 │     3238 │       51 │     3201 │     3326 │     1.6 │
+│ UUIDV4         │     2638 │     2630 │       43 │     2587 │     2689 │     1.6 │
+│ UUIDV7         │     2645 │     2652 │       30 │     2619 │     2699 │     1.1 │
+│ ULID           │     2675 │     2656 │       39 │     2599 │     2689 │     1.5 │
+│ ULID_MONOTONIC │     2667 │     2686 │       42 │     2643 │     2734 │     1.6 │
+│ UUIDV1         │     2704 │     2684 │       42 │     2637 │     2723 │     1.6 │
+│ OBJECTID       │     3243 │     3284 │      130 │     3158 │     3495 │     3.9 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      -19.2% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │      -17.6% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID           │      -16.8% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │      -18.6% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │      -16.8% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs OBJECTID       │       +0.1% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      -18.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      -17.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      -16.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -17.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -16.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.7% │   0.6015 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Fragmentation (%)
@@ -1188,7 +1188,7 @@ Cache Hit Ratio
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
 │ SEQUENTIAL     │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
-│ UUIDV4         │   1.0000 │   0.9997 │   0.0004 │   0.9993 │   1.0000 │     0.0 │
+│ UUIDV4         │   1.0000 │   0.9999 │   0.0002 │   0.9996 │   1.0000 │     0.0 │
 │ UUIDV7         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
 │ ULID           │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
 │ ULID_MONOTONIC │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
@@ -1200,12 +1200,12 @@ Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       -0.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.6015 │ Yes       │ n.s.          │
 │ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID           │       +0.0% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.2506 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Index Hit Ratio
@@ -1213,7 +1213,7 @@ Index Hit Ratio
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
 │ SEQUENTIAL     │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
-│ UUIDV4         │   1.0000 │   0.9997 │   0.0004 │   0.9993 │   1.0000 │     0.0 │
+│ UUIDV4         │   1.0000 │   0.9999 │   0.0002 │   0.9996 │   1.0000 │     0.0 │
 │ UUIDV7         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
 │ ULID           │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
 │ ULID_MONOTONIC │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
@@ -1225,87 +1225,87 @@ Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       -0.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.6015 │ Yes       │ n.s.          │
 │ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID           │       +0.0% │   0.0090 │ No        │ No overlap    │
 │ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.2506 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Latency P50 (µs)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      291 │      290 │        2 │      288 │      292 │     0.7 │
-│ UUIDV4         │      305 │      305 │        2 │      303 │      308 │     0.7 │
-│ UUIDV7         │      300 │      300 │        1 │      299 │      302 │     0.4 │
-│ ULID           │      299 │      299 │        2 │      297 │      301 │     0.5 │
-│ ULID_MONOTONIC │      302 │      302 │        1 │      300 │      303 │     0.4 │
-│ UUIDV1         │      299 │      299 │        1 │      298 │      300 │     0.3 │
-│ OBJECTID       │      289 │      291 │        4 │      288 │      298 │     1.5 │
+│ SEQUENTIAL     │      289 │      288 │        2 │      284 │      290 │     0.9 │
+│ UUIDV4         │      304 │      304 │        1 │      303 │      306 │     0.4 │
+│ UUIDV7         │      301 │      301 │        1 │      300 │      303 │     0.4 │
+│ ULID           │      301 │      301 │        2 │      299 │      304 │     0.6 │
+│ ULID_MONOTONIC │      301 │      301 │        2 │      298 │      302 │     0.6 │
+│ UUIDV1         │      300 │      300 │        2 │      298 │      302 │     0.6 │
+│ OBJECTID       │      290 │      289 │        3 │      284 │      293 │     1.1 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │       +4.8% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       +3.1% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID           │       +2.7% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │       +3.8% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │       +2.7% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs OBJECTID       │       -0.7% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │       +5.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +4.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +4.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +4.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +3.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.3% │   0.6015 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Latency P95 (µs)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      432 │      434 │        7 │      428 │      445 │     1.5 │
-│ UUIDV4         │      562 │      559 │        6 │      551 │      565 │     1.0 │
-│ UUIDV7         │      573 │      574 │       17 │      552 │      596 │     3.0 │
-│ ULID           │      551 │      555 │        9 │      550 │      572 │     1.7 │
-│ ULID_MONOTONIC │      566 │      572 │       33 │      545 │      628 │     5.7 │
-│ UUIDV1         │      577 │      558 │       30 │      524 │      586 │     5.3 │
-│ OBJECTID       │      435 │      436 │        5 │      429 │      442 │     1.1 │
+│ SEQUENTIAL     │      432 │      432 │        1 │      431 │      434 │     0.3 │
+│ UUIDV4         │      566 │      578 │       26 │      559 │      622 │     4.5 │
+│ UUIDV7         │      545 │      556 │       17 │      543 │      574 │     3.0 │
+│ ULID           │      561 │      561 │       30 │      527 │      602 │     5.3 │
+│ ULID_MONOTONIC │      548 │      551 │       12 │      537 │      569 │     2.2 │
+│ UUIDV1         │      563 │      571 │       31 │      535 │      606 │     5.3 │
+│ OBJECTID       │      432 │      434 │        9 │      426 │      449 │     2.1 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      +30.1% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │      +32.6% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID           │      +27.5% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │      +31.0% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │      +33.6% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs OBJECTID       │       +0.7% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      +31.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +26.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +29.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +26.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +30.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.7540 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Latency P99 (µs)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      582 │      614 │       77 │      572 │      751 │    12.5 │
-│ UUIDV4         │      885 │      884 │        5 │      877 │      890 │     0.6 │
-│ UUIDV7         │      885 │      884 │        7 │      873 │      892 │     0.8 │
-│ ULID           │      877 │      879 │        5 │      873 │      886 │     0.6 │
-│ ULID_MONOTONIC │      877 │      883 │       16 │      866 │      906 │     1.8 │
-│ UUIDV1         │      885 │      884 │        5 │      876 │      889 │     0.6 │
-│ OBJECTID       │      600 │      623 │       47 │      582 │      681 │     7.5 │
+│ SEQUENTIAL     │      613 │      620 │       46 │      585 │      698 │     7.4 │
+│ UUIDV4         │      887 │      888 │       13 │      877 │      910 │     1.5 │
+│ UUIDV7         │      878 │      880 │        4 │      875 │      885 │     0.5 │
+│ ULID           │      885 │      880 │       13 │      862 │      894 │     1.5 │
+│ ULID_MONOTONIC │      882 │      881 │        5 │      875 │      887 │     0.5 │
+│ UUIDV1         │      875 │      883 │       16 │      871 │      908 │     1.8 │
+│ OBJECTID       │      583 │      615 │       82 │      566 │      760 │    13.3 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      +52.1% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │      +52.1% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID           │      +50.7% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs ULID_MONOTONIC │      +50.7% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV1         │      +52.1% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs OBJECTID       │       +3.1% │   0.2506 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      +44.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +43.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +44.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +43.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +42.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       -4.9% │   0.2506 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Read IOPS
@@ -1337,25 +1337,25 @@ Write IOPS
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     1.6 │
-│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │    15.1 │
-│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     8.0 │
-│ ULID           │        0 │        0 │        0 │        0 │        0 │     4.5 │
-│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │    10.0 │
-│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │    10.5 │
-│ OBJECTID       │        0 │        0 │        0 │        0 │        0 │     1.4 │
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     2.9 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │    24.4 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     7.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     8.5 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     9.4 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │    11.6 │
+│ OBJECTID       │        0 │        0 │        0 │        0 │        0 │     3.8 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      +31.3% │   0.0090 │ No        │ No overlap    │
-│ SEQUENTIAL vs UUIDV7         │       -8.9% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │       -8.1% │   0.0758 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID_MONOTONIC │       -6.3% │   0.6015 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │       -4.3% │   0.6015 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs OBJECTID       │       -0.1% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      +34.6% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       -4.6% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +2.7% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -5.4% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -5.8% │   0.4647 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.8% │   0.7540 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 Read Throughput (MB/s)
@@ -1387,25 +1387,25 @@ Write Throughput (MB/s)
 ┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
 │ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
 ├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
-│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    23.3 │
-│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    10.5 │
-│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     5.6 │
-│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    21.2 │
-│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    19.4 │
-│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    23.6 │
-│ OBJECTID       │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     4.4 │
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     3.6 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    12.4 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    14.8 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    22.3 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    23.8 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │    22.9 │
+│ OBJECTID       │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     4.1 │
 └────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
 
 Statistical Comparisons (vs SEQUENTIAL):
 ┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
 │ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
 ├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
-│ SEQUENTIAL vs UUIDV4         │      +28.2% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV7         │       +8.3% │   0.1172 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID           │      +10.4% │   0.0758 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs ULID_MONOTONIC │      +18.9% │   0.0758 │ Yes       │ n.s.          │
-│ SEQUENTIAL vs UUIDV1         │      +19.4% │   0.0472 │ Yes       │ * (p<0.05)    │
-│ SEQUENTIAL vs OBJECTID       │       +1.2% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV4         │      +33.4% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV7         │      +22.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +66.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +13.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +12.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.8% │   0.4647 │ Yes       │ n.s.          │
 └──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
 
 [3/5] UPDATE PERFORMANCE
@@ -1419,8 +1419,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m9.391s
-Update throughput: 2882.18 ops/sec
+Completed 200000 updates in 1m9.856s
+Update throughput: 2863.00 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1432,8 +1432,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m2.682s
-Update throughput: 3190.71 ops/sec
+Completed 200000 updates in 1m6.781s
+Update throughput: 2994.82 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1445,8 +1445,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m5.89s
-Update throughput: 3035.35 ops/sec
+Completed 200000 updates in 1m15.071s
+Update throughput: 2664.13 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1458,8 +1458,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m9.316s
-Update throughput: 2885.31 ops/sec
+Completed 200000 updates in 1m10.69s
+Update throughput: 2829.22 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1471,8 +1471,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m8.852s
-Update throughput: 2904.75 ops/sec
+Completed 200000 updates in 1m4.774s
+Update throughput: 3087.65 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1487,8 +1487,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m22.26s
-Update throughput: 2431.31 ops/sec
+Completed 200000 updates in 1m22.715s
+Update throughput: 2417.93 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1500,8 +1500,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m21.12s
-Update throughput: 2465.45 ops/sec
+Completed 200000 updates in 1m26.211s
+Update throughput: 2319.88 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1513,8 +1513,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m21.188s
-Update throughput: 2463.41 ops/sec
+Completed 200000 updates in 1m24.81s
+Update throughput: 2358.19 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1526,8 +1526,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m23.764s
-Update throughput: 2387.65 ops/sec
+Completed 200000 updates in 1m23.088s
+Update throughput: 2407.09 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1539,8 +1539,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m25.108s
-Update throughput: 2349.93 ops/sec
+Completed 200000 updates in 1m25.481s
+Update throughput: 2339.69 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1555,8 +1555,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m24.77s
-Update throughput: 2359.32 ops/sec
+Completed 200000 updates in 1m25.936s
+Update throughput: 2327.30 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1568,8 +1568,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m22.112s
-Update throughput: 2435.69 ops/sec
+Completed 200000 updates in 1m21.9s
+Update throughput: 2441.98 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1581,8 +1581,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m21.715s
-Update throughput: 2447.52 ops/sec
+Completed 200000 updates in 1m20.618s
+Update throughput: 2480.82 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1594,8 +1594,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m21.119s
-Update throughput: 2465.49 ops/sec
+Completed 200000 updates in 1m25.469s
+Update throughput: 2340.01 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1607,8 +1607,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m23.069s
-Update throughput: 2407.61 ops/sec
+Completed 200000 updates in 1m18.831s
+Update throughput: 2537.06 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1623,8 +1623,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m19.213s
-Update throughput: 2524.83 ops/sec
+Completed 200000 updates in 1m22.707s
+Update throughput: 2418.15 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1636,8 +1636,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m20.842s
-Update throughput: 2473.95 ops/sec
+Completed 200000 updates in 1m21.345s
+Update throughput: 2458.64 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1649,8 +1649,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m23.346s
-Update throughput: 2399.63 ops/sec
+Completed 200000 updates in 1m23.972s
+Update throughput: 2381.74 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1662,8 +1662,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m20.482s
-Update throughput: 2485.01 ops/sec
+Completed 200000 updates in 1m22.869s
+Update throughput: 2413.43 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1675,8 +1675,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m23.284s
-Update throughput: 2401.41 ops/sec
+Completed 200000 updates in 1m24.215s
+Update throughput: 2374.85 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1691,8 +1691,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m21.42s
-Update throughput: 2456.38 ops/sec
+Completed 200000 updates in 1m19.69s
+Update throughput: 2509.69 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1704,8 +1704,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m19.731s
-Update throughput: 2508.42 ops/sec
+Completed 200000 updates in 1m24.205s
+Update throughput: 2375.15 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1717,8 +1717,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m24.272s
-Update throughput: 2373.27 ops/sec
+Completed 200000 updates in 1m23.461s
+Update throughput: 2396.32 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1730,8 +1730,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m24.994s
-Update throughput: 2353.08 ops/sec
+Completed 200000 updates in 1m21.278s
+Update throughput: 2460.68 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1743,8 +1743,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m21.208s
-Update throughput: 2462.80 ops/sec
+Completed 200000 updates in 1m24.428s
+Update throughput: 2368.87 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1759,8 +1759,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m21.452s
-Update throughput: 2455.43 ops/sec
+Completed 200000 updates in 1m19.637s
+Update throughput: 2511.37 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1772,8 +1772,8 @@ Container ready
 Inserting 1000000 records...
 Inserted 1000000 records
 Running 200000 updates...
-Completed 200000 updates in 1m18.712s
-Update throughput: 2540.90 ops/sec
+Completed 200000 updates in 1m19.683s
+Update throughput: 2509.93 ops/sec
 Measuring fragmentation...
 
 Cleaning up container...
@@ -1781,4 +1781,1893 @@ Container stopped and removed
 done
   Run 3/5... Starting fresh MongoDB container...
 Waiting for MongoDB to initialize...
-2026/03/14 00:29:22 MongoDB failed to start: timeout waiting for MongoDB after 1m0s
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 1m25.237s
+Update throughput: 2346.38 ops/sec
+Measuring fragmentation...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 1m24.428s
+Update throughput: 2368.86 ops/sec
+Measuring fragmentation...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 1m19.886s
+Update throughput: 2503.57 ops/sec
+Measuring fragmentation...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing OBJECTID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 1m12.16s
+Update throughput: 2771.58 ops/sec
+Measuring fragmentation...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 1m12.124s
+Update throughput: 2772.99 ops/sec
+Measuring fragmentation...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 1m21.928s
+Update throughput: 2441.16 ops/sec
+Measuring fragmentation...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 1m2.185s
+Update throughput: 3216.18 ops/sec
+Measuring fragmentation...
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+Inserting 1000000 records...
+Inserted 1000000 records
+Running 200000 updates...
+Completed 200000 updates in 1m11.605s
+Update throughput: 2793.09 ops/sec
+Measuring fragmentation...
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Update Performance - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Update Throughput (ops/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     2863 │     2888 │      162 │     2664 │     3088 │     5.6 │
+│ UUIDV4         │     2358 │     2369 │       43 │     2320 │     2418 │     1.8 │
+│ UUIDV7         │     2442 │     2425 │       90 │     2327 │     2537 │     3.7 │
+│ ULID           │     2413 │     2409 │       33 │     2375 │     2459 │     1.4 │
+│ ULID_MONOTONIC │     2396 │     2422 │       61 │     2369 │     2510 │     2.5 │
+│ UUIDV1         │     2504 │     2448 │       83 │     2346 │     2511 │     3.4 │
+│ OBJECTID       │     2773 │     2799 │      275 │     2441 │     3216 │     9.8 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -17.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      -14.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      -15.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -16.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -12.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       -3.1% │   0.3472 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Fragmentation (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │    11.54 │    11.60 │     0.51 │    10.96 │    12.14 │     4.4 │
+│ UUIDV4         │    12.64 │    12.66 │     0.35 │    12.27 │    13.15 │     2.7 │
+│ UUIDV7         │    12.79 │    12.70 │     0.40 │    12.31 │    13.26 │     3.1 │
+│ ULID           │    12.70 │    12.76 │     0.20 │    12.59 │    13.07 │     1.6 │
+│ ULID_MONOTONIC │    12.58 │    12.57 │     0.04 │    12.52 │    12.64 │     0.4 │
+│ UUIDV1         │    12.44 │    12.43 │     0.19 │    12.16 │    12.70 │     1.6 │
+│ OBJECTID       │    11.82 │    11.65 │     0.80 │    10.34 │    12.51 │     6.8 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +9.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +10.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +10.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +9.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +7.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +2.5% │   0.7540 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P50 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      352 │      349 │       12 │      331 │      365 │     3.6 │
+│ UUIDV4         │      377 │      378 │        2 │      376 │      382 │     0.7 │
+│ UUIDV7         │      370 │      370 │        5 │      363 │      376 │     1.4 │
+│ ULID           │      372 │      371 │        2 │      368 │      374 │     0.6 │
+│ ULID_MONOTONIC │      372 │      371 │        4 │      365 │      375 │     1.2 │
+│ UUIDV1         │      367 │      369 │        5 │      364 │      375 │     1.4 │
+│ OBJECTID       │      356 │      352 │       21 │      318 │      377 │     6.1 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +7.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +5.1% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID           │       +5.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +5.7% │   0.0122 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       +4.3% │   0.0216 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs OBJECTID       │       +1.1% │   0.3472 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P95 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      486 │      486 │       11 │      472 │      503 │     2.4 │
+│ UUIDV4         │      584 │      578 │       26 │      550 │      614 │     4.5 │
+│ UUIDV7         │      565 │      569 │       22 │      543 │      600 │     3.8 │
+│ ULID           │      573 │      579 │       22 │      557 │      614 │     3.8 │
+│ ULID_MONOTONIC │      575 │      570 │       13 │      546 │      579 │     2.4 │
+│ UUIDV1         │      572 │      564 │       18 │      538 │      580 │     3.2 │
+│ OBJECTID       │      492 │      509 │       52 │      469 │      600 │    10.2 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +20.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +16.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +17.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +18.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +17.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +1.2% │   0.4034 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      607 │      619 │       43 │      586 │      693 │     7.0 │
+│ UUIDV4         │      902 │      900 │       13 │      888 │      919 │     1.4 │
+│ UUIDV7         │      899 │      899 │        7 │      890 │      908 │     0.8 │
+│ ULID           │      899 │      904 │       11 │      891 │      920 │     1.3 │
+│ ULID_MONOTONIC │      902 │      899 │        7 │      888 │      905 │     0.7 │
+│ UUIDV1         │      895 │      896 │        6 │      889 │      904 │     0.7 │
+│ OBJECTID       │      625 │      669 │      131 │      585 │      901 │    19.5 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +48.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +48.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +48.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +48.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +47.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +3.0% │   0.4647 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ OBJECTID       │        0 │        0 │        0 │        0 │        0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │       17 │       17 │        0 │       16 │       17 │     2.4 │
+│ UUIDV4         │       18 │       18 │        0 │       17 │       18 │     2.0 │
+│ UUIDV7         │       17 │       17 │        0 │       16 │       17 │     1.2 │
+│ ULID           │       17 │       17 │        0 │       17 │       17 │     1.6 │
+│ ULID_MONOTONIC │       16 │       16 │        0 │       16 │       16 │     0.9 │
+│ UUIDV1         │       17 │       17 │        0 │       16 │       17 │     1.9 │
+│ OBJECTID       │       17 │       17 │        1 │       17 │       18 │     3.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +5.6% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       -0.2% │   0.7540 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -2.4% │   0.0472 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs UUIDV1         │       -1.8% │   0.4647 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +3.6% │   0.1172 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ OBJECTID       │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      3.4 │      3.4 │      0.2 │      3.1 │      3.7 │     6.0 │
+│ UUIDV4         │      3.4 │      3.4 │      0.1 │      3.3 │      3.5 │     2.1 │
+│ UUIDV7         │      3.1 │      3.1 │      0.1 │      3.0 │      3.1 │     1.8 │
+│ ULID           │      3.1 │      3.1 │      0.0 │      3.1 │      3.2 │     1.3 │
+│ ULID_MONOTONIC │      3.0 │      3.0 │      0.0 │      3.0 │      3.0 │     0.8 │
+│ UUIDV1         │      3.0 │      3.0 │      0.1 │      2.9 │      3.1 │     1.8 │
+│ OBJECTID       │      3.4 │      3.4 │      0.3 │      2.9 │      3.8 │    10.1 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.6% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │      -10.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       -9.4% │   0.0283 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -12.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -12.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       -1.3% │   0.9168 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+[4/5] MIXED INSERT-HEAVY
+====================================================================================================
+
+Testing SEQUENTIAL (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 5566.78 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 5492.74 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 5499.62 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 5447.84 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - sequential ===
+Creating initial dataset (100000 records)...
+Overall throughput: 5543.20 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV4 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4902.84 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4856.74 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4868.21 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4948.61 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv4 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4886.88 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV7 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4919.44 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4973.97 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4982.74 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 5001.43 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv7 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4998.35 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4990.48 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4880.23 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4912.73 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4974.53 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4974.18 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID_MONOTONIC (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 5043.06 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4980.34 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4955.59 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4963.59 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - ulid_monotonic ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4968.87 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV1 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 5021.68 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4937.85 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4913.77 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4948.68 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - uuidv1 ===
+Creating initial dataset (100000 records)...
+Overall throughput: 4953.09 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing OBJECTID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - objectid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 7215.40 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - objectid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6892.40 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - objectid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 6770.34 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - objectid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 7012.24 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: Insert-Heavy (70% insert, 30% read) - objectid ===
+Creating initial dataset (100000 records)...
+Overall throughput: 7142.04 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Mixed Insert-Heavy (70% insert, 30% read) - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Overall Throughput (ops/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     5500 │     5510 │       46 │     5448 │     5567 │     0.8 │
+│ UUIDV4         │     4887 │     4893 │       36 │     4857 │     4949 │     0.7 │
+│ UUIDV7         │     4983 │     4975 │       33 │     4919 │     5001 │     0.7 │
+│ ULID           │     4974 │     4946 │       47 │     4880 │     4990 │     1.0 │
+│ ULID_MONOTONIC │     4969 │     4982 │       35 │     4956 │     5043 │     0.7 │
+│ UUIDV1         │     4949 │     4955 │       40 │     4914 │     5022 │     0.8 │
+│ OBJECTID       │     7012 │     7006 │      181 │     6770 │     7215 │     2.6 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -11.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -9.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       -9.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -9.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -10.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │      +27.5% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Fragmentation (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV4         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV7         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID           │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ ULID_MONOTONIC │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ UUIDV1         │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+│ OBJECTID       │     0.00 │     0.00 │     0.00 │     0.00 │     0.00 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Cache Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV4         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV7         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ ULID           │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ ULID_MONOTONIC │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV1         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ OBJECTID       │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV4         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV7         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ ULID           │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ ULID_MONOTONIC │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV1         │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ OBJECTID       │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Table Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     14.8 │     14.8 │      0.0 │     14.7 │     14.8 │     0.1 │
+│ UUIDV4         │     25.7 │     25.7 │      0.0 │     25.7 │     25.7 │     0.1 │
+│ UUIDV7         │     25.7 │     25.6 │      0.0 │     25.6 │     25.7 │     0.1 │
+│ ULID           │     25.7 │     25.7 │      0.0 │     25.6 │     25.7 │     0.1 │
+│ ULID_MONOTONIC │     25.6 │     25.7 │      0.0 │     25.6 │     25.7 │     0.1 │
+│ UUIDV1         │     25.6 │     25.6 │      0.0 │     25.6 │     25.7 │     0.1 │
+│ OBJECTID       │     25.4 │     25.4 │      0.0 │     25.4 │     25.4 │     0.1 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +73.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +73.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +73.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +73.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +73.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │      +71.8% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      1.6 │      1.6 │      0.0 │      1.6 │      1.6 │     0.1 │
+│ UUIDV4         │      6.2 │      6.2 │      0.1 │      6.1 │      6.3 │     1.4 │
+│ UUIDV7         │      4.6 │      4.6 │      0.0 │      4.6 │      4.6 │     0.1 │
+│ ULID           │      4.6 │      4.6 │      0.0 │      4.6 │      4.6 │     0.1 │
+│ ULID_MONOTONIC │      4.6 │      4.6 │      0.0 │      4.6 │      4.6 │     0.1 │
+│ UUIDV1         │      5.6 │      5.6 │      0.0 │      5.6 │      5.6 │     0.1 │
+│ OBJECTID       │      2.3 │      2.3 │      0.0 │      2.3 │      2.3 │     0.3 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │     +280.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │     +186.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │     +186.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │     +182.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │     +244.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │      +43.9% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P50 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      574 │      572 │        8 │      562 │      581 │     1.3 │
+│ UUIDV4         │      433 │      433 │        8 │      424 │      444 │     1.9 │
+│ UUIDV7         │      423 │      424 │        4 │      421 │      430 │     0.9 │
+│ ULID           │      425 │      424 │        2 │      422 │      426 │     0.4 │
+│ ULID_MONOTONIC │      425 │      424 │        3 │      420 │      427 │     0.6 │
+│ UUIDV1         │      425 │      428 │        8 │      418 │      437 │     1.9 │
+│ OBJECTID       │      399 │      400 │       12 │      388 │      418 │     3.1 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -24.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      -26.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      -26.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -26.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -26.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │      -30.5% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P95 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1164 │     1167 │       11 │     1153 │     1183 │     1.0 │
+│ UUIDV4         │      940 │      940 │        9 │      931 │      951 │     1.0 │
+│ UUIDV7         │      920 │      923 │       10 │      912 │      936 │     1.1 │
+│ ULID           │      926 │      928 │       10 │      919 │      942 │     1.1 │
+│ ULID_MONOTONIC │      924 │      926 │        5 │      921 │      933 │     0.5 │
+│ UUIDV1         │      933 │      939 │       16 │      925 │      964 │     1.7 │
+│ OBJECTID       │      842 │      833 │       26 │      793 │      854 │     3.1 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -19.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      -21.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      -20.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -20.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -19.8% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │      -27.7% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │    56752 │    56781 │      127 │    56629 │    56956 │     0.2 │
+│ UUIDV4         │    64416 │    64342 │      317 │    63889 │    64682 │     0.5 │
+│ UUIDV7         │    63919 │    63902 │      170 │    63720 │    64084 │     0.3 │
+│ ULID           │    63942 │    64048 │      381 │    63779 │    64714 │     0.6 │
+│ ULID_MONOTONIC │    64156 │    64322 │      299 │    64063 │    64728 │     0.5 │
+│ UUIDV1         │    63802 │    64043 │      633 │    63466 │    64724 │     1.0 │
+│ OBJECTID       │    56821 │    56799 │      241 │    56432 │    57044 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +13.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +12.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +12.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +13.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +12.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +0.1% │   0.6015 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ OBJECTID       │        0 │        0 │        0 │        0 │        0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        6 │        6 │        0 │        6 │        6 │     1.2 │
+│ UUIDV4         │       16 │       16 │        0 │       16 │       16 │     0.6 │
+│ UUIDV7         │       16 │       16 │        0 │       16 │       17 │     1.5 │
+│ ULID           │       16 │       16 │        0 │       16 │       16 │     1.1 │
+│ ULID_MONOTONIC │       16 │       16 │        0 │       16 │       16 │     0.6 │
+│ UUIDV1         │       16 │       16 │        0 │       16 │       16 │     1.3 │
+│ OBJECTID       │       20 │       20 │        0 │       20 │       20 │     1.2 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │     +156.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │     +158.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │     +157.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │     +158.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │     +156.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │     +217.7% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ OBJECTID       │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      1.6 │      1.6 │      0.0 │      1.5 │      1.6 │     0.6 │
+│ UUIDV4         │      4.0 │      4.0 │      0.0 │      3.9 │      4.0 │     0.9 │
+│ UUIDV7         │      4.0 │      4.0 │      0.0 │      4.0 │      4.1 │     1.0 │
+│ ULID           │      4.0 │      4.0 │      0.1 │      3.9 │      4.1 │     1.4 │
+│ ULID_MONOTONIC │      4.0 │      4.1 │      0.0 │      4.0 │      4.1 │     1.0 │
+│ UUIDV1         │      4.0 │      4.0 │      0.1 │      3.9 │      4.1 │     1.5 │
+│ OBJECTID       │      5.4 │      5.5 │      0.1 │      5.3 │      5.7 │     2.7 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │     +154.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │     +158.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │     +157.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │     +159.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │     +157.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │     +249.2% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+[5/5] MIXED READ-UPDATE (YCSB-A)
+====================================================================================================
+
+Testing SEQUENTIAL (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6554.35 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6283.47 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6582.22 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6202.91 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - sequential ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6393.83 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV4 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4729.56 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4664.21 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4580.09 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4647.97 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv4 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4757.58 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV7 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4712.18 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4647.80 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4663.67 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4691.48 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv7 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4613.26 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4656.25 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4694.88 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4682.72 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4762.24 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4731.54 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing ULID_MONOTONIC (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4625.49 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4660.09 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4659.88 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4683.45 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - ulid_monotonic ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4621.35 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing UUIDV1 (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4602.63 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4698.79 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4671.08 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4737.34 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - uuidv1 ===
+Creating initial dataset (500000 records)...
+Overall throughput: 4673.53 ops/sec
+Buffer hit ratio: 99.99%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+Testing OBJECTID (5 runs)
+----------------------------------------------------------------------
+  Run 1/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - objectid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 5980.58 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 2/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - objectid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 5984.10 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 3/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - objectid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6162.52 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 4/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - objectid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 5939.23 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+  Run 5/5... Starting fresh MongoDB container...
+Waiting for MongoDB to initialize...
+Container ready
+
+=== Mixed Workload: YCSB-A (50% read, 50% update) - objectid ===
+Creating initial dataset (500000 records)...
+Overall throughput: 6071.99 ops/sec
+Buffer hit ratio: 100.00%
+
+Cleaning up container...
+Container stopped and removed
+done
+
+====================================================================================================
+Mixed YCSB-A (50% read, 50% update) - Statistical Summary (5 runs per UUID type)
+====================================================================================================
+
+Overall Throughput (ops/sec)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     6394 │     6403 │      165 │     6203 │     6582 │     2.6 │
+│ UUIDV4         │     4664 │     4676 │       70 │     4580 │     4758 │     1.5 │
+│ UUIDV7         │     4664 │     4666 │       38 │     4613 │     4712 │     0.8 │
+│ ULID           │     4695 │     4706 │       42 │     4656 │     4762 │     0.9 │
+│ ULID_MONOTONIC │     4660 │     4650 │       26 │     4621 │     4683 │     0.6 │
+│ UUIDV1         │     4674 │     4677 │       49 │     4603 │     4737 │     1.1 │
+│ OBJECTID       │     5984 │     6028 │       90 │     5939 │     6163 │     1.5 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      -27.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      -27.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      -26.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      -27.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      -26.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       -6.4% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Fragmentation (%)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     1.60 │     1.63 │     0.32 │     1.22 │     2.12 │    19.8 │
+│ UUIDV4         │    38.81 │    38.82 │     0.13 │    38.63 │    38.97 │     0.3 │
+│ UUIDV7         │    38.45 │    38.35 │     0.16 │    38.12 │    38.49 │     0.4 │
+│ ULID           │    38.36 │    38.31 │     0.39 │    37.81 │    38.80 │     1.0 │
+│ ULID_MONOTONIC │    37.49 │    37.61 │     0.32 │    37.27 │    37.99 │     0.8 │
+│ UUIDV1         │    37.31 │    37.23 │     0.40 │    36.56 │    37.63 │     1.1 │
+│ OBJECTID       │     1.64 │     1.63 │     0.11 │     1.48 │     1.77 │     6.7 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │    +2330.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │    +2308.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │    +2302.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │    +2248.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │    +2236.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +2.9% │   0.6015 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Cache Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV4         │   1.0000 │   1.0000 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ UUIDV7         │   1.0000 │   1.0000 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ ULID           │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ ULID_MONOTONIC │   1.0000 │   1.0000 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ UUIDV1         │   0.9999 │   1.0000 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ OBJECTID       │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       -0.0% │   0.7540 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Hit Ratio
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+│ UUIDV4         │   1.0000 │   1.0000 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ UUIDV7         │   1.0000 │   1.0000 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ ULID           │   0.9999 │   0.9999 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ ULID_MONOTONIC │   1.0000 │   1.0000 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ UUIDV1         │   0.9999 │   1.0000 │   0.0000 │   0.9999 │   1.0000 │     0.0 │
+│ OBJECTID       │   1.0000 │   1.0000 │   0.0000 │   1.0000 │   1.0000 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       -0.0% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       -0.0% │   0.7540 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Table Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │     79.3 │     79.4 │      0.3 │     79.1 │     79.9 │     0.4 │
+│ UUIDV4         │    142.7 │    142.7 │      0.3 │    142.3 │    143.2 │     0.2 │
+│ UUIDV7         │    137.5 │    137.2 │      0.7 │    136.4 │    137.9 │     0.5 │
+│ ULID           │    138.9 │    139.5 │      0.9 │    138.8 │    140.8 │     0.6 │
+│ ULID_MONOTONIC │    133.7 │    133.8 │      1.1 │    132.7 │    135.7 │     0.8 │
+│ UUIDV1         │    129.9 │    129.7 │      0.7 │    128.8 │    130.6 │     0.6 │
+│ OBJECTID       │     82.2 │     82.2 │      0.2 │     82.0 │     82.5 │     0.2 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +79.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +73.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +75.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +68.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +63.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +3.7% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Index Size (MB)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      6.1 │      6.1 │      0.0 │      6.1 │      6.1 │     0.0 │
+│ UUIDV4         │     13.6 │     13.6 │      0.4 │     13.1 │     14.1 │     3.1 │
+│ UUIDV7         │      9.8 │      9.8 │      0.0 │      9.8 │      9.8 │     0.0 │
+│ ULID           │      9.8 │      9.8 │      0.0 │      9.8 │      9.8 │     0.1 │
+│ ULID_MONOTONIC │      9.5 │      9.5 │      0.0 │      9.5 │      9.5 │     0.1 │
+│ UUIDV1         │     11.8 │     11.8 │      0.0 │     11.8 │     11.8 │     0.1 │
+│ OBJECTID       │      5.0 │      5.0 │      0.0 │      5.0 │      5.0 │     0.1 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │     +123.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +61.2% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +61.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +56.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +94.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │      -17.7% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P50 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      441 │      443 │       11 │      432 │      458 │     2.6 │
+│ UUIDV4         │      483 │      481 │       10 │      467 │      493 │     2.0 │
+│ UUIDV7         │      483 │      484 │        9 │      476 │      498 │     1.8 │
+│ ULID           │      478 │      480 │        9 │      468 │      494 │     1.9 │
+│ ULID_MONOTONIC │      487 │      484 │        8 │      472 │      492 │     1.6 │
+│ UUIDV1         │      482 │      480 │        9 │      469 │      492 │     1.9 │
+│ OBJECTID       │      478 │      473 │        9 │      459 │      481 │     1.9 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +9.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +9.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │       +8.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +10.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │       +9.3% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +8.4% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P95 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      866 │      849 │       33 │      814 │      882 │     3.8 │
+│ UUIDV4         │      978 │      979 │       13 │      960 │      994 │     1.3 │
+│ UUIDV7         │      978 │      983 │       11 │      972 │     1000 │     1.1 │
+│ ULID           │      975 │      975 │       12 │      962 │      995 │     1.3 │
+│ ULID_MONOTONIC │      991 │      987 │        9 │      972 │      995 │     0.9 │
+│ UUIDV1         │      984 │      984 │       13 │      969 │     1004 │     1.3 │
+│ OBJECTID       │      926 │      918 │       14 │      902 │      931 │     1.5 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +12.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +12.9% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +12.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +14.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +13.6% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       +6.9% │   0.0090 │ No        │ No overlap    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Latency P99 (µs)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │    58732 │    58888 │      506 │    58231 │    59426 │     0.9 │
+│ UUIDV4         │    65512 │    65472 │      228 │    65102 │    65722 │     0.3 │
+│ UUIDV7         │    65576 │    65371 │      431 │    64890 │    65764 │     0.7 │
+│ ULID           │    65249 │    65286 │      256 │    64971 │    65637 │     0.4 │
+│ ULID_MONOTONIC │    65418 │    65306 │      344 │    64792 │    65666 │     0.5 │
+│ UUIDV1         │    65511 │    65521 │      147 │    65338 │    65693 │     0.2 │
+│ OBJECTID       │    57973 │    57995 │      205 │    57823 │    58330 │     0.4 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +11.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │      +11.7% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID           │      +11.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +11.4% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV1         │      +11.5% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs OBJECTID       │       -1.3% │   0.0163 │ Yes       │ * (p<0.05)    │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV4         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV7         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID           │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ ULID_MONOTONIC │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ UUIDV1         │        0 │        0 │        0 │        0 │        0 │     0.0 │
+│ OBJECTID       │        0 │        0 │        0 │        0 │        0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write IOPS
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │       18 │       20 │        2 │       18 │       22 │    11.3 │
+│ UUIDV4         │       23 │       24 │        4 │       21 │       30 │    16.3 │
+│ UUIDV7         │       21 │       22 │        2 │       20 │       25 │     9.9 │
+│ ULID           │       21 │       22 │        2 │       20 │       25 │     8.8 │
+│ ULID_MONOTONIC │       22 │       23 │        2 │       21 │       24 │     7.0 │
+│ UUIDV1         │       20 │       20 │        1 │       19 │       22 │     4.7 │
+│ OBJECTID       │       19 │       20 │        2 │       18 │       22 │     9.3 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +27.6% │   0.0758 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │      +15.0% │   0.3472 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │      +15.9% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │      +22.4% │   0.1172 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │      +13.0% │   0.6015 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +6.5% │   0.6015 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Read Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV4         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV7         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID           │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ ULID_MONOTONIC │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ UUIDV1         │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+│ OBJECTID       │      0.0 │      0.0 │      0.0 │      0.0 │      0.0 │     0.0 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV7         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID           │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs ULID_MONOTONIC │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       +0.0% │   1.0000 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+Write Throughput (MB/s)
+┌────────────────┬──────────┬──────────┬──────────┬──────────┬──────────┬─────────┐
+│ Key Type       │ Median   │ Mean     │ StdDev   │ Min      │ Max      │ CV %    │
+├────────────────┼──────────┼──────────┼──────────┼──────────┼──────────┼─────────┤
+│ SEQUENTIAL     │      4.6 │      4.6 │      0.1 │      4.4 │      4.7 │     2.7 │
+│ UUIDV4         │      5.1 │      5.1 │      0.2 │      4.9 │      5.4 │     4.2 │
+│ UUIDV7         │      4.8 │      4.8 │      0.1 │      4.7 │      5.0 │     2.7 │
+│ ULID           │      4.9 │      4.9 │      0.2 │      4.7 │      5.1 │     3.4 │
+│ ULID_MONOTONIC │      4.6 │      4.7 │      0.2 │      4.5 │      5.0 │     3.7 │
+│ UUIDV1         │      4.5 │      4.5 │      0.0 │      4.5 │      4.6 │     0.9 │
+│ OBJECTID       │      4.5 │      4.4 │      0.1 │      4.4 │      4.5 │     1.3 │
+└────────────────┴──────────┴──────────┴──────────┴──────────┴──────────┴─────────┘
+
+Statistical Comparisons (vs SEQUENTIAL):
+┌──────────────────────────────┬─────────────┬──────────┬───────────┬───────────────┐
+│ Comparison                   │ Median Diff │ p-value  │ Overlap?  │ Significant?  │
+├──────────────────────────────┼─────────────┼──────────┼───────────┼───────────────┤
+│ SEQUENTIAL vs UUIDV4         │      +10.1% │   0.0090 │ No        │ No overlap    │
+│ SEQUENTIAL vs UUIDV7         │       +3.8% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID           │       +5.7% │   0.0163 │ Yes       │ * (p<0.05)    │
+│ SEQUENTIAL vs ULID_MONOTONIC │       -0.7% │   0.9168 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs UUIDV1         │       -3.7% │   0.1745 │ Yes       │ n.s.          │
+│ SEQUENTIAL vs OBJECTID       │       -4.1% │   0.1172 │ Yes       │ n.s.          │
+└──────────────────────────────┴─────────────┴──────────┴───────────┴───────────────┘
+
+====================================================================================================
+ALL SCENARIOS COMPLETED IN 3h48m58s
+====================================================================================================
+
+Exporting results to CSV...
+  Statistical summary: /home/aaeirack/uuid-benchmark/results/mongodb_1m_all_8conn.csv
+  Raw runs data: /home/aaeirack/uuid-benchmark/results/mongodb_1m_all_8conn_raw.csv
+
+All scenarios completed successfully!
