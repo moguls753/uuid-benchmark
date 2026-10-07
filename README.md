@@ -38,6 +38,11 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 ./uuid-benchmark -database=mongodb -scenario=insert-performance -num-records=100000 -num-runs=5 -output=results.csv
 ```
 
+The normal benchmark also runs from a source ZIP without Git. It prints a
+warning and records `git_provenance: "unavailable"`, an empty `commit`, and
+`working_tree_dirty: null`; binary hashes are still recorded. Run from the
+benchmark root. Use a Git checkout when you need recorded Git provenance.
+
 ## Options
 
 - `-database` - Database to benchmark: `postgres`, `mysql`, `mongodb`, `cassandra` (default: postgres)
@@ -82,8 +87,10 @@ python3 -B scripts/ih_campaign.py --mode=full --seed=42
 python3 -B scripts/ih_repeat.py --help
 ```
 
-Executing a campaign additionally requires `--execute --host-ready`, a quiet
-host and locally available database images. Full mode normally requires pilots;
+Executing an IH campaign additionally requires a Git checkout for source
+archiving, `--execute --host-ready`, a quiet host and locally available database
+images. The Git-free startup support above applies to the normal benchmark,
+not this full campaign launcher. Full mode normally requires pilots;
 `--skip-pilot` explicitly records a bypass, never a passed pilot gate. Repeats
 require named source runs and a reason, reuse archived binaries, and reject
 changed measurement sources. The consolidated code therefore cannot silently

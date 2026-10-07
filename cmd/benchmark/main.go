@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"hash/fnv"
@@ -52,7 +53,8 @@ var effectiveCluster map[string]string
 
 type manifest struct {
 	Commit           string            `json:"commit"`
-	WorkingTreeDirty bool              `json:"working_tree_dirty"`
+	GitProvenance    string            `json:"git_provenance"`
+	WorkingTreeDirty *bool             `json:"working_tree_dirty"`
 	OrchestratorMD5  string            `json:"orchestrator_md5"`
 	WorkloadMD5      string            `json:"workload_md5"`
 	Flags            map[string]string `json:"flags"`
@@ -171,11 +173,15 @@ func writeManifest() error {
 
 // initManifest captures everything needed to say afterwards which code
 // produced a dataset: commit, whether the tree was dirty, the md5 of both
-// binaries and every flag value. Reconstructing this after the fact for the
-// June 2026 runs took a full audit, and parts of it stayed unprovable.
+// binaries and every flag value. Git-free source exports may run too, but
+// explicitly record unavailable Git provenance rather than a clean tree.
 func initManifest(database string) {
 	commit, dirty, err := gitState()
-	if err != nil {
+	gitProvenance := "available"
+	if errors.Is(err, errGitUnavailable) {
+		gitProvenance = "unavailable"
+		log.Printf("Warning: Git provenance unavailable (%v); continuing without a source commit or working-tree status. Use a Git checkout for recorded Git provenance.", err)
+	} else if err != nil {
 		log.Fatalf("Campaign provenance: cannot determine the source commit: %v", err)
 	}
 	orchestrator, err := os.Executable()
@@ -188,6 +194,7 @@ func initManifest(database string) {
 	}
 	campaignManifest = manifest{
 		Commit:                commit,
+		GitProvenance:         gitProvenance,
 		WorkingTreeDirty:      dirty,
 		OrchestratorMD5:       orchestratorSum,
 		Flags:                 flagDump(),
@@ -255,10 +262,9 @@ func readSetOf(result any) string {
 	return ""
 }
 
-// The provenance helpers return errors rather than blanks. An empty commit or
-// a falsely clean working tree is worse than no manifest at all: it looks like
-// an answer. initManifest turns any of these into an abort before the first
-// container starts.
+// Binary hashing failures still abort before the first container starts.
+// Missing Git metadata/tooling is separately represented as unavailable; an
+// actual Git query failure must never look like a clean working tree.
 func fileMD5(path string) (string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -268,17 +274,33 @@ func fileMD5(path string) (string, error) {
 	return hex.EncodeToString(sum[:]), nil
 }
 
-func gitState() (string, bool, error) {
+var errGitUnavailable = errors.New("Git provenance unavailable")
+
+func gitState() (string, *bool, error) {
+	// Run from the benchmark root, as required by the build/Docker paths.
+	// A worktree's .git file is valid too. Do not attribute an extracted ZIP
+	// to an unrelated parent repository that Git would otherwise discover.
+	if _, err := os.Stat(".git"); errors.Is(err, os.ErrNotExist) {
+		return "", nil, fmt.Errorf("%w: no .git in benchmark directory", errGitUnavailable)
+	} else if err != nil {
+		return "", nil, fmt.Errorf("inspect .git: %w", err)
+	}
 	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
-	if err != nil {
-		return "", false, fmt.Errorf("git rev-parse HEAD: %w", err)
+	if errors.Is(err, exec.ErrNotFound) {
+		return "", nil, fmt.Errorf("%w: Git executable not installed", errGitUnavailable)
+	} else if err != nil {
+		return "", nil, fmt.Errorf("git rev-parse HEAD: %w", err)
+	}
+	if strings.TrimSpace(string(commit)) == "" {
+		return "", nil, fmt.Errorf("git rev-parse HEAD returned an empty commit")
 	}
 	// A failing status must never read as clean.
 	status, err := exec.Command("git", "status", "--porcelain").Output()
 	if err != nil {
-		return "", false, fmt.Errorf("git status: %w", err)
+		return "", nil, fmt.Errorf("git status: %w", err)
 	}
-	return strings.TrimSpace(string(commit)), len(strings.TrimSpace(string(status))) > 0, nil
+	dirty := len(strings.TrimSpace(string(status))) > 0
+	return strings.TrimSpace(string(commit)), &dirty, nil
 }
 
 func flagDump() map[string]string {
