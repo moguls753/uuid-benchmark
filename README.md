@@ -2,7 +2,7 @@
 
 Benchmarks sequential integer keys, UUIDv1, UUIDv4, UUIDv7, ULID and monotonic ULID across **PostgreSQL 18, MySQL 8, MongoDB 8 and Cassandra 5**. MongoDB also includes ObjectId. Measures throughput, latency, storage, cache behavior and I/O, with engine-specific structural metrics.
 
-The project includes the single-node thesis benchmarks, a **Cassandra multi-node extension**, and a separate corrected insert-heavy protocol. Historical results and current protocols are not automatically interchangeable.
+Run locally with Docker or benchmark Cassandra across multiple hosts over SSH.
 
 ## Quick start
 
@@ -41,8 +41,7 @@ binary hashes are still recorded. Use a Git checkout for source provenance.
 
 Scenarios: `insert-performance`, `read-performance`, `update-performance`,
 `mixed-insert-heavy` (70% insert / 30% read), `mixed-read-update` (50% read /
-50% update), or `all`. The historical `mixed-insert-heavy` scenario is **not**
-the corrected IH protocol below. See `-help` for all flags.
+50% update), or `all`. See `-help` for all flags.
 
 ## Cassandra: single-node and multi-node
 
@@ -86,31 +85,9 @@ see [Safety](#safety) before running.
 - Remote images default to `cassandra:5`, pulled at startup. Pin
   `-cassandra-image=cassandra@sha256:…` for a multi-day campaign.
 
-**Comparison limits:** Normal Cassandra workloads use hash-based partition
-buckets (`-num-buckets=1000`), even in single-node mode—not the historical fixed
-partition. Read/update targets are now sampled uniformly during insertion;
-`-head-sampling` restores the legacy per-partition-head fetch for bridge
-comparisons. Network path, replication, partition count and sampling must be
-accounted for when comparing results. Cluster metrics aggregate per-node
-snapshots; see [paper notes](docs/paper-notes.md) for details.
-
-## Corrected insert-heavy (IH)
-
-The separate single-client IH protocol verifies the preload target pool,
-successful reads, fresh inserts and final cardinality. Cassandra uses fixed
-**bucket 1**, RF1, LOCAL_ONE and STCS; `-num-buckets=1` is not a substitute.
-
-```bash
-# Planning only; Python 3.10+. Does not start measurements.
-python3 -B scripts/ih_campaign.py --mode=full --seed=42
-python3 -B scripts/ih_repeat.py --help
-```
-
-Execution requires a Git checkout, locally available database images, a quiet
-host and `--execute --host-ready`. Full mode normally requires pilots;
-`--skip-pilot` records a bypass, not a passed gate. Repeats require named source
-runs and a reason, reuse archived binaries and reject changed measurement sources.
-See the [IH protocol and implementation](docs/plans/ih-corrected-implementation.md).
+Cassandra distributes rows across hash-based partition buckets
+(`-num-buckets=1000`) and aggregates metrics across nodes. Keep node count,
+replication, consistency and partition count consistent when comparing runs.
 
 ## Measurement and outputs
 
@@ -147,8 +124,10 @@ remote clusters with ephemeral hosts; use only trusted private networks.
 
 ## Results and checks
 
-- [Evidence dashboard and source documentation](docs/EVIDENCE.md)
+- [Results dashboard](docs/EVIDENCE.md)
 - [YCSB validation](validation/README.md)
+- [Specialized insert-heavy campaign scripts](docs/plans/ih-corrected-implementation.md)
+  (separate from the standard CLI scenarios)
 - PDF plots: `pip install -r scripts/requirements.txt`, then
   `python3 scripts/plot.py results.csv --output-dir plots/`
 
