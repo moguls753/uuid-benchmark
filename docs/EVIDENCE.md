@@ -1,159 +1,115 @@
-# Paper evidence dashboard
+# Results dashboard
 
-The active GitHub Pages entry point is `docs/index.html`, with `assets/evidence.js`,
-`assets/evidence.css` and `data/evidence.json`. It is a static, dependency-free
-browser application (fonts have system fallbacks). Serve over HTTP, not `file://`.
+**[Open dashboard](https://moguls753.github.io/uuid-benchmark/)** · [Project README](../README.md)
 
-## Audience and design
+Explore selected benchmark results across PostgreSQL, MySQL, MongoDB and
+Cassandra: findings, comparisons, individual runs and downloadable source data.
+The dashboard shows a curated research dataset, not every result in the repository.
+New benchmark runs do **not** appear automatically.
 
-Paper readers and reviewers follow **finding → experiment → individual runs →
-source evidence**. The existing editorial visual identity is retained: white and
-pale-gray surfaces, serif headings, fine rules, stable key-scheme colors, and
-monospaced measurement labels. Body text uses a readable system sans-serif.
-No best-key badge, synthetic sparkline, cross-campaign scaling curve, or universal
-engine ranking is presented.
+## View locally
 
-- Findings: A5/A1/A2, PostgreSQL index structure, within-engine workload overview.
-- Explorer: key-scheme, same-experiment scale and normalized engine comparisons.
-- Data & methods: per-run table/CSV, source files with SHA-256, experiment register,
-  sampling, measurement windows, statistics and limitations.
-- State is encoded in the URL, including experiment, endpoint, scale, engine,
-  comparison mode and normalization. Back/forward and old scenario links work.
-- Graphical marks have scheme labels, text alternatives and exact-value tables.
-  UUIDv4 additionally uses diamonds. Local table scrolling does not overflow the page.
-
-The raw corrected-IH campaigns are archived outside this repository under
-`../benchmark-results-archiv/`. The builder accepts `--ih-results PATH` and checks
-the former `results/` location before the sibling archive. Only the location is
-discovered; the selected campaign and validation rules are unchanged. Published
-source snapshots under `docs/data/sources/` remain self-contained.
-
-## Selected sources — no automatic discovery
-
-The dashboard includes exactly the paper's selected configurations:
-
-| ID | Source | Scope |
-|---|---|---|
-| single-insert | `results/laptop/*_1conn_raw.csv`, explicit validated candidates | Four engines; 100K, 1M, 10M; throughput. PostgreSQL structure at 1M/10M. |
-| single-read | Same historical collection | Four engines; 100K, 1M, 10M; throughput and process-window block-read rate. |
-| single-update | Same historical collection | Four engines; 1M/10M; throughput. |
-| single-ru | Selected rows of `*_1m_all_1conn_raw.csv` | 500K **preload**, not the archived RecordCount=1M metadata; throughput. |
-| single-ih | `../benchmark-results-archiv/ih-corrected-consolidated-20261006T060522Z/` (local archive; override with `--ih-results`) | 125 selected runs, five per engine/scheme; 100K preload; successful-operation throughput and per-run latency percentiles. |
-| A1–A5 | Paper `data/nachlauf_a*.csv.runs.jsonl` | Precise primary run logs, not two-decimal raw CSV exports. A4 has n=3; the others n=5. |
-
-Each series has `experiment`, `database`, `scale`, `metric`, `keyType`, `values`,
-`runIds`, `median` and a source reference. Source files are downloadable snapshots;
-`sourceDigest` hashes the sorted source manifest. A source CSV can contain archival,
-unselected rows. The selection CSV downloaded by the UI contains **only the
-selected plotted series**, including logical run IDs and source hashes.
-
-The three selected IH replacements occupy their original block slots. They are
-not added as extra observations. The failed consolidation, smoke tests, superseded
-originals, historical IH, June cluster pilots and older concurrent single-node
-measurements are not selected. They remain in the repository where available.
-
-`assets/app.js`, its old modules, `data/data.json`, `data/annotations.json`, and
-`scripts/convert_results.py` are legacy assets, **not loaded by the active site**.
-Running the old converter does not rebuild the paper evidence dashboard.
-Its old explanatory annotations must not be merged into the new UI.
-
-## Build
-
-Run from the benchmark repository with the companion paper checkout available:
+From the repository root:
 
 ```sh
-python3 scripts/build_evidence.py --paper-root ../uuid-paper
-python3 -m unittest discover -s scripts -p test_evidence.py
-python3 scripts/check_evidence_package.py
 python3 -m http.server 8000 --directory docs
 ```
 
-The builder requires NumPy because it uses the paper's own statistical functions.
-It imports the paper's validated loaders for historical inserts, structure, reads,
-updates/RU and corrected IH; executes the cluster validity gate; recomputes the
-UUIDv4/UUIDv7 contrasts using `gen_numbers.py`; and verifies rounded numerical
-agreement with the paper's generated single-node and cluster macros, including
-A2's I/O-exclusion inputs. All validation completes
-before output files are written. The builder does not run a database benchmark,
-modify measurement inputs, rewrite paper macros, commit or deploy.
+Open **http://localhost:8000**. The committed snapshot is ready to serve—no build,
+Python packages or companion repository needed. Use HTTP, not `file://`.
 
-The output bundles 700 selected metric series and the small source/analysis files.
-The IH validator also checks archived selected-run evidence and full PostgreSQL
-transaction logs **in the local source bundle**. Those large per-run logs and
-build binaries are not copied to Pages. Thus the Pages snapshot supports numeric
-traceability, not a claim that it contains the entire reproducibility bundle.
-To rerun full validation, retain the selected IH bundle and the companion paper
-checkout. Source snapshots under `data/sources/analysis/` preserve analysis code;
-these copies are evidence, not a stand-alone replacement for that checkout.
+The active files are `docs/index.html`, `docs/assets/evidence.js`,
+`docs/assets/evidence.css` and `docs/data/evidence.json`. The application uses no
+JavaScript framework; externally hosted fonts have system fallbacks. Older
+`app.js`, `data.json`, `annotations.json` and `scripts/convert_results.py` are
+legacy assets and do not power this dashboard.
 
-Cluster manifests come from the paper's scrubbed copies and are sanitized again
-for operational SSH flags and node addresses. Their output hashes refer to the
-sanitized files. The precise run logs are copied byte-for-byte. Ten exact-path
-`.gitignore` exceptions make only the selected dashboard snapshots eligible for
-normal source tracking; raw operational manifests and logs remain ignored.
+## Included data
 
-`check_evidence_package.py` builds and verifies a temporary local candidate from
-the active assets and source files eligible under Git's normal tracked/addable
-inventory. It stages no Git files and does not commit or deploy. To check a later
-actual publication directory, run:
+| Experiments | Coverage |
+|---|---|
+| Single-node insert/read | Four engines, 100K–10M rows; PostgreSQL index structure at 1M/10M |
+| Single-node update | Four engines, 1M/10M rows |
+| Read/update mix | 500K preload; archived RecordCount=1M is command-line metadata |
+| Corrected insert-heavy | 100K preload; 125 selected runs, five per engine/key scheme |
+| Cassandra A1–A5 | Selected cluster and single-node comparison arms at 50M rows; A4 has three repetitions, the others five |
+
+The current snapshot contains 700 metric series and 49 source files. Downloads
+include selected runs and source hashes. Source CSVs may also contain unselected
+archival rows; the UI's selection CSV contains only the plotted selection.
+Three insert-heavy replacement runs occupy their original slots, not additional
+observations. Historical insert-heavy runs, pilots and superseded runs are excluded.
+
+## Rebuild the dataset
+
+Rebuilding is **not required to view the dashboard**. It requires Python with
+NumPy, the companion paper checkout, and the selected corrected-IH campaign
+archive. From the repository root:
+
+```sh
+python3 -m pip install numpy
+python3 scripts/build_evidence.py --paper-root ../uuid-paper \
+    --ih-results /path/to/ih-corrected-consolidated-20261006T060522Z
+```
+
+Without `--ih-results`, the builder looks in `results/`, then the sibling
+`../benchmark-results-archiv/`. Inputs are explicitly selected, not discovered
+from arbitrary CSVs. It uses the paper's analysis code, checks run validity and
+numerical agreement, then writes the dashboard snapshot and source copies.
+It does not execute benchmarks, change original measurements, commit or deploy.
+
+Cluster manifest copies are scrubbed for SSH usernames, key paths and node
+addresses; hashes identify those sanitized copies. Run logs are copied unchanged.
+The published sources support numerical traceability, but do not include the
+full campaign archives, binaries or PostgreSQL transaction logs. Full rebuilds
+and validation therefore need the external inputs above.
+
+## Validate changes
+
+```sh
+python3 -m unittest discover -s scripts -p test_evidence.py
+python3 scripts/check_evidence_package.py
+
+# Optional browser checks: requires Python Playwright and Chromium.
+python3 scripts/check_evidence_browser.py
+```
+
+The package check verifies active assets and source hashes in a temporary
+Git-eligible publication candidate. To check an existing publication directory:
 
 ```sh
 python3 scripts/check_evidence_package.py --artifact /path/to/publication-directory
 ```
 
-This fails on a missing active asset, missing declared source or source hash
-mismatch. The local candidate is a packaging rehearsal, not evidence of a deployed
-GitHub Pages build.
+Browser checks cover source downloads, navigation, filters, CSV exports, error
+states and responsive layout. Use `--screenshots /tmp/uuid-evidence-review` to
+save screenshots. These checks do not deploy or prove the live site is current.
 
-## Statistical/display contract
+## Interpretation limits
 
-- One point = one run; vertical ticks = medians. Vertical point offsets reveal
-  overlap, never change x values or imply paired comparisons.
-- Summary cluster and PostgreSQL panels have explicitly independent axes.
-  Explorer multi-panel comparisons share an axis, inside one experiment only.
-- Normalization divides each run by its **own configuration's** Sequential median.
-  It is not a ratio of paired observations. Cross-engine view is throughput-only
-  and normalized; structural proxies and absolute host speed are not compared.
+- Points represent runs; ticks mark medians. Vertical offsets only separate
+  overlapping points. Summary panels can have independent axes; Explorer
+  comparisons share axes within one experiment.
+- Normalized values divide each run by its own configuration's Sequential
+  median, not a paired observation. Cross-engine comparisons are normalized
+  throughput only; they do not establish a universal engine ranking.
 - A1/A3 rank-sum tests are exact and one-sided; A2 is two-sided. Median-ratio
-  intervals use 10,000 percentile-bootstrap resamples and seed 20260905.
-  Four supporting endpoints have Bonferroni threshold 0.0125.
-- A2/A5 Welch intervals refer to relative **mean** differences using the combined
-  group mean as denominator. They are not median-ratio intervals and do not
-  establish equivalence.
-- Cluster read throughput counts attempts. No driver errors were recorded, but
-  some reads returned no row; `failed=0` does not mean every lookup succeeded.
-  Only corrected IH supports the all-success/all-hit claim.
-- I/O per lookup is formed per run from the exported process-window rate divided
-  by timed-loop throughput. Only the paper-retained A1/A3 endpoint is exposed.
-  The arm-level exclusion fires when both median read I/O exceeds 1 block op/s
-  and median per-run write/read I/O exceeds 5%. A2 meets both; these values are
-  recomputed from logs and checked against the paper. Insert-side counters stop
-  when the workload returns, missing later flushes/compactions by an unknown amount.
-- PostgreSQL corrected-IH throughput uses the elapsed mixed phase, including
-  pgbench startup, connection establishment and full transaction logging.
-  Preload, target retrieval and validation are outside that window; validation
-  can warm caches.
-- A5 latency percentiles are deliberately not offered alongside per-lookup read
-  latencies: the insert path includes batch timing. A5's supported endpoints here
-  are throughput, table size and block I/O rates.
-- Structural metrics are descriptive; hypotheses about timestamp wraps, SSTable
-  overlap, compression and Bloom filters are not labeled proven mechanisms.
-- Source hashes, not a wall-clock build timestamp, identify the selected snapshot.
+  intervals use 10,000 percentile-bootstrap resamples (seed 20260905).
+  Four supporting endpoints use a Bonferroni threshold of 0.0125.
+  A2/A5 Welch intervals instead describe relative **mean** differences, using
+  the combined group mean as denominator; they do not establish equivalence.
+- Cluster read throughput counts attempts, including reads returning no row.
+  Zero driver errors does not mean all lookups succeeded. The corrected IH
+  dataset validates successful operations and read hits; PostgreSQL IH timing
+  includes pgbench startup, connections and transaction logging, but excludes
+  preload and validation. Validation can warm caches.
+- I/O per lookup divides each run's process-window rate by timed-loop throughput.
+  Only the retained A1/A3 endpoint is exposed. A2 is excluded because both median
+  read I/O exceeds 1 block op/s and median write/read I/O exceeds 5%.
+  Insert counters omit later flushes/compactions by an unknown amount.
+- A5 offers throughput, table size and block I/O rates, not insert batch latency
+  alongside per-lookup read latency. Structural metrics are descriptive, not
+  proof of a particular storage-engine mechanism.
 
-## Browser validation
-
-With Python Playwright and Chromium installed:
-
-```sh
-python3 scripts/check_evidence_browser.py
-# Optional: one batched screenshot set for independent review
-python3 scripts/check_evidence_browser.py --screenshots /tmp/uuid-evidence-review
-```
-
-The script serves the Git-eligible candidate, not the unrestricted working tree.
-It requests all 49 declared sources over HTTP and checks their hashes, then checks
-deep links, reload, same-view hash changes, history, filter focus, campaign
-isolation, withheld endpoints, per-selection CSV contents, load failure and page
-overflow at 1440/1024/390/320 pixels. Keyboard activation of the skip link must
-preserve the Explorer/Data experiment, metric, URL and content. It does not deploy
-or install dependencies.
+See [metrics methodology](METRICS_METHODOLOGY.md) and
+[paper notes](paper-notes.md) for further context.

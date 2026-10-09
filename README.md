@@ -21,9 +21,7 @@ go build -o uuid-benchmark cmd/benchmark/main.go
 ./uuid-benchmark -help
 ```
 
-A source ZIP works for normal benchmarks: without Git, provenance records
-`git_provenance: "unavailable"`, an empty commit and unknown working-tree state;
-binary hashes are still recorded. Use a Git checkout for source provenance.
+Source ZIPs work too; use a Git checkout to record source provenance.
 
 ## Options and scenarios
 
@@ -96,19 +94,10 @@ data. PostgreSQL uses pgbench with server-side key generation; the other engines
 use a shared Go workload binary with client-side generation. Workloads run inside
 the database container **except in Cassandra cluster modes**.
 
-Throughput, latency, disk size and cgroup I/O are collected alongside
-engine-specific metrics: PostgreSQL/InnoDB/WiredTiger page splits, and Cassandra
-SSTable count/delta and space amplification. **SSTable count is not a compaction
-count.** Fragmentation and cache metrics have different engine-specific meanings;
-do not treat them as identical measurements. Repeated runs support summary
-statistics and Mann–Whitney U comparisons.
-
-With `-output`, provenance is recorded in `<output>.meta.json` (flags,
-source/binary identity, seeds and execution order); completed runs are appended
-to `<output>.runs.jsonl`. Remote manifests include SSH usernames, key paths and
-node addresses—review before sharing. CSV summaries are available in multi-run
-mode. See [metrics methodology](docs/METRICS_METHODOLOGY.md) for definitions and
-limitations.
+Multi-run mode exports CSV summaries. With `-output`, `<output>.meta.json`
+records provenance and `<output>.runs.jsonl` records completed runs.
+Fragmentation/cache metrics are engine-specific; Cassandra SSTable counts are
+not compaction counts. See [metrics methodology](docs/METRICS_METHODOLOGY.md).
 
 ## Safety
 
@@ -122,18 +111,11 @@ and volumes. Remote Cassandra also replaces containers named `cassandra` and
 volumes named `cassandra-data-<host>`. SSH host-key verification is disabled for
 remote clusters with ephemeral hosts; use only trusted private networks.
 
-## Results and checks
+## Results
 
-- [Results dashboard](docs/EVIDENCE.md)
+- [Live dashboard](https://moguls753.github.io/uuid-benchmark/) · [Dashboard documentation](docs/EVIDENCE.md)
 - [YCSB validation](validation/README.md)
 - [Specialized insert-heavy campaign scripts](docs/plans/ih-corrected-implementation.md)
   (separate from the standard CLI scenarios)
 - PDF plots: `pip install -r scripts/requirements.txt`, then
   `python3 scripts/plot.py results.csv --output-dir plots/`
-
-Offline tests (no database measurements):
-
-```bash
-go test -count=1 ./...
-python3 -B -m unittest discover -s scripts -p 'test_ih*.py'
-```
