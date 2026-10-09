@@ -1,5 +1,10 @@
 # FT-Inspired Full-Bleed Refactor Design
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 **Date:** 2026-03-05
 **Inspiration:** ft.com editorial layout — full-width rules, background bands, serif/mono typography pairing
 **Constraint:** Monochrome palette stays. No border-radius, no shadows. Data colors only.

@@ -1,6 +1,9 @@
-# Benchmark Anomalies & Open Issues
+# Historical benchmark review notes
 
-Status: tracking anomalies found during thesis data review (2026-02-26)
+Notes from the February 2026 thesis review, not a current issue tracker.
+Causal explanations below were not all experimentally verified, and some
+workloads have since been superseded. Do not treat them as established mechanisms.
+For the selected results, see [Dashboard documentation](docs/EVIDENCE.md).
 
 ## Action items requiring Taurus cluster
 
@@ -17,7 +20,7 @@ Status: tracking anomalies found during thesis data review (2026-02-26)
 ### 6. ULID page splits = UUIDv4 despite perfect ordering
 - ULID: 4,944 splits (90% density, varlena type), UUIDv4: 4,872 splits (71% density, native UUID)
 - Coincidence from two independent mechanisms: UUIDv4 splits from low density, ULID splits from larger per-entry varlena overhead (~9 bytes/entry)
-- Proof: ULID_MONO has same split count (4,955) — confirms it's entry size, not randomness
+- Supporting observation: ULID_MONO has a similar split count (4,955). This does not by itself isolate entry size as the cause.
 - Root cause: `struct ulid(u128)` stored as varlena with header, native UUID is fixed-length 16 bytes
 
 ## Open
@@ -35,7 +38,7 @@ Status: tracking anomalies found during thesis data review (2026-02-26)
   | ULID\_MONO  | 2.74      | 8–22%      |
   | UUIDv1      | 2.19      | 8–22%      |
 
-- **Conclusion**: The high CVs were laptop noise, not InnoDB. On dedicated hardware, all CVs are 1.4–4.9%. UUIDv4 is slightly elevated (4.86%) vs. other key types (1.4–2.7%), consistent with random I/O causing more flush timing variance — but well within acceptable range. MySQL 8conn results are reliable on dedicated hardware.
+- **Observation**: These Taurus runs had lower CVs (1.4–4.9%) than the laptop runs. This comparison does not isolate the cause of the variance or establish reliability for every configuration.
 - **Thesis impact**: Remove the "MySQL 8conn unreliable, treat with caution" caveat. Report Taurus CVs instead. UUIDv4's slightly elevated CV (4.86%) can be noted as expected given random I/O patterns, but no special caveat is needed.
 
 ### 2. Bloom filter FP = 0 in Cassandra
@@ -47,7 +50,7 @@ Status: tracking anomalies found during thesis data review (2026-02-26)
 - **Problem**: Thesis agent dismissed UUIDv1 throughput gap as "measurement artifact" — partially wrong. Generation overhead is real at all scales, byte-ordering degradation is real at 10M.
 - **Penalty 1 — Generation overhead (constant, all scales)**:
   - At 1M: UUIDv1 B-tree metrics identical to UUIDv7 (3,849 splits, 0% frag, 89.98% density, 30.10 MB index) but 23% lower throughput (26,949 vs 34,993). Same pattern at 100K (26,673 vs 34,401).
-  - Cause: `uuid_generate_v1()` server-side cost (MAC lookup, clock sequence management). Pure generation overhead, not B-tree behavior.
+  - Candidate explanation: `uuid_generate_v1()` generation cost. A generator-only control was not recorded, so the throughput gap cannot be attributed solely to generation overhead.
 - **Penalty 2 — Byte-ordering degradation (scale-dependent, 10M only)**:
   - RFC 4122 places `time_low` (least significant 32 bits of 60-bit timestamp) in bytes 0–3. PostgreSQL B-trees sort by raw byte order. `time_low` wraps every ~429 seconds (2^32 × 100ns).
   - After wrap: new UUIDs inserted into earlier B-tree positions → page splits in non-tail pages.
@@ -72,7 +75,7 @@ Status: tracking anomalies found during thesis data review (2026-02-26)
 
 ### 7. MySQL 8conn insert CVs — RESOLVED (2026-02-28, Taurus preliminary data)
 - See anomaly #1 for full analysis.
-- **Conclusion**: Laptop noise. On Taurus, MySQL 8conn CVs are 1.4–4.9% (all key types). The elevated UUIDv4 CV (4.86%) is expected from random I/O patterns but is not a reliability concern.
+- **Observation**: Taurus CVs were 1.4–4.9% in these runs. The cause of the difference from laptop runs was not isolated.
 
 ### 8. Cassandra reads: near-zero differentiation
 - **At 1M**: All types ~814 ops/s, indistinguishable. Cache hit ratio 1.00, bloom filter FP = 0.

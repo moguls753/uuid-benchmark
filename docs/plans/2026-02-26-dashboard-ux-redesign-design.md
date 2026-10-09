@@ -1,5 +1,10 @@
 # Dashboard UX Redesign Design
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 ## Problem
 
 The benchmark dashboard displays data correctly but lacks educational context and visual polish. Visitors (thesis reviewers, GitHub users, the author) see charts without understanding:

@@ -1,5 +1,10 @@
 # Handoff Prompt: Local Cross-Machine Validation
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 Copy everything between `===BEGIN PROMPT===` and `===END PROMPT===` into a
 fresh Claude Code session running from inside the `uuid-benchmark` repo on
 the laptop.

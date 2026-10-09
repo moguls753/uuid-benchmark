@@ -1,5 +1,10 @@
 # Dashboard UX Redesign Implementation Plan
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Add educational context (methodology, metric definitions, hand-written findings) and visual polish to the UUID benchmark dashboard.

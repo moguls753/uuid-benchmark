@@ -1,5 +1,10 @@
 # Dashboard Redesign Implementation Plan
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 > **For Claude:** REQUIRED SUB-SKILLS:
 > - Use `frontend-design` skill before writing any code (monochrome terminal aesthetic, Courier New, observatory-inspired)
 > - Use `superpowers:executing-plans` to implement this plan task-by-task.

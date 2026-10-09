@@ -83,10 +83,10 @@ function panel({title, meta, exp, db='cassandra', scale='50m', metric='throughpu
 }
 
 function miniComparison(patch) {
-  const keys = patch.experiment === 'A1' || patch.metric === 'fragmentation' ? ['UUIDV7','UUIDV4'] : ['SEQUENTIAL','UUIDV4'];
+  const keys = patch.experiment === 'A1' ? ['UUIDV7','UUIDV4'] : patch.metric === 'fragmentation' ? ['UUIDV4','UUIDV7'] : ['UUIDV4','SEQUENTIAL'];
   const entries = keys.map(key => series(patch.experiment,patch.db,patch.scale,patch.metric).find(e=>e.keyType===key));
   const max = Math.max(...entries.map(e=>e.median));
-  const unit = data.metrics[patch.metric].unit;
+  const unit = patch.experiment === 'A1' && patch.metric === 'throughput' ? 'read attempts/s' : data.metrics[patch.metric].unit;
   return `<svg class="mini-comparison" viewBox="0 0 240 58" role="img" aria-label="${esc(entries.map(e=>`${LABELS[e.keyType]}: ${number(e.median)} ${unit}`).join('; '))}">${entries.map((e,i)=>`<text x="0" y="${14+i*23}">${e.keyType==='SEQUENTIAL'?'Seq.':LABELS[e.keyType]}</text><rect x="76" y="${5+i*23}" width="${max>0?e.median/max*108:0}" height="10" fill="${COLORS[e.keyType]}"/><text x="240" y="${14+i*23}" text-anchor="end">${axisNumber(e.median)}</text>`).join('')}<text x="240" y="57" text-anchor="end">${esc(unit)}</text></svg>`;
 }
 function summary() {
@@ -94,11 +94,12 @@ function summary() {
   const pgPenalty = (1 - medianFor('single-insert','postgres','1m','throughput','UUIDV4') / medianFor('single-insert','postgres','1m','throughput','SEQUENTIAL')) * 100;
   const fragmentation = medianFor('single-insert','postgres','1m','fragmentation','UUIDV4');
   const mysqlPenalty = (1 - medianFor('single-insert','mysql','10m','throughput','UUIDV4') / medianFor('single-insert','mysql','10m','throughput','SEQUENTIAL')) * 100;
+  const readRatio = ratio('A1');
   const findings = [
-    ['PostgreSQL inserts', `−${number(pgPenalty,1)}%`, 'UUIDv4 throughput vs. Sequential', '1M rows · 1 client · n=5', target('single-insert','postgres','1m')],
-    ['Leaf fragmentation', `${number(fragmentation,1)}%`, 'PostgreSQL · UUIDv4 index', '1M rows · n=5', target('single-insert','postgres','1m','fragmentation')],
-    ['MySQL inserts', `−${number(mysqlPenalty,1)}%`, 'UUIDv4 throughput vs. Sequential', '10M rows · 1 client · n=5', target('single-insert','mysql','10m')],
-    ['Cassandra reads', `${number(ratio('A1'))}×`, 'UUIDv7 / UUIDv4 attempted throughput', '50M rows · 4 GB · 3 nodes / RF3 · n=5', target('A1','cassandra','50m')],
+    ['PostgreSQL inserts', `−${number(pgPenalty,1)}%`, 'Throughput: UUIDv4 vs Sequential', '1M rows · 1 client · n=5', target('single-insert','postgres','1m')],
+    ['PostgreSQL index', `${number(fragmentation,1)}%`, 'Leaf fragmentation: UUIDv4 (absolute)', '1M rows · 1 client · n=5', target('single-insert','postgres','1m','fragmentation')],
+    ['MySQL inserts', `−${number(mysqlPenalty,1)}%`, 'Throughput: UUIDv4 vs Sequential', '10M rows · 1 client · n=5', target('single-insert','mysql','10m')],
+    ['Cassandra reads', `+${number((readRatio - 1) * 100,0)}%`, 'Throughput: UUIDv7 vs UUIDv4', '50M rows · 4 GB · 3 nodes / RF3 · n=5', target('A1','cassandra','50m')],
   ];
   const architectures = {postgres:'B-tree / heap-organized',mysql:'Clustered B-tree (InnoDB)',mongodb:'WiredTiger B-tree index',cassandra:'LSM-tree / SSTables'};
   return `<section class="summary-meta"><div class="wrap">Medians · 5 runs per configuration (A4: 3) · Separate single-node and cluster experiments ${link('Methods', {view:'data'}, 'inline-link')}</div></section>
@@ -115,7 +116,7 @@ function detailedFindings() {
   const pm = state.pgMetric;
   return `<section class="section"><div class="wrap"><div class="section-heading"><div><h2>Cassandra · 50M rows</h2><p>Cassandra at 50M rows: compare key schemes <em>within</em> each experiment. The panels use independent axes.</p></div><span class="section-reference">§6 · Cluster results</span></div><div class="section-tools">${field('Measurement','clusterMetric',[['throughput','Throughput'],['table_size_mb','Table size'],['read_iops','Block-read rate'],['write_iops','Block-write rate']])}${plotKey()}</div><div class="plot-grid">
   ${panel({title:'Inserts · 4 GB',meta:'A5 · 3 nodes / RF3 · 8 writers · n=5',exp:'A5',metric:cm,caption:cm==='throughput'?`Similar observed medians. v4/v7 relative mean difference: ${signed(contrastA5.difference)}%; 95% CI [${signed(contrastA5.ci[0])}, ${signed(contrastA5.ci[1])}] (combined-mean denominator).`:cm==='table_size_mb'?`UUIDv4 table-size median: ${number(storageExcess,1)}% above Sequential. Repeated, highly compressible payload.`:data.metrics[cm].note})}
-  ${panel({title:'Reads · 4 GB',meta:'A1 · 3 nodes / RF3 · 1 reader · n=5',exp:'A1',metric:cm,caption:cm==='throughput'?`UUIDv7 reaches ${number(ratio('A1'))}× the UUIDv4 median. Every v4 run is below every v7 run.`:data.metrics[cm].note})}
+  ${panel({title:'Reads · 4 GB',meta:'A1 · 3 nodes / RF3 · 1 reader · n=5',exp:'A1',metric:cm,caption:cm==='throughput'?`UUIDv7 has ${number((ratio('A1')-1)*100,0)}% higher median read throughput than UUIDv4 (${number(ratio('A1'))}×). Counts read attempts, including no-row responses.`:data.metrics[cm].note})}
   ${panel({title:'Reads · 32 GB',meta:'A2 · 3 nodes / RF3 · 1 reader · n=5',exp:'A2',metric:cm,caption:cm==='throughput'?'No statistically significant v4/v7 throughput difference; this does not establish equivalence.':data.metrics[cm].note})}
   </div><div class="result-note"><div><p>HDD storage. Reads immediately after loading, without waiting for compaction. The 4/32 GB contrast changes container memory, heap and new generation together.</p>${link('Single-node check: A3', {view:'explorer',experiment:'A3',db:'cassandra',scale:'50m',metric:'throughput',mode:'keys',reference:'absolute'})} &nbsp; ${link('Target-selection check: A4', {view:'explorer',experiment:'A4',db:'cassandra',scale:'50m',metric:'throughput',mode:'keys',reference:'absolute'})}</div><p class="muted">At 32 GB, the v4/v7 relative mean-throughput difference has a 95% interval of [${signed(contrastA2.ci[0])}%, ${signed(contrastA2.ci[1])}%]. The denominator is the two groups’ combined mean. Substantial differences in both directions remain compatible with this estimate.</p></div></div></section>
   <section class="section shaded"><div class="wrap"><div class="section-heading"><div><h2>PostgreSQL index structure</h2><p>PostgreSQL: split counts, leaf occupancy and index size tell different parts of the story.</p></div><span class="section-reference">§5.2 · Figure 2</span></div><div class="section-tools">${field('Index measurement','pgMetric',['page_splits','avg_leaf_density','index_size_mb','fragmentation'].map(m=>[m,data.metrics[m].label]))}${plotKey()}</div><div class="plot-grid two">${['1m','10m'].map(scale=>panel({title:`${scale.toUpperCase()} rows`,meta:'PostgreSQL · inserts · 1 client · n=5',exp:'single-insert',db:'postgres',scale,metric:pm,caption:data.metrics[pm].note})).join('')}</div><div class="result-note"><p><strong>UUIDv1 runs separate into two observed ranges at 10M</strong> in split count and leaf density. The timestamp layout is a candidate explanation; individual wrap events were not recorded.</p><p class="muted">Do not read fragmentation as wasted-space percentage. Both ULID variants can have split counts close to UUIDv4’s while retaining higher leaf density. Axes are independent; values are absolute.</p></div></div></section>

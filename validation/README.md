@@ -1,101 +1,37 @@
-# Validation Against go-ycsb
+# go-ycsb comparison
 
-Validates uuid-benchmark measurement methodology against industry-standard go-ycsb.
+These scripts compare PostgreSQL throughput and latency for sequential integer
+keys. Both clients run inside their respective database containers. This is a
+baseline comparison, not validation of every key type or internal database metric.
 
-## Architecture
+## Run
 
-**Identical execution environment for both tools:**
-
-```
-YCSB Validation:
-┌────────────────────────────────┐
-│  PostgreSQL Container          │
-│  go-ycsb → localhost → postgres│  <- Inside container
-└────────────────────────────────┘
-
-uuid-benchmark:
-┌────────────────────────────────┐
-│  PostgreSQL Container          │
-│  pgbench → localhost → postgres│  <- Inside container
-└────────────────────────────────┘
-```
-
-Both tools:
-- Run inside fresh containers
-- Connect via localhost (zero network overhead)
-- Test BIGSERIAL keys (YCSB limitation: can't generate UUIDs/ULIDs)
-
-## Setup
+Build `uuid-benchmark` as described in the [README](../README.md). Supply a
+container-compatible `go-ycsb` binary with PostgreSQL support; the default path
+is `../go-ycsb/bin/go-ycsb` relative to the repository root. The scripts also
+require Bash, Docker, GNU grep and `bc`.
 
 ```bash
-# Build go-ycsb (one-time)
-cd /home/eike/dev/studium/go-ycsb
-make
-
-# Build uuid-benchmark
-cd /home/eike/dev/studium/uuid-benchmark
-go build -o uuid-benchmark cmd/benchmark/main.go
+# From the repository root; omit YCSB_BIN to use the default path.
+YCSB_BIN=/path/to/go-ycsb bash validation/run-comparison.sh insert 10000
 ```
 
-## Usage
+Supported scenarios are `insert` and `read`; the default dataset is 10,000 rows.
+Both use ten clients; the insert comparison uses batch size 1. The benchmark
+still runs all key types, but the comparison script selects the sequential baseline.
+Outputs are saved under `validation/results/`.
 
-```bash
-cd validation
+## Limitations
 
-# Run full comparison (both tools, automatic comparison)
-./run-comparison.sh insert
+- Client implementations, schemas and database configurations differ; in-container
+  execution does not make the workloads identical.
+- `compare-results.sh` selects the latest files by timestamp, not matching run IDs.
+  Verify that the selected files refer to the intended scenario and configuration.
+- Its final success message is unconditional; inspect the actual differences and
+  raw outputs. Console parsing can break when output labels or units change.
+- Similar baseline throughput does not validate UUID generators, tail latency,
+  page-split counts, fragmentation or cache metrics.
 
-# Available scenarios: insert, read
-```
-
-Results automatically saved to `results/`. View comparison:
-```bash
-./compare-results.sh
-```
-
-## What Gets Validated
-
-**Overlapping metrics (BIGSERIAL keys):**
-- ✓ Throughput (ops/sec)
-- ✓ Latency percentiles (p50/p95/p99)
-
-**uuid-benchmark unique metrics:**
-- Page splits (WAL analysis)
-- Index fragmentation (pgstatindex)
-- Buffer pool hit ratios (pg_stat_database)
-- Container I/O metrics (cgroups)
-
-## Why Only BIGSERIAL?
-
-YCSB generates numeric keys (1, 2, 3...) suitable for BIGSERIAL, but cannot generate proper UUIDs or ULIDs:
-- UUIDv7: Time-ordered, requires specific algorithm
-- ULID: Requires specific encoding
-- UUIDv4: Random, YCSB can't track for reads/updates
-
-**Validation approach:** Confirm BIGSERIAL measurements match industry standard, then trust uuid-benchmark's extended measurements for other key types.
-
-## Workload Mapping
-
-| uuid-benchmark Scenario | YCSB Workload | Operations |
-|-------------------------|---------------|------------|
-| `insert-performance` | `insert` | 100% insert |
-| `read-performance` | `read` | 100% read |
-
-## Expected Results
-
-Both tools should show similar ranges for BIGSERIAL:
-- Throughput: 30k-50k ops/sec (workload dependent)
-- p95 latency: 2-10ms (workload dependent)
-
-Differences expected due to:
-- Client implementation (pgbench vs go-ycsb)
-- Connection pooling
-- Batch sizes
-
-## Files
-
-- `run-ycsb.sh` - Run go-ycsb inside container
-- `run-comparison.sh` - Run both tools sequentially
-- `compare-results.sh` - Parse and compare outputs
-- `workloads/` - YCSB workload configurations
-- `results/` - Output files (created on first run)
+The [recorded comparison](SUPERVISOR_MEETING.md) summarizes one historical run.
+Use dedicated benchmark resources: these scripts start and remove database
+containers. See [Safety](../README.md#safety).

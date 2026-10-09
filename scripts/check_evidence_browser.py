@@ -51,6 +51,23 @@ def main():
                 assert response.status==200,source['path']
                 assert hashlib.sha256(response.body()).hexdigest()==source['sha256'],source['path']
             assert page.locator('.finding').count()==4
+            finding_labels=[
+                ('PostgreSQL inserts','Throughput: UUIDv4 vs Sequential',['UUIDv4','Seq.']),
+                ('PostgreSQL index','Leaf fragmentation: UUIDv4 (absolute)',['UUIDv4','UUIDv7']),
+                ('MySQL inserts','Throughput: UUIDv4 vs Sequential',['UUIDv4','Seq.']),
+                ('Cassandra reads','Throughput: UUIDv7 vs UUIDv4',['UUIDv7','UUIDv4']),
+            ]
+            for title,description,keys in finding_labels:
+                card=page.locator('.finding').filter(has=page.get_by_role('heading',name=title,exact=True))
+                expect(card.locator('p')).to_have_text(description)
+                labels=card.locator('.mini-comparison text').all_text_contents()
+                assert [labels[0],labels[2]]==keys
+            cassandra_finding=page.locator('.finding').filter(has=page.get_by_role('heading',name='Cassandra reads',exact=True))
+            read_medians={e['keyType']:e['median'] for e in manifest['entries'] if e['experiment']=='A1' and e['metric']=='throughput'}
+            read_ratio=read_medians['UUIDV7']/read_medians['UUIDV4']
+            expect(cassandra_finding.locator('strong')).to_have_text(f'+{(read_ratio-1)*100:.0f}%')
+            expect(cassandra_finding).to_contain_text('Throughput: UUIDv7 vs UUIDv4')
+            expect(cassandra_finding).to_contain_text('read attempts/s')
             assert page.locator('.database-entry').count()==4
             assert page.locator('svg.plot-svg:visible').count()==0
             for card in page.locator('.finding').all():
@@ -63,6 +80,7 @@ def main():
             page.locator('.additional-results > summary').click()
             assert page.locator('svg.plot-svg:visible').count()==5
             assert '3.48' in page.locator('#content').inner_text()
+            expect(page.locator('#content')).to_contain_text('Counts read attempts, including no-row responses.')
             assert 'No significant difference is not equivalence' not in page.locator('#load-state').inner_text()
             page.locator('#select-clusterMetric').select_option('table_size_mb')
             assert '18.2%' in page.locator('#content').inner_text()

@@ -1,5 +1,10 @@
 # Mobile-First Dashboard Refactor — Design Document
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 **Date:** 2026-03-05
 **Audience:** Thesis reviewers, professors, and developers finding this via GitHub
 **Aesthetic direction:** Preserve the monochrome terminal aesthetic (JetBrains Mono, 1px borders, no radius, no shadows). Mobile improvements should feel like the same terminal adapted for a smaller viewport, not a different design system.

@@ -1,5 +1,10 @@
 # GitHub Pages Dashboard Design
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 ## Overview
 
 Interactive static dashboard for exploring UUID benchmark results across 4 databases (PostgreSQL, MySQL, MongoDB, Cassandra). Served via GitHub Pages from `docs/` on `main` branch.

@@ -1,5 +1,10 @@
 # Multi-Node Cassandra Benchmark Implementation Plan
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
 > **User preference override:** This project's owner handles all git operations themselves. **Do NOT run `git add`, `git commit`, or `git push`.** Steps that say "pause for review" mean: stop, summarize the change, and wait for the user to commit before continuing to the next task.

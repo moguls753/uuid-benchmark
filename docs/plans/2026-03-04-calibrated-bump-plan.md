@@ -1,5 +1,10 @@
 # Calibrated Bump Implementation Plan
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Apply UX refinements (wider max-width, JetBrains Mono font, +1px type scale, proportional spacing) to the existing dashboard without changing any logic or architecture.

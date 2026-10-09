@@ -27,7 +27,9 @@ new benchmark runs are not added automatically.
 
 Source downloads include hashes for traceability. The selection CSV contains
 only the plotted data; source files can also contain unselected archival rows.
-Published files do not include the complete raw campaign archives.
+Published files do not include the complete raw campaign archives. The copied
+IH source README describes that full archive; its `runs/`, `provenance/` and
+`tools/` directories are not part of the dashboard download.
 
 Definitions and limitations: [Metrics methodology](METRICS_METHODOLOGY.md) ·
 [Measurement notes](paper-notes.md).

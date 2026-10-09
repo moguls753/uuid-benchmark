@@ -1,5 +1,10 @@
 # Mobile-First Dashboard Refactor — Implementation Plan
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Also use frontend-design skill for all CSS/HTML work to maintain the monochrome terminal aesthetic.
 
 **Goal:** Make the UUID Benchmark dashboard fully mobile-usable: proper touch targets, readable typography, collapsible filter drawer, card-based raw data view, consistent spacing scale.

@@ -1,5 +1,10 @@
 # GitHub Pages Dashboard Implementation Plan
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Use frontend-design skill for Tasks 3-8.
 
 **Goal:** Build an interactive static dashboard for exploring UUID benchmark results across 4 databases, served via GitHub Pages.

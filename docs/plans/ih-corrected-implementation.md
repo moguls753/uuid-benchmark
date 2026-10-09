@@ -1,5 +1,10 @@
 # Corrected IH implementation (opt-in)
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 Branch: `fix/ih-corrected-rerun`, based on `6cb737bff35eb1b1d509b20cd4b8900f93c51c06`.
 Protocol authority: [ih-rerun.md](ih-rerun.md). Implementation and independent review are complete. The separately authorized small smoke test passed; no full-size pilot or main series has been started.
 

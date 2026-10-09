@@ -1,5 +1,10 @@
 # UUID Benchmark Dashboard — Redesign Design Document
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 **Date:** 2026-03-04
 **Author:** Eike Rackwitz
 **Status:** Approved

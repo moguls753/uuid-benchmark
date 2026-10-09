@@ -1,5 +1,10 @@
 # Korrigierte IH-Serie auf dem Workstation-Rechner
 
+> Historical design/implementation record. Status statements and commands refer
+> to the work at that time, not current release instructions. See the
+> [README](../../README.md) for current usage; preserve protocol details when
+> interpreting archived measurements.
+
 **Auftrag:** Umsetzung und Ausführung von diesem Repository aus vorbereiten. Dieser Plan wurde angefordert; Codeänderungen und Messstart sind noch nicht erfolgt. Umsetzung und Pilot/Hauptmessung erst mit Eikes Umsetzungs-/Startauftrag; danach ist der bestandene Pilot das technische Gate für die Hauptserie. Paperübernahme bleibt ein separater Schritt. Keine Commits, Uploads oder Änderungen historischer Messdateien; niemals `SHA256SUMS` erzeugen.
 
 ## 1. Ziel und Arbeitsbasis
