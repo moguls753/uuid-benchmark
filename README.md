@@ -1,230 +1,160 @@
 # UUID Benchmark
 
-Benchmarks UUID types (UUIDv1, UUIDv4, UUIDv7, ULID non-monotonic, ULID monotonic) vs sequential integer keys across PostgreSQL, MySQL, MongoDB, and Cassandra. Measures page splits, fragmentation, buffer pool / cache hit ratios, disk usage, throughput, and latency percentiles.
+Benchmarks sequential integer keys, UUIDv1, UUIDv4, UUIDv7, ULID and monotonic ULID across **PostgreSQL 18, MySQL 8, MongoDB 8 and Cassandra 5**. MongoDB also includes ObjectId. Measures throughput, latency, storage, cache behavior and I/O, with engine-specific structural metrics.
 
-## Requirements
+The project includes the single-node thesis benchmarks, a **Cassandra multi-node extension**, and a separate corrected insert-heavy protocol. Historical results and current protocols are not automatically interchangeable.
 
-| Requirement | Minimum | Notes |
-|---|---|---|
-| Go | 1.22 | Needed on the host to build the benchmark binary and the workload binary |
-| Docker | 20.10 | Must be able to run containers with `--cpus` and `--memory` flags |
-| Docker Compose | V1 ≥ 1.29 (`docker-compose`) **or** V2 plugin (`docker compose`) | Either works |
-| Linux | kernel ≥ 5.10 | cgroup v2 required for container-isolated I/O metrics |
-| Disk space | ≥ 20 GB free | Each database image + volumes can reach several GB; images are rebuilt per run |
-| RAM | ≥ 8 GB | PostgreSQL and MongoDB containers are configured with 8 GB memory limits |
-| Internet access | — | First run fetches Docker base images and builds pgx_ulid from source |
+## Quick start
 
-**cgroup v2 check:**
-```bash
-mount | grep cgroup2   # should show a cgroup2 mount
-```
-If cgroup v2 is not mounted, I/O metrics will be zeroed out but all other metrics will work normally.
+Requires **Go 1.22+**, **Docker with Compose V1 ≥ 1.29 or V2**, and Linux with **cgroup v2** for container I/O metrics. Allow at least 8 GB RAM plus host overhead and 20 GB free disk for small local runs; large datasets and clusters need more. Initial setup needs Internet access to fetch images and build PostgreSQL extensions.
 
-## Build & Run
+Run from the repository root:
 
 ```bash
 go build -o uuid-benchmark cmd/benchmark/main.go
 
-# Run all scenarios for a database
-./uuid-benchmark -database=postgres -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
-./uuid-benchmark -database=mysql -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
-./uuid-benchmark -database=mongodb -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
-./uuid-benchmark -database=cassandra -scenario=all -num-records=1000000 -num-ops=100000 -connections=10 -num-runs=5 -output=results.csv
+# Each scenario tests all supported key types automatically.
+./uuid-benchmark -database=postgres -scenario=insert-performance \
+    -num-records=100000 -connections=1 -num-runs=5 -output=results.csv
 
-# Run single scenario (tests all UUID types automatically)
-./uuid-benchmark -database=postgres -scenario=insert-performance -num-records=100000 -connections=10
-
-# Run with statistical analysis (5 runs per UUID type)
-./uuid-benchmark -database=mongodb -scenario=insert-performance -num-records=100000 -num-runs=5 -output=results.csv
+# Use mysql, mongodb or cassandra for the other engines.
+./uuid-benchmark -help
 ```
 
-The normal benchmark also runs from a source ZIP without Git. It prints a
-warning and records `git_provenance: "unavailable"`, an empty `commit`, and
-`working_tree_dirty: null`; binary hashes are still recorded. Run from the
-benchmark root. Use a Git checkout when you need recorded Git provenance.
+A source ZIP works for normal benchmarks: without Git, provenance records
+`git_provenance: "unavailable"`, an empty commit and unknown working-tree state;
+binary hashes are still recorded. Use a Git checkout for source provenance.
 
-## Options
+## Options and scenarios
 
-- `-database` - Database to benchmark: `postgres`, `mysql`, `mongodb`, `cassandra` (default: postgres)
-- `-scenario` - Scenario to run: `insert-performance`, `read-performance`, `update-performance`, `mixed-insert-heavy`, `mixed-read-update`, `all`
-- `-num-records` - Dataset size for insert scenarios (default: 100000)
-- `-num-ops` - Number of operations for read/update/mixed (default: 10000)
-- `-connections` - Concurrent workers (default: 1)
-- `-batch-size` - Records per transaction (default: 100)
-- `-num-runs` - Number of runs per UUID type for statistical analysis (default: 1)
-- `-output` - CSV file for statistical results (multi-run mode only)
-- `-cluster-mode` - Cassandra deployment: `local-single` (default), `local-cluster`, `remote-cluster`
-- `-cluster-nodes` - Node count for `local-cluster` mode (default: 3)
-- `-nodes` - Comma-separated `host[:port]` list for `remote-cluster` mode
-- `-ssh-user` - SSH user for `remote-cluster` mode
-- `-ssh-key` - SSH private key path for `remote-cluster` mode
-- `-replication-factor` - Cassandra keyspace RF (default: 1 single-node, 3 cluster)
-- `-consistency` - gocql consistency level: `one`, `local_one`, `local_quorum`, `quorum` (default: `local_one` for `local-single`, `local_quorum` for cluster modes)
-- `-num-buckets` - Partition-key bucket count for the bucketed Cassandra schema (default: 1000)
+| Option | Default | Purpose |
+|---|---|---|
+| `-database` | `postgres` | `postgres`, `mysql`, `mongodb`, `cassandra` |
+| `-scenario` | `insert-performance` | One scenario below, or `all` |
+| `-num-records` | `100000` | Dataset size |
+| `-num-ops` | `10000` | Read/update/mixed operation count |
+| `-connections` | `1` | Concurrent workers |
+| `-batch-size` | `100` | Batch size |
+| `-num-runs` | `1` | Repetitions per key type |
+| `-output` | none | CSV results in multi-run mode; provenance sidecars |
+| `-campaign-seed` | `0` | Nonzero randomizes key-type order per repetition and seeds read-set sampling |
 
-## Scenarios
+Scenarios: `insert-performance`, `read-performance`, `update-performance`,
+`mixed-insert-heavy` (70% insert / 30% read), `mixed-read-update` (50% read /
+50% update), or `all`. The historical `mixed-insert-heavy` scenario is **not**
+the corrected IH protocol below. See `-help` for all flags.
 
-- `insert-performance` - Page splits, fragmentation, disk usage, throughput
-- `read-performance` - Buffer pool hit ratios, memory efficiency
-- `update-performance` - Update throughput, fragmentation impact
-- `mixed-insert-heavy` - 70% insert, 30% read workload
-- `mixed-read-update` - 50% read, 50% update (YCSB Workload A)
-- `all` - Runs all scenarios sequentially (comprehensive benchmark)
+## Cassandra: single-node and multi-node
 
-## Corrected Insert-Heavy (IH)
+Both are built into the same binary; select a mode with `-cluster-mode`:
 
-The corrected single-client IH protocol is an opt-in path, separate from
-`-scenario=mixed-insert-heavy`. It verifies a fixed preload target pool, fresh
-inserts, successful reads and final cardinality. Cassandra IH uses **bucket 1**
-throughout, RF1, LOCAL_ONE and STCS; the normal Cassandra workloads retain
-hash-based buckets and their configured consistency and sampling. Setting
-`-num-buckets=1` is not an IH substitute: it hashes every ID to bucket 0.
+| Mode | Deployment | Use |
+|---|---|---|
+| `local-single` (default) | One local container; workload inside it | Single-node runs |
+| `local-cluster` | Three local containers; workload on orchestrator | Correctness checks only, not performance measurements |
+| `remote-cluster` | Separate hosts via SSH; workload on orchestrator | Multi-node measurements |
 
-The Python launcher defaults to planning only (Python 3.10+):
+PostgreSQL, MySQL and MongoDB remain single-node. The local Cassandra cluster
+exposes only the seed's CQL port, so all workload queries use one coordinator.
 
 ```bash
+# Local cluster: small correctness check, not a performance measurement.
+./uuid-benchmark -database=cassandra -cluster-mode=local-cluster \
+    -scenario=insert-performance -num-records=10000
+
+# Remote cluster: dedicated hosts, reachable over SSH and CQL.
+./uuid-benchmark -database=cassandra -cluster-mode=remote-cluster \
+    -nodes=taurus-01:9042,taurus-02:9042,taurus-03:9042 \
+    -ssh-user="$USER" -ssh-key="$HOME/.ssh/id_ed25519" \
+    -scenario=insert-performance -num-records=1000000 -num-runs=3 \
+    -campaign-seed=42 -output=cassandra-cluster.csv
+```
+
+**Remote prerequisites:** Docker accessible to the SSH user on every node,
+image-registry access, SSH/CQL connectivity from the orchestrator, and internode
+connectivity (port 7000). Use dedicated hosts on a trusted private network;
+see [Safety](#safety) before running.
+
+**Defaults and sizing:**
+- Single-node uses RF1 / `local_one`; cluster modes use RF3 / `local_quorum`.
+  Override with `-replication-factor` and `-consistency`. For two remote hosts,
+  set RF to at most 2. One remote host requires `-single-node`, which defaults
+  to RF1 but retains `local_quorum`.
+- Each remote container defaults to `-cassandra-cpus=8`,
+  `-cassandra-memory=32g`, `-cassandra-heap=8G`, `-cassandra-newgen=2G`.
+  Adjust to host capacity; new generation must not exceed heap.
+- Remote images default to `cassandra:5`, pulled at startup. Pin
+  `-cassandra-image=cassandra@sha256:…` for a multi-day campaign.
+
+**Comparison limits:** Normal Cassandra workloads use hash-based partition
+buckets (`-num-buckets=1000`), even in single-node mode—not the historical fixed
+partition. Read/update targets are now sampled uniformly during insertion;
+`-head-sampling` restores the legacy per-partition-head fetch for bridge
+comparisons. Network path, replication, partition count and sampling must be
+accounted for when comparing results. Cluster metrics aggregate per-node
+snapshots; see [paper notes](docs/paper-notes.md) for details.
+
+## Corrected insert-heavy (IH)
+
+The separate single-client IH protocol verifies the preload target pool,
+successful reads, fresh inserts and final cardinality. Cassandra uses fixed
+**bucket 1**, RF1, LOCAL_ONE and STCS; `-num-buckets=1` is not a substitute.
+
+```bash
+# Planning only; Python 3.10+. Does not start measurements.
 python3 -B scripts/ih_campaign.py --mode=full --seed=42
 python3 -B scripts/ih_repeat.py --help
 ```
 
-Executing an IH campaign additionally requires a Git checkout for source
-archiving, `--execute --host-ready`, a quiet host and locally available database
-images. The Git-free startup support above applies to the normal benchmark,
-not this full campaign launcher. Full mode normally requires pilots;
-`--skip-pilot` explicitly records a bypass, never a passed pilot gate. Repeats
-require named source runs and a reason, reuse archived binaries, and reject
-changed measurement sources. The consolidated code therefore cannot silently
-repeat a pre-consolidation campaign as if its source were unchanged.
+Execution requires a Git checkout, locally available database images, a quiet
+host and `--execute --host-ready`. Full mode normally requires pilots;
+`--skip-pilot` records a bypass, not a passed gate. Repeats require named source
+runs and a reason, reuse archived binaries and reject changed measurement sources.
+See the [IH protocol and implementation](docs/plans/ih-corrected-implementation.md).
 
-Offline checks (no database measurements):
+## Measurement and outputs
+
+Each key type gets a fresh database container; cleanup removes its benchmark
+data. PostgreSQL uses pgbench with server-side key generation; the other engines
+use a shared Go workload binary with client-side generation. Workloads run inside
+the database container **except in Cassandra cluster modes**.
+
+Throughput, latency, disk size and cgroup I/O are collected alongside
+engine-specific metrics: PostgreSQL/InnoDB/WiredTiger page splits, and Cassandra
+SSTable count/delta and space amplification. **SSTable count is not a compaction
+count.** Fragmentation and cache metrics have different engine-specific meanings;
+do not treat them as identical measurements. Repeated runs support summary
+statistics and Mann–Whitney U comparisons.
+
+With `-output`, provenance is recorded in `<output>.meta.json` (flags,
+source/binary identity, seeds and execution order); completed runs are appended
+to `<output>.runs.jsonl`. Remote manifests include SSH usernames, key paths and
+node addresses—review before sharing. CSV summaries are available in multi-run
+mode. See [metrics methodology](docs/METRICS_METHODOLOGY.md) for definitions and
+limitations.
+
+## Safety
+
+**Benchmark use only:** The supplied Docker Compose configurations publish
+database ports on all host interfaces and use default benchmark credentials
+(Cassandra without authentication). Run only on isolated or appropriately
+firewalled hosts; do not expose these ports to the public Internet.
+
+Use dedicated benchmark hosts: the normal runner removes benchmark containers
+and volumes. Remote Cassandra also replaces containers named `cassandra` and
+volumes named `cassandra-data-<host>`. SSH host-key verification is disabled for
+remote clusters with ephemeral hosts; use only trusted private networks.
+
+## Results and checks
+
+- [Evidence dashboard and source documentation](docs/EVIDENCE.md)
+- [YCSB validation](validation/README.md)
+- PDF plots: `pip install -r scripts/requirements.txt`, then
+  `python3 scripts/plot.py results.csv --output-dir plots/`
+
+Offline tests (no database measurements):
 
 ```bash
 go test -count=1 ./...
 python3 -B -m unittest discover -s scripts -p 'test_ih*.py'
-```
-
-Cassandra adapter tests cover all six key types, fixed-partition preload,
-unbounded target/count scans, reads, inserts and error handling. The dedicated
-preload uses batches of 100 and stops on the first failed batch. These checks
-are not evidence of historical binary identity or identical measured behavior.
-
-## Multi-Node Cassandra
-
-Cassandra supports three deployment modes via `-cluster-mode`. PostgreSQL, MySQL, and MongoDB are always single-node — this section only applies to `-database=cassandra`.
-
-- `local-single` (default) — one `cassandra:5` container on the orchestrator host. Workload runs inside the container. This is the thesis baseline.
-- `local-cluster` — three `cassandra:5` containers by default on one Docker network. Only `cassandra-1` publishes 9042 to the host, so all CQL queries are routed through a single coordinator. **For code-correctness validation only — not for performance measurement.**
-- `remote-cluster` — real machines reached over SSH (e.g. an HPC allocation). Workload runs natively on the orchestrator and connects to the ring over the network. This is what produces the paper-extension measurements.
-
-See `CLAUDE.md` ("Cluster Modes (Cassandra)") for the deeper rationale on bucketed schema, replication, consistency, and per-node metric aggregation.
-
-### Invocation examples
-
-```bash
-# local-single: existing thesis methodology, no flag changes needed
-./uuid-benchmark -database=cassandra -scenario=all -num-records=1000000 -num-runs=3 -output=cassandra.csv
-
-# local-cluster: 3-container compose ring, code validation only
-./uuid-benchmark -database=cassandra -cluster-mode=local-cluster \
-    -scenario=insert-performance -num-records=10000
-
-# remote-cluster: 3 real nodes over SSH (Taurus-style)
-./uuid-benchmark -database=cassandra -cluster-mode=remote-cluster \
-    -nodes=taurus-01:9042,taurus-02:9042,taurus-03:9042 \
-    -ssh-user=$USER -ssh-key=$HOME/.ssh/id_ed25519 \
-    -scenario=all -num-records=1000000 -num-runs=3 -output=cassandra-cluster.csv
-```
-
-### Sample output (illustrative — numbers are not real measurements)
-
-```
-UUID Benchmark - Cassandra
-======================================================================
-Database:     Cassandra
-Cluster mode: remote-cluster
-Scenario:     insert-performance
-Records:      1000000
-Runs:         3 (statistical mode)
-Testing:      [SEQUENTIAL UUIDV1 UUIDV4 UUIDV7 ULID ULID_MONOTONIC]
-======================================================================
-
-COMPARISON - Insert Performance
-=====================================================================================================
-Metric              SEQUENTIAL    UUIDV1        UUIDV4        UUIDV7        ULID          ULID_MONO
----------------------------------------------------------------------------------------------------
-Throughput          48213 rec/s   42105 rec/s   31872 rec/s   46540 rec/s   46011 rec/s   46324 rec/s
-SSTable Delta       12            14            21            13            13            13
-SSTable Count       28            31            42            29            29            29
-Index Size          18.4 MB       24.1 MB       24.6 MB       24.2 MB       24.2 MB       24.2 MB
-Space Amplification 1.08%         1.12%         1.41%         1.10%         1.10%         1.10%
-Latency p99         2.4ms         3.1ms         5.8ms         2.7ms         2.7ms         2.7ms
-Read MB/s           0.42          0.55          0.71          0.50          0.50          0.50
-Write MB/s          18.30         19.10         22.40         18.80         18.80         18.80
-```
-
-Cluster-mode runs sum counters (SSTable count, page splits, IO bytes) across all nodes and average ratios (cache hit rate, bloom filter false ratio). Per-node `nodetool` output and per-node cgroup v2 `io.stat` are collected via `docker exec` (local-cluster) or SSH (remote-cluster).
-
-### Security note
-
-SSH to remote nodes uses `ssh.InsecureIgnoreHostKey()`. This is intentional for ephemeral private-VPN clusters where host keys change per allocation (e.g. Taurus). Do not point `-cluster-mode=remote-cluster` at hosts on an untrusted network.
-
-## How It Works
-
-Each database uses a workload tool that runs **inside the Docker container** (localhost connection, zero network overhead):
-
-| Database | Workload Tool | UUID Generation |
-|---|---|---|
-| PostgreSQL | pgbench with custom SQL scripts | Server-side (PostgreSQL functions) |
-| MySQL | Custom Go binary | Client-side (Go UUID/ULID libraries) |
-| MongoDB | Custom Go binary | Client-side (Go UUID/ULID libraries) |
-| Cassandra | Custom Go binary | Client-side (Go UUID/ULID libraries) |
-
-**Workflow:** For each key type (SEQUENTIAL, UUIDv4, UUIDv7, ULID, ULID_MONOTONIC, UUIDv1), the benchmark:
-1. Starts a **fresh database container** to ensure isolated measurements
-2. Creates the benchmark table/collection with the appropriate key type
-3. Executes the workload inside the container
-4. Collects database-specific metrics after the workload completes
-5. Stops and removes the container (including volumes)
-
-**Metrics collected per database:**
-
-| Metric | PostgreSQL | MySQL | MongoDB | Cassandra |
-|---|---|---|---|---|
-| Page splits / compaction | WAL analysis | innodb_metrics | WiredTiger cache splits | SSTable count |
-| Fragmentation | pgstatindex | B-tree overhead ratio | freeStorageSize/storageSize | Space amplification |
-| Cache hit ratio | pg_stat_database | performance_schema | WiredTiger cache | Key cache (nodetool) |
-| Disk size | pg_relation_size | information_schema | collStats | nodetool tablestats |
-| Throughput & latency | pgbench | Go workload binary | Go workload binary | Go workload binary |
-| I/O | cgroup v2 | cgroup v2 | cgroup v2 | cgroup v2 |
-
-**Key Design Decisions:**
-- **Fresh container per UUID type:** Prevents metric contamination between runs
-- **Workload inside container:** Eliminates network latency from measurements
-- **Custom Go workload binary for MySQL/MongoDB/Cassandra:** Enables proper UUID generation with Go libraries (`github.com/google/uuid`, `github.com/oklog/ulid`) — no existing benchmark tool supports custom UUID key generation for all types
-- **Statistical analysis mode:** Multiple runs with Mann-Whitney U tests provide p-values and significance testing
-
-## Plotting
-
-Generate PDF bar charts from benchmark CSV results:
-
-```bash
-pip install -r scripts/requirements.txt
-
-# Generate all plots
-python3 scripts/plot.py results.csv --output-dir plots/
-
-# Filter by scenario or metric
-python3 scripts/plot.py results.csv --scenario insert_performance
-python3 scripts/plot.py results.csv --metric p99_latency_us
-```
-
-Output: one PDF per (scenario, metric) pair, named `{scenario}_{metric}.pdf`.
-
-## Validation
-
-PostgreSQL results validated against **go-ycsb** (industry-standard benchmark) for overlapping metrics (throughput, latency). Both tools run inside containers with identical architecture (client inside container → localhost). See `validation/` directory.
-
-```bash
-cd validation
-./run-comparison.sh insert  # Runs both tools, compares sequential int results
 ```
